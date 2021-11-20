@@ -10,7 +10,7 @@ services:
       - /dev/ttyUSB0:/dev/ttyUSB0
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600"
+                    roslaunch src/swarm-nodes/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600"
     restart: unless-stopped
     # volumes:
     #   - type: bind

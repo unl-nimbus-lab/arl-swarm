@@ -1,4 +1,0 @@
-<launch>
-    <node name="pixhawk_xform" type="pixhawk_xform" pkg="pixhawk_xform" output="screen">
-    </node>
-</launch>

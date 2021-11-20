@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/docker-swarm/drone
+  IMAGE_NAME: ${{ github.repository }}/drone
 
 jobs:
   build-and-push-image:

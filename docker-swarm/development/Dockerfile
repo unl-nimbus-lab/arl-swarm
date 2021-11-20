@@ -81,14 +81,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && sudo /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone ROS Nodes
-# ROS Nodes Installed:
-#   - Freyja
-#   - vicon_bridge
-RUN git clone https://github.com/unl-nimbus-lab/Freyja.git \
-    && mv Freyja /home/catkin_ws/src \
-    && git clone https://github.com/ethz-asl/vicon_bridge.git \
-    && mv vicon_bridge /home/catkin_ws/src
+# Copy the swarm nodes to the image
+COPY swarm-nodes /home/catkin_ws/src/
 
 # Build the ROS workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
@@ -96,7 +90,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin_make
 
 # Overlay the ROS environment on top of the existing environment
-COPY ./ros_entrypoint.sh /
+COPY docker-swarm/development/ros_entrypoint.sh /
 RUN ["chmod", "+x", "/ros_entrypoint.sh"]
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]

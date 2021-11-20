@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/docker-swarm/development
+  IMAGE_NAME: ${{ github.repository }}/development
 
 jobs:
   build-and-push-image:
