@@ -26,13 +26,13 @@ help()
 
 pull_latest_version()
 {
-    docker pull ghcr.io/unl-nimbus-lab/docker/drone:latest
+    docker pull ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
 }
 
 
 run()
 {
-    docker run -it "$@" ghcr.io/unl-nimbus-lab/docker/drone:latest
+    docker run -it "$@" ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
 }
 
 
