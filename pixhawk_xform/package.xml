@@ -1,0 +1,16 @@
+<package format="2">
+  <name>pixhawk_xform</name>
+  <version>1.0.0</version>
+  <description>Pixhawk Transform Node for Mocap</description>
+  <author>Adam Plowcha</author>
+  <maintainer email="uavlab@cse.unl.edu">UNL NIMBUS Lab</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  
+
+</package>
