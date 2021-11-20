@@ -7,6 +7,9 @@
 *.code-workspace
 .history/
 
+# Misc
+.DS_Store
+
 # Docker
 .vagrant*
 bin

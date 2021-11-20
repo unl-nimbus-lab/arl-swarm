@@ -26,13 +26,13 @@ help()
 
 pull_latest_version()
 {
-    docker pull ghcr.io/unl-nimbus-lab/docker/development:master
+    docker pull ghcr.io/unl-nimbus-lab/arl-swarm/development:main
 }
 
 
 run()
 {
-    docker run -it "$@" ghcr.io/unl-nimbus-lab/docker/development:master
+    docker run -it "$@" ghcr.io/unl-nimbus-lab/arl-swarm/development:main
 }
 
 
