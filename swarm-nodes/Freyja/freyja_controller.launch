@@ -9,24 +9,24 @@
 
   <!-- allowed autopilots: "asctec" or "arducopter" -->
   <arg name="autopilot"                 default="arducopter" />
-  <arg name="vicon_topic" />
+  <arg name="vicon_topic"               default="dummy" />
 
   <!-- use "device:baudrate" for apm, "device" for asctec -->
-  <arg name="comm_port"                 default="/dev/ttyUSB0:57600"/>
-  <arg name="total_mass"                default="0.95"/>
-  <arg name="thrust_scaler" 		        default="200.0"/>
+  <arg name="comm_port"                 default="/dev/ttyS0:230400"/>
+  <arg name="total_mass"                default="1.35"/>
+  <arg name="thrust_scaler" 		default="60"/>
 
   <!-- launch a handler for discrete waypoints -->
   <arg name="use_waypoint_handler"      default="false" />
 
   <!-- advanced settings -->
   <arg name="use_velctrl_only"          default="false" />
+  <arg name="bias_compensation"         default="auto" /> <!--auto, on, off-->
   <arg name="enable_flatness_ff"        default="false" />
-  <arg name="bias_compensation"         default="auto" />  <!--auto, on, off-->
 
   <!-- Used for examples -->
-  <arg name="use_examples"              default="false"/>
-  <arg name="example_number"            default="0" />
+  <arg name="use_examples"              default="true"/>
+  <arg name="example_number"            default="1" />
 
   <arg name="start_rosbag"              default="false" />
 
@@ -34,9 +34,10 @@
   <!-- state source can be: "apm", "asctec", "vicon" or "onboard_camera" -->
   <!-- implemented filters: "median", "gauss" and "lwma" -->
   <node name="state_manager" pkg="state_manager" type="state_manager_node">
-    <param name="state_source"  type="string"   value="vicon" />
+    <param name="state_source"  type="string"   value="apm" />
     <param name="filter_type"   type="string"   value="median" />
     <param name="vicon_topic"   type="string"   value="$(arg vicon_topic)" />
+    <remap from="/mavros/global_position/local" to="/mavros/local_position/odom" />
   </node>
 
 
@@ -74,6 +75,7 @@
 
     <include file="$(find freyja_configfiles)/apm_nimbus.launch">
       <arg name="fcu_url" value="$(arg comm_port)"/>
+      <arg name="my_sysid" value="50" />
     </include>
   </group>
 
@@ -83,7 +85,7 @@
         output="screen"  if="$(eval use_waypoint_handler and not use_examples)"> 
     <param name="init_pn"       type="double"     value="0.0" />
     <param name="init_pe"       type="double"     value="0.0" />
-    <param name="init_pd"       type="double"     value="-0.5" />
+    <param name="init_pd"       type="double"     value="-3.0" />
     <param name="init_yaw"      type="double"     value="0.0" />
 	</node>
 

@@ -172,7 +172,7 @@ void LQRController::stateCallback( const freyja_msgs::CurrentState::ConstPtr &ms
     state_err.head<6>() = current_state.head<6>() - reference_state_.head<6>();
     /* yaw-error is done differently */
     state_err(6) = calcYawError( current_state(6), reference_state_(6) );
-    rsmtx.unlock();
+    rsmtx.unlock();    
     reduced_state_ = std::move( state_err );
     have_state_update_ = true;
   }
@@ -225,7 +225,7 @@ void LQRController::computeFeedback( const ros::TimerEvent &event )
   {
     /* Compute control inputs (accelerations, in this case) */
     state_err = std::move( reduced_state_ );
-    control_input = -1 * lqr_K_ * state_err 
+    control_input = -1 * lqr_K_ * state_err  
                     + static_cast<double>(enable_flatness_ff_) * reference_ff_;
   
     /* Force saturation on downward acceleration */
@@ -258,7 +258,7 @@ void LQRController::computeFeedback( const ros::TimerEvent &event )
   ctrl_cmd.ctrl_mode = 0b00001111;
   atti_cmd_pub_.publish( ctrl_cmd );
   
-
+  
   /* Tell bias estimator about new control input */
   if( bias_compensation_req_ )
     bias_est_.setControlInput( control_input );
@@ -266,7 +266,7 @@ void LQRController::computeFeedback( const ros::TimerEvent &event )
   /* Update the total flying mass if requested */
   if( enable_dyn_mass_estimation_ )
     estimateMass( control_input, tnow );
-    
+
   /* Debug information */
   static freyja_msgs::ControllerDebug debug_msg;
   debug_msg.header.stamp = tnow;

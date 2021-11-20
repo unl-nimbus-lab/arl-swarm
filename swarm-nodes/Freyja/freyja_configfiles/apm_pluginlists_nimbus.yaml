@@ -1,5 +1,7 @@
 plugin_blacklist:
 # common
+- imu
+- sys_time
 - actuator_control
 - ftp
 - safety_area
@@ -10,7 +12,7 @@ plugin_blacklist:
 - setpoint_velocity
 - setpoint_position
 - imu_pub
-- local_position
+# local_position
 - manual_control
 - adsb
 - fake_gps
@@ -22,6 +24,8 @@ plugin_blacklist:
 - param
 
 # extras
+- geofence
+- rallypoint
 - altitude
 - debug_value
 - image_pub

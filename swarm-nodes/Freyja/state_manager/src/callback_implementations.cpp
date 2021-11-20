@@ -202,6 +202,7 @@ void StateManager::mavrosGpsOdomCallback( const nav_msgs::Odometry::ConstPtr &ms
   }
   
   // armed at this point
+  //ROS_WARN( "Here" );
   pn = gps_odom_pn_ + map_rtk_pn_ - arming_gps_pn_;
   pe = gps_odom_pe_ + map_rtk_pe_ - arming_gps_pe_;
   pd = gps_odom_pd_ + map_rtk_pd_ - arming_gps_pd_;
@@ -250,6 +251,7 @@ bool StateManager::maplockArmingHandler( BoolServReq& rq, BoolServRsp& rp )
     have_arming_origin_ = false;
     ROS_WARN( "StateManager::Origin cleared, unlocking RTK map-frame!" );
   }
+  return true;
 }
 
 void StateManager::cameraUpdatesCallback( const CameraOdom::ConstPtr &msg )

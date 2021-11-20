@@ -37,7 +37,7 @@ TrajRef getHoverReference( const ros::Duration &cur_time )
   TrajRef ref_state;
   ref_state.pn = 0.0;
   ref_state.pe = 0.0;
-  ref_state.pd = -0.75;
+  ref_state.pd = -3.0;
   ref_state.vn = 0.0;
   ref_state.ve = 0.0;
   ref_state.vd = 0.0;
@@ -61,12 +61,12 @@ TrajRef getCircleReference( const ros::Duration &cur_time, const int agg_level)
     case 1 :
       break;
     case 2 :
-      A = 0.5;
+      A = 1.5;
       w = 1;
       break;
     case 3 :
-      A = 1;
-      w = 3;
+      A = 2;
+      w = 1.5;
       break;
     default :
       ROS_WARN_STREAM("Circle aggression " << agg_level << " not supported, defaulting to agg_level 1");
@@ -80,8 +80,8 @@ TrajRef getCircleReference( const ros::Duration &cur_time, const int agg_level)
 
   ref_state.pn = A*std::sin( w*t );
   ref_state.pe = A*std::cos( w*t );
-  ref_state.pd = -1.0;
-  
+  ref_state.pd = -3.0;
+
   ref_state.vn = A*w*std::cos( w*t );
   ref_state.ve = -A*w*std::sin( w*t );
   ref_state.vd = 0.0;
@@ -95,9 +95,9 @@ TrajRef getCircleReference( const ros::Duration &cur_time, const int agg_level)
 TrajRef getDefaultReference( const ros::Duration &cur_time )
 {
   TrajRef ref_state;
-  ref_state.pn = 0.5;
-  ref_state.pe = 0.5;
-  ref_state.pd = -1.0;
+  ref_state.pn = 0;
+  ref_state.pe = 0;
+  ref_state.pd = -2.0;
   ref_state.vn = 0.0;
   ref_state.ve = 0.0;
   ref_state.vd = 0.0;

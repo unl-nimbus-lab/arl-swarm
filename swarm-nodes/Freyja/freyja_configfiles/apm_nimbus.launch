@@ -3,10 +3,11 @@
 	<!-- Launch script for ArduPilotMega based FCU's -->
 	<!-- Customised for NimbusLab indoor flights. ~aj -->
 
-	<arg name="fcu_url" default="/dev/ttyUSB0:57600" />
-	<!--arg name="fcu_url" default="/dev/ttyUSB0:115200" /-->
+	<arg name="my_sysid" default="1" />
+	<arg name="fcu_url" default="/dev/ttyUSB0:230400" />
+	<!--arg name="fcu_url" default="/dev/ttyUSB0:230400" /-->
 	<arg name="gcs_url" default="" />
-	<arg name="tgt_system" default="1" />
+	<arg name="tgt_system" default="50" />
 	<arg name="tgt_component" default="1" />
 	<arg name="log_output" default="screen" />
 	<arg name="fcu_protocol" default="v2.0" />
@@ -17,6 +18,7 @@
 		<arg name="pluginlists_yaml" value="$(find freyja_configfiles)/apm_pluginlists_nimbus.yaml" />
 		<arg name="config_yaml" value="$(find freyja_configfiles)/apm_config_nimbus.yaml" />
 
+		<arg name="my_sysid" value="$(arg my_sysid)" />
 		<arg name="fcu_url" value="$(arg fcu_url)" />
 		<arg name="gcs_url" value="$(arg gcs_url)" />
 		<arg name="tgt_system" value="$(arg tgt_system)" />

@@ -10,7 +10,7 @@
 
   <node name="temporal_provider_node" pkg="freyja_examples" type="temporal_provider_node"
         if="$(eval example_number==1)" >
-    <param name="example_traj_type" type="string" value="circle1"/>
+    <param name="example_traj_type" type="string" value="circle2"/>
   </node>
 
   <!-- Example 4/5: use_waypoint_handler:=true in freyja_controller.launch -->
