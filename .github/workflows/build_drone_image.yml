@@ -47,4 +47,5 @@ jobs:
           docker buildx build \
             --platform linux/arm64 \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --push ./docker-swarm/drone/
+            --push \
+            -f ./docker-swarm/drone/Dockerfile
