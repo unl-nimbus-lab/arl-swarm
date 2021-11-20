@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  frejya:
+    # build: .
+    image: ghcr.io/unl-nimbus-lab/docker/drone:latest
+    container_name: frejya
+    network_mode: "host"
+    devices: 
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    command: >
+      /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
+                    roslaunch src/swarm-nodes/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600"
+    restart: unless-stopped
+    # volumes:
+    #   - type: bind
+    #     source: $HOST/location
+    #     target: /container/location
