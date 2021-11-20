@@ -2,7 +2,7 @@ name: Build Drone Docker Image
 
 on:
   push:
-    branches: ['master']
+    branches: ['main']
 
 env:
   REGISTRY: ghcr.io
