@@ -119,6 +119,7 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
    src/geo_converter.cpp
+   src/json_reader.cpp
  )
 
 ## Add cmake target dependencies of the library

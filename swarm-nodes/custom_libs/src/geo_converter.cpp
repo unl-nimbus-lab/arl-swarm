@@ -15,7 +15,7 @@ double geo_converter::gps_to_meters(double lat1, double lon1, double lat2, doubl
 }
 
 
-double meters_to_lat(double base_lat, double base_lon, double d ){
+double geo_converter::meters_to_lat(double base_lat, double base_lon, double d ){
 
 	// This gives the latitde from a base lat,lon coordinnates and a particualr distance with a bearing of 0 degrees
 
@@ -32,7 +32,7 @@ double meters_to_lat(double base_lat, double base_lon, double d ){
 }
 
 
-double meters_to_lon(double base_lat, double base_lon, double d ){ 
+double geo_converter::meters_to_lon(double base_lat, double base_lon, double d ){ 
 
         // This gives the longitude from a base lat,lon coordinnates and a particualr distance with a bearing of 90 degrees
 
