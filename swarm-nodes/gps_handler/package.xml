@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gps_handler</name>
+  <version>0.0.1</version>
+  <description>
+    ROS package developed to handle incoming GLOBAL_POSITION_INT MAVLink messages
+  </description>
+
+  <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
+  <license>MIT</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>copter_msgs</build_depend>
+
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+</package>
