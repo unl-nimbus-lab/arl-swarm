@@ -113,6 +113,9 @@ class GpsHandler:
                 lat = msg.lat / 1.0e7
                 lon = msg.lon / 1.0e7
                 alt = msg.alt / 1000
+                vx = msg.vx / 100
+                vy = msg.vy / 100
+                vz = msg.vz / 100
 
                 # TODO: Construct and publish ROS msg                
 
