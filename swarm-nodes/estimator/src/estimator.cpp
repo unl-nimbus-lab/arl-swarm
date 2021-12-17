@@ -14,10 +14,15 @@
 #include <eigen3/Eigen/Dense>
 #include <custom_libs/geo_converter.hpp>
 
+#include <swarm_msgs/state.h>
+
+
 #define ROS_NODE_NAME "estimator"
 #define PUBLISH_RATE 8 // TODO : change 8Hz to the desired publish rate
 
-void mavlinkCallback(std_msgs::String newMsg){
+#define NN 2 // TODO: change this to a parameter to be passed from a parameter file
+
+void mavlinkCallback(swarm_msgs::state new_state){
 	// This callback receives other agent info info from the python node that listens to mavlink directly
 
 

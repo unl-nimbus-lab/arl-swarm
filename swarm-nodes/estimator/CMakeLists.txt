@@ -12,11 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  swarm_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES estimator
-#  CATKIN_DEPENDS custom_libs roscpp rospy std_msgs
+  CATKIN_DEPENDS message_generation message_runtime custom_libs roscpp rospy std_msgs swarm_msgs
 #  DEPENDS system_lib
 )
 

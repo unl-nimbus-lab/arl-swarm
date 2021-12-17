@@ -7,7 +7,9 @@ project(custom_libs)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+#find_package(catkin REQUIRED
+#	message_generation
+#)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -45,8 +47,6 @@ find_package(catkin REQUIRED)
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -101,7 +101,7 @@ find_package(catkin REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES custom_libs
-#  CATKIN_DEPENDS other_catkin_pkg
+#  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
