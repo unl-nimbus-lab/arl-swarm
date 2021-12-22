@@ -4,6 +4,7 @@ project(gps_handler)
 find_package(catkin REQUIRED COMPONENTS
     rospy
     std_msgs
+    swarm_msgs
 )
 
 catkin_package(

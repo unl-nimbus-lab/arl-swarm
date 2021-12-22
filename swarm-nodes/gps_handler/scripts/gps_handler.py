@@ -6,6 +6,7 @@ import threading
 import atexit
 from pymavlink import mavutil
 from pymavlink.dialects.v10 import ardupilotmega
+from swarm_msgs.msg import gps
 # Import Custom Message
 
 
@@ -16,7 +17,7 @@ class GpsHandler:
     properly formatted messages
     """
     def __init__(self, outgoing_gps_topic: str, port: str, baud: int, source_system: int, source_component: int) -> None:
-        # self.gps_publisher = rospy.Publisher(outgoing_gps_topic, CHANDIMACUSTOMMSG, queue_size=1)
+        self.gps_publisher = rospy.Publisher(outgoing_gps_topic, gps, queue_size=1)
 
         # Create a new MAVLink master
         self.master = mavutil.mavlink_connection(port, 
@@ -107,18 +108,21 @@ class GpsHandler:
 
             # Handle the GPS message and republish the desired ROS message
             if msg.get_type() == 'GLOBAL_POSITION_INT':
-                # Read the message values of interest
-                sys_id = msg.get_srcSystem()
-                comp_id = msg.get_srcComponent()
-                lat = msg.lat / 1.0e7
-                lon = msg.lon / 1.0e7
-                alt = msg.alt / 1000
-                vx = msg.vx / 100
-                vy = msg.vy / 100
-                vz = msg.vz / 100
+                # Create a new ROS GPS message
+                gps_msg = gps()
 
-                # TODO: Construct and publish ROS msg                
+                # Populate the message
+                gps_msg.id = msg.get_srcSystem()
+                gps.lat = msg.lat / 1.0e7
+                gps.lon = msg.long / 1.0e7
+                gps.alt = msg.alt / 1000
+                gps.vx = msg.vx / 100
+                gps.vy = msg.vy / 100
+                gps.vz = msg.vz / 100
 
+                # Publish the state message
+                self.gps_publisher.publish(gps_msg)
+                
         return
 
 
