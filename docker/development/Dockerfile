@@ -54,7 +54,9 @@ RUN pip3 install \
     numpy \
     pandas \
     scipy \
-    matplotlib
+    matplotlib \
+    pyserial \
+    pymavlink
 
 # Add the ROS repo to the sources list
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'

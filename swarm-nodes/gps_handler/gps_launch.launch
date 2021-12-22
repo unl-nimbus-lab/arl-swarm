@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="gps_handler" type="gps_handler.py" name="gps_handler_node" output="screen">
+        <rosparam command="load" file="$(find gps_handler)/config/params.yaml"/>
+    </node>
+</launch>
