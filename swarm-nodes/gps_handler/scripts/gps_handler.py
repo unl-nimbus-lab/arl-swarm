@@ -114,7 +114,7 @@ class GpsHandler:
                 # Populate the message
                 gps_msg.id = msg.get_srcSystem()
                 gps.lat = msg.lat / 1.0e7
-                gps.lon = msg.long / 1.0e7
+                gps.lon = msg.lon / 1.0e7
                 gps.alt = msg.alt / 1000
                 gps.vx = msg.vx / 100
                 gps.vy = msg.vy / 100
