@@ -1,10 +1,68 @@
 # arl-swarm
-This repository contains the implementation, tools, and processes that have been used by the ARL Swarm Team for swarm deployment. For a high-level introduction to the project please refer to [Getting Started](#getting-started). For comprehensive documentation regarding the project and its implementation, please refer to the project Wiki.
+
+## Introduction
+This repository contains the implementation, tools, and processes that have been used by the ARL Swarm Team for swarm deployment. For more comprehensive documentation, please refer to the project Wiki.
+
+## Installation
+Prior to installing this project, it is necessary to first install the software requirements listed below. Note that these requirements must also be met on the respective agents.
+
+* [Docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/)
+* Login to the NIMBUS container registry:
+    * Generate a [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) (PAT)
+    * Copy the generated token
+    * `docker login ghcr.io`
+        * When prompted to enter your password, insert the generated PAT
+
+Once these software requirements have been met, it is now necessary to clone the project repository. Performing this step will provide access to the project's `docker-compose.yml` scripts and helper scripts.
+
+```
+git clone https://github.com/unl-nimbus-lab/docker.git
+```
+
+After cloning the project repository, it is now possible to install and deploy the Docker images provided within this project. The provided Docker images contain all code and the respective environments so that Users may continue to develop and deploy this project.
+
 
 ## Getting Started
-TEST
-### Requirements
+The `arl-swarm` repository provides two Docker images: `arl-swarm/drone` and `arl-swarm/development`. The `drone` image contains the implementation and environment to deploy the swarm software stack on a drone. The `development` image contains the implementation and environment to develop software for the swarm.
 
-### Installation
+### Launching an `arl-swarm/development` Container
+The `arl-swarm/development` image comes with a helper script (`start.sh`) to improve usability of the container and to help new Users get started with the project:
 
-### Usage
+```bash
+# Navigate to the correct directory
+cd arl-swarm/docker/development/scripts
+
+# Pull the latest image
+./start.sh -p
+
+# See the list of available commands
+./start.sh -h
+```
+
+For Users familiar with Docker that wish to interact directly with the image, you may use the `start.sh` script to pull the latest version of the image and utilize the downloaded image.
+
+
+### Launching an `arl-swarm/drone` Container
+Prior to launching the `arl-swarm/drone` container, it is first necessary to modify the `SYS_ID` environment variable provided within the `.env` file and to source this environment:
+
+```bash
+# Navigate to the proper directory
+cd path/to/arl-swarm/docker/drone/
+
+# Modify the SYS_ID variable to the desired value and save the file
+nano .env
+
+# Source the environment
+source .env
+```
+
+After setting the desired `SYS_ID` value and sourcing the environment, the `docker-compose.yml` script may be used to launch the container.
+
+```bash
+# Navigate to the proper directory
+cd path/to/arl-swarm/docker/drone/
+
+# Run the docker services
+docker-compose up
+```
