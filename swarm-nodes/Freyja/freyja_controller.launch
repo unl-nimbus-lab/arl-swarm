@@ -19,6 +19,9 @@
   <!-- launch a handler for discrete waypoints -->
   <arg name="use_waypoint_handler"      default="false" />
 
+  <!-- configure the mavros system id -->
+  <arg name="tgt_system"                default="1" />
+
   <!-- advanced settings -->
   <arg name="use_velctrl_only"          default="false" />
   <arg name="bias_compensation"         default="auto" /> <!--auto, on, off-->
@@ -75,7 +78,7 @@
 
     <include file="$(find freyja_configfiles)/apm_nimbus.launch">
       <arg name="fcu_url" value="$(arg comm_port)"/>
-      <arg name="my_sysid" value="50" />
+      <arg name="tgt_system" value="$(arg tgt_system)" />
     </include>
   </group>
 
