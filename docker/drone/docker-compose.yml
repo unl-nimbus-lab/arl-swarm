@@ -2,7 +2,6 @@ version: '3'
 
 services:
   mavros:
-    # build: .
     image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
     container_name: mavros
     network_mode: "host"
