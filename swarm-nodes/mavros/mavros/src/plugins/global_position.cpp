@@ -31,6 +31,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <geographic_msgs/GeoPointStamped.h>
 
+#include <mavros_msgs/SwarmGPS.h>
 #include <mavros_msgs/HomePosition.h>
 
 namespace mavros {
@@ -82,6 +83,7 @@ public:
 		gp_odom_pub = gp_nh.advertise<nav_msgs::Odometry>("local", 10);
 		gp_rel_alt_pub = gp_nh.advertise<std_msgs::Float64>("rel_alt", 10);
 		gp_hdg_pub = gp_nh.advertise<std_msgs::Float64>("compass_hdg", 10);
+		gp_swarm_fix_pub = gp_nh.advertise<mavros_msgs::SwarmGPS>("swarm", 10);
 
 		// global origin
 		gp_global_origin_pub = gp_nh.advertise<geographic_msgs::GeoPointStamped>("gp_origin", 10);
@@ -118,6 +120,7 @@ private:
 	ros::Publisher gp_rel_alt_pub;
 	ros::Publisher gp_global_origin_pub;
 	ros::Publisher gp_global_offset_pub;
+	ros::Publisher gp_swarm_fix_pub;
 
 	ros::Subscriber gp_set_global_origin_sub;
 	ros::Subscriber hp_sub;
@@ -257,11 +260,17 @@ private:
 		auto fix = boost::make_shared<sensor_msgs::NavSatFix>();
 		auto relative_alt = boost::make_shared<std_msgs::Float64>();
 		auto compass_heading = boost::make_shared<std_msgs::Float64>();
+		auto swarm_fix = boost::make_shared<mavros_msgs::SwarmGPS>();
 
 		auto header = m_uas->synchronized_header(child_frame_id, gpos.time_boot_ms);
 
 		// Global position fix
 		fix->header = header;
+
+		// Populate general swarm fix data
+		swarm_fix->header = header;
+		swarm_fix->system_id = msg->sysid;
+		swarm_fix->component_id = msg->compid;
 
 		fill_lla(gpos, fix);
 
@@ -374,11 +383,15 @@ private:
 								rot_cov,
 									rot_cov;
 
+		// Add the resulting fix to the swarm fix
+		swarm_fix->global_position = fix;
+
 		// publish
 		gp_fix_pub.publish(fix);
 		gp_odom_pub.publish(odom);
 		gp_rel_alt_pub.publish(relative_alt);
 		gp_hdg_pub.publish(compass_heading);
+		gp_swarm_fix_pub.publish(swarm_fix);
 
 		// TF
 		if (tf_send) {
