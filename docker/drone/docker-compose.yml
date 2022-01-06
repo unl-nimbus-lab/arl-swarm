@@ -1,18 +1,14 @@
 version: '3'
 
 services:
-  frejya:
+  mavros:
     # build: .
     image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
-    container_name: frejya
+    container_name: mavros
     network_mode: "host"
     devices: 
-      - /dev/ttyS0:/dev/ttyS0
+      - ${PORT}:${PORT}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600 tgt_system:=${SYS_ID}"
+                    roslaunch src/mavros/mavros/launch/apm.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID}"
     restart: unless-stopped
-    # volumes:
-    #   - type: bind
-    #     source: $HOST/location
-    #     target: /container/location

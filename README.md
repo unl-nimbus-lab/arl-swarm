@@ -40,24 +40,24 @@ cd arl-swarm/docker/development/scripts
 ./start.sh -h
 ```
 
-For Users familiar with Docker that wish to interact directly with the image, you may use the `start.sh` script to pull the latest version of the image and utilize the downloaded image.
+For Users familiar with Docker that wish to interact directly with the image, you may use the `start.sh` script to pull the latest version of the image and utilize the downloaded image as you would any other image.
 
 
 ### Launching an `arl-swarm/drone` Container
-Prior to launching the `arl-swarm/drone` container, it is first necessary to modify the `SYS_ID` environment variable provided within the `.env` file and to source this environment:
+Prior to launching the `arl-swarm/drone` container, it is first necessary to modify the environment variables provided within the `.env` file and to source this environment file:
 
 ```bash
 # Navigate to the proper directory
 cd path/to/arl-swarm/docker/drone/
 
-# Modify the SYS_ID variable to the desired value and save the file
+# Modify the BAUD, PORT, SYS_ID, and COMP_ID variables to the desired values and save the file
 nano .env
 
 # Source the environment
 source .env
 ```
 
-After setting the desired `SYS_ID` value and sourcing the environment, the `docker-compose.yml` script may be used to launch the container.
+After setting the desired environment variable values and sourcing the environment, the `docker-compose.yml` script may be used to launch the container.
 
 ```bash
 # Navigate to the proper directory
