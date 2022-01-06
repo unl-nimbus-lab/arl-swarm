@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-mavros-extras \
     && rm -rf /var/lib/apt/lists/*
 
-# Now install weird MAVROS geoids
+# Now install MAVROS geoids
 RUN sudo /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh
 
 # Copy the swarm nodes to the image

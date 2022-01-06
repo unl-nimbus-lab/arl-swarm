@@ -150,6 +150,14 @@ private:
 		fix->altitude = msg.alt / 1E3 + m_uas->geoid_to_ellipsoid_height(fix);	// in meters
 	}
 
+	template<typename MsgT>
+	inline void fill_lla(MsgT &msg, mavros_msgs::SwarmGPS::Ptr fix)
+	{
+		fix->latitude = msg.lat / 1E7;		// deg
+		fix->longitude = msg.lon / 1E7;		// deg
+		fix->altitude = msg.alt / 1E3 + m_uas->geoid_to_ellipsoid_height(fix);	// in meters
+	}
+
 	inline void fill_unknown_cov(sensor_msgs::NavSatFix::Ptr fix)
 	{
 		fix->position_covariance.fill(0.0);
@@ -273,6 +281,7 @@ private:
 		swarm_fix->component_id = msg->compid;
 
 		fill_lla(gpos, fix);
+		fill_lla(gpos, swarm_fix);
 
 		// fill GPS status fields using GPS_RAW data
 		auto raw_fix = m_uas->get_gps_fix();
@@ -382,9 +391,6 @@ private:
 							rot_cov,
 								rot_cov,
 									rot_cov;
-
-		// Add the resulting fix to the swarm fix
-		swarm_fix->global_position = fix;
 
 		// publish
 		gp_fix_pub.publish(fix);
