@@ -4,13 +4,13 @@ services:
   frejya:
     # build: .
     image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
-    container_name: frejya
+    container_name: pre-planned_arl
     network_mode: "host"
     devices: 
       - /dev/ttyS0:/dev/ttyS0
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600 tgt_system:=${SYS_ID}"
+                    roslaunch src/pre-planned_arl/pre_planned_cube.launch
     restart: unless-stopped
     # volumes:
     #   - type: bind

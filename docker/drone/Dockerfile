@@ -18,18 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iputils-ping \
     net-tools \
     netbase \
-    python3 \
-    python3-pip \
     git \
     nano \
     vim \
     htop \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Python packages
-RUN pip3 install \
-    pyserial \
-    pymavlink
 
 # Install MAVROS
 RUN apt-get update && apt-get install -y --no-install-recommends \
