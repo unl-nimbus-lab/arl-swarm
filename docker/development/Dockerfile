@@ -18,35 +18,36 @@ ENV LC_ALL=C.UTF-8
 ENV ROS_DISTRO=noetic
 ENV HOME=/home/
 ENV ROS_WS=/home/catkin_ws/
-WORKDIR ${HOME}
+WORKDIR ${ROS_WS}
 
 # Install some helpful utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    iputils-ping \
-    net-tools \
-    nano \
-    vim \
-    git \
-    clang \
-    g++ \
-    rsync \
-    zip \
-    make \
-    cmake \
-    curl \
-    wget \
-    libopencv-dev \
-    python3-opencv \
-    build-essential \
-    lsb-release \
-    ca-certificates \
-    dirmngr \
-    gnupg2 \
-    python3 \
-    python3-pip \
-    netbase \
-    htop \
-    nmap \
+        iputils-ping \
+        net-tools \
+        nano \
+        vim \
+        git \
+        clang \
+        g++ \
+        rsync \
+        zip \
+        make \
+        cmake \
+        curl \
+        wget \
+        libopencv-dev \
+        python3-opencv \
+        build-essential \
+        lsb-release \
+        ca-certificates \
+        dirmngr \
+        gnupg2 \
+        python3 \
+        python3-pip \
+        python3-dev \
+        netbase \
+        htop \
+        nmap \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
@@ -66,32 +67,55 @@ RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt
 
 # Install ROS Noetic
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3-rosdep \
-    python3-rosinstall \
-    python3-vcstools \
-    ros-noetic-ros-base \
+        python3-rosdep \
+        python3-rosinstall \
+        python3-vcstools \
+        ros-noetic-ros-base \
     && rosdep init \
     && rosdep update \
     && rm -rf /var/lib/apt/lists/*
 
-# Install MAVROS and other ROS dependencies
+# Install ROS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-noetic-mavros \
-    ros-noetic-mavros-extras \
-    ros-noetic-tf \
-    ros-noetic-diagnostic-updater \
-    && sudo /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh \
+        ros-noetic-tf \
+        ros-noetic-diagnostic-updater \
+        ros-noetic-control-toolbox \
     && rm -rf /var/lib/apt/lists/*
+
+# Install MAVROS dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3-lxml \
+        python3-catkin-tools \
+        python3-rosinstall-generator \
+        geographiclib-tools \
+        libgeographic-dev \
+	&& geographiclib-get-geoids egm96-5 \
+    && geographiclib-get-gravity egm96 \
+    && geographiclib-get-magnetic emm2015 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Initialize the ROS workspace
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
+    && cd ${ROS_WS} \
+    && rosdep update \
+    && catkin init \
+    && wstool init src
 
 # Copy the swarm nodes to the image
 COPY swarm-nodes /home/catkin_ws/src/
 
+# Install MAVLink and configure workspace
+RUN apt-get update && rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
+    && wstool merge -t src /tmp/mavros.rosinstall \
+    && wstool update -t src -j4 \
+    && rosdep install --from-paths src --ignore-src -y
+
 # Build the ROS workspace
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && cd ${ROS_WS} \
-    && catkin_make
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh \ 
+    && catkin build
 
 # Overlay the ROS environment on top of the existing environment
+WORKDIR ${HOME}
 COPY docker/development/ros_entrypoint.sh /
 RUN ["chmod", "+x", "/ros_entrypoint.sh"]
 ENTRYPOINT ["/ros_entrypoint.sh"]
