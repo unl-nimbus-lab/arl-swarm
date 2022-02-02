@@ -9,7 +9,7 @@
 #include <string>
 //TODO: Add GPS transform
 
-int mode = 0;
+int mode = 1;
 bool initialPositionFlag = true;
 bool finalPositionFlag = true;
 ros::Time init_time;
@@ -98,18 +98,8 @@ geometry_msgs::PoseStamped pos_msg ;
 
 // State machine as switch 
 switch(mode) {
+
     case 0 :
-        //Starting Position
-        if (initialPositionFlag) {
-            initialPositionFlag = false;
-            finalPositionFlag = true;
-            ROS_WARN("MOVING TO INITIAL POSITION ...");
-        }
-        pos_msg.pose.position.x = initialX;
-        pos_msg.pose.position.y = initialY;
-	    pos_msg.pose.position.z = heightFixed;
-        break;
-    case 1 :
         //Final ARL Positoin
         if (finalPositionFlag) {
             initialPositionFlag = true;
@@ -118,6 +108,18 @@ switch(mode) {
         }
         pos_msg.pose.position.x = finalX;
         pos_msg.pose.position.y = finalY;
+	    pos_msg.pose.position.z = heightFixed;
+        break;
+    
+    case 1 :
+        //Starting Position
+        if (initialPositionFlag) {
+            initialPositionFlag = false;
+            finalPositionFlag = true;
+            ROS_WARN("MOVING TO INITIAL POSITION ...");
+        }
+        pos_msg.pose.position.x = initialX;
+        pos_msg.pose.position.y = initialY;
 	    pos_msg.pose.position.z = heightFixed;
         break;
 }
