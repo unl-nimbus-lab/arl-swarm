@@ -27,3 +27,4 @@ services:
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
                     roslaunch src/pre-planned_arl/launch/pre_planned_cube_test.launch"
     restart: unless-stopped
+    
