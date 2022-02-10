@@ -12,19 +12,7 @@ services:
       - ${PORT}:${PORT}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/mavros/mavros/launch/apm.launch"
+                    roslaunch src/mavros/mavros/launch/apm_pre_planned.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID}"
     restart: unless-stopped
-  pre-planned_hrl:
-    #image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
-    image: pre-planned
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
-    container_name: pre-planned_hrl
-    network_mode: "host"
-    devices: 
-      - ${PORT}:${PORT}
-    command: >
-      /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/pre-planned_arl/launch/pre_planned_cube_test.launch"
-    restart: unless-stopped
+
     
