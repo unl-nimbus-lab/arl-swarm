@@ -12,7 +12,5 @@ services:
       - ${PORT}:${PORT}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/mavros/mavros/launch/apm_pre_planned.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID}"
+                    roslaunch src/mavros/mavros/launch/apm_preplanned.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID} heightReference:=${ALTITUDE} fileNumber:=${TRAJECTORY_ID}"
     restart: unless-stopped
-
-    

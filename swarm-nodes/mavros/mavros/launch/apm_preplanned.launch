@@ -23,7 +23,12 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<include file="$(find pre-planned_arl)/launch/pre_planned_cube_test.launch">
+	<arg name="heightReference" default="3.0" />
+	<arg name="fileNumber" default="Test" />
 
+	<include file="$(find pre-planned_arl)/launch/pre_planned.launch">
+		<arg name="alt" value="$(arg heightReference)" />
+		<arg name="fileNo" value="$(arg fileNumber)" />
 	</include>
+
 </launch>
