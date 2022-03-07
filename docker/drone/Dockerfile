@@ -3,7 +3,8 @@ FROM arm64v8/ros:noetic-robot
 
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
-    && mkdir /home/catkin_ws/src
+    && mkdir /home/catkin_ws/src \
+    && mkdir /home/rosbags
 
 # Setup the environments
 ENV LANG=C.UTF-8

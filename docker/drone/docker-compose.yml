@@ -8,6 +8,8 @@ services:
     tty: true        # docker run -t
     container_name: mavros
     network_mode: "host"
+    volumes:
+      - /home/ubuntu/rosbags:/home/rosbags
     devices: 
       - ${PORT}:${PORT}
     command: >

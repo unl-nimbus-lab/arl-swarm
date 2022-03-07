@@ -31,4 +31,7 @@
 		<arg name="fileNo" value="$(arg fileNumber)" />
 	</include>
 
+	 <node pkg="rosbag" type="record" name="rosbag_record_drone" 
+	 	args="record -o /home/rosbags/" />  
+
 </launch>
