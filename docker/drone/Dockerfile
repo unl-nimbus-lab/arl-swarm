@@ -3,7 +3,8 @@ FROM arm64v8/ros:noetic-robot
 
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
-    && mkdir /home/catkin_ws/src
+    && mkdir /home/catkin_ws/src \
+    && mkdir /home/rosbags
 
 # Setup the environments
 ENV LANG=C.UTF-8
@@ -71,6 +72,7 @@ COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
 COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
+COPY swarm-nodes/pre-planned_arl /home/catkin_ws/src/pre-planned_arl
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \

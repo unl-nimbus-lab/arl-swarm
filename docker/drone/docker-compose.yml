@@ -2,12 +2,17 @@ version: '3'
 
 services:
   mavros:
-    image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
+    #image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
+    image: pre-planned
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     container_name: mavros
     network_mode: "host"
+    volumes:
+      - /home/ubuntu/rosbags:/home/rosbags
     devices: 
       - ${PORT}:${PORT}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/mavros/mavros/launch/apm.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID}"
+                    roslaunch src/mavros/mavros/launch/apm_preplanned.launch fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID} heightReference:=${ALTITUDE} fileNumber:=${TRAJECTORY_ID}"
     restart: unless-stopped
