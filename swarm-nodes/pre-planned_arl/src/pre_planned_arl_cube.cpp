@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 //TODO: Add GPS transform
 
 int mode = 1;
@@ -19,14 +20,32 @@ int columnIndex = 0;
 int numberOfColumns = 1001;
 int numberOfRows = 5;
 mavros_msgs::DebugValue modeBroadcast;
+mavros_msgs::DebugValue HRLReference;
 std::string file_var;
+int system_ID;
 float heightFixed = -3.0;
 
-void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg)
-{
+float liveX;
+float liveY;
+float liveZ;
+
+void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    //update the state
     modeBroadcast = *msg;
     mode = modeBroadcast.value_int;
     //ROS_INFO("[%i",mode);
+}
+
+void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    //update the reference
+    ROS_WARN("DEBUG_VECTOR_RECEIVED");
+    HRLReference = *msg;
+    if (stoi(HRLReference.name) == system_ID) {
+	ROS_WARN("THIS ONE IS FOR ME!!!!");
+        liveX = HRLReference.data[0];
+        liveY = HRLReference.data[1];
+        liveZ = HRLReference.data[2];
+    }
 }
 
 int main(int argc, char **argv)
@@ -79,6 +98,12 @@ int main(int argc, char **argv)
     }
     ////////// END FILE READ //////////
 
+    if (nh.getParam("/drone_name", system_ID))
+        ROS_WARN("SYSTEM ID IS: %d", system_ID);
+    else
+        ROS_ERROR("BAD system_ID PARAMETER");
+
+
 //Set initial conditions 
 float initialX = freyjaTrajectory[1][0];
 float initialY = freyjaTrajectory[2][0];
@@ -86,9 +111,13 @@ float finalX = freyjaTrajectory[1][1000];
 float finalY = freyjaTrajectory[2][1000];
 float yaw = 0.0;
 
-
+liveX = finalX;
+liveY = finalY;
+liveZ = heightFixed; 
 
 ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 1, stateBroadcast_cb);
+
+ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 1, HRLReference_cb);
 
 ros::Publisher wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true );
 while (ros::ok())
@@ -121,6 +150,13 @@ switch(mode) {
         pos_msg.pose.position.x = initialX;
         pos_msg.pose.position.y = initialY;
 	    pos_msg.pose.position.z = heightFixed;
+        break;
+    case 3 : 
+        //Live HRL
+	ROS_WARN("LIVE HRL");
+        pos_msg.pose.position.x = liveX;
+        pos_msg.pose.position.y = liveY;
+        pos_msg.pose.position.z = liveZ;
         break;
 }
     pos_msg.header.stamp = ros::Time::now();

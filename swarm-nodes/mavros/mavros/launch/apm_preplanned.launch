@@ -25,13 +25,15 @@
 
 	<arg name="heightReference" default="3.0" />
 	<arg name="fileNumber" default="Test" />
+	<arg name="droneName" default="1" />
 
 	<include file="$(find pre-planned_arl)/launch/pre_planned.launch">
 		<arg name="alt" value="$(arg heightReference)" />
 		<arg name="fileNo" value="$(arg fileNumber)" />
+		<arg name="system_ID" value="$(arg droneName)" />
 	</include>
 
-	 <!--node pkg="rosbag" type="record" name="rosbag_record_drone" 
-	 	args="record -o /home/rosbags/" / -->  
+	 <!--node pkg="rosbag" type="record" name="rosbag_record_drone" -->
+	 <!--	args="record -o /home/rosbags/" / -->  
 
 </launch>
