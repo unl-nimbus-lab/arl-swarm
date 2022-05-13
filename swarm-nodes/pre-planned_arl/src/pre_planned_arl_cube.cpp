@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "custom_libs/geo_converter.hpp"
 //TODO: Add GPS transform
 
 int mode = 1;
@@ -24,6 +25,7 @@ mavros_msgs::DebugValue HRLReference;
 std::string file_var;
 int system_ID;
 float heightFixed = -3.0;
+geo_converter location;
 
 float liveX;
 float liveY;
