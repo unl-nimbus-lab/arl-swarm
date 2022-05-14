@@ -19,8 +19,8 @@
 
 	<arg name="fcu_url" value="$(env PORT):$(env BAUD)?ids=255,240"/>
 	<arg name="gcs_url" default="" />
-	<arg name="tgt_system" default="(env SYS_ID)" />
-	<arg name="tgt_component" default="(env COMP_ID)" />
+	<arg name="tgt_system" default="$(env SYS_ID)" />
+	<arg name="tgt_component" default="$(env COMP_ID)" />
 	<arg name="log_output" default="screen" />
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />

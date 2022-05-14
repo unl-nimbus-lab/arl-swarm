@@ -92,7 +92,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     ROS_WARN("DEBUG_VECTOR_RECEIVED");
     HRLReference = *msg;
     //TODO: if name == 0 -> set home location
-    if (stod(HRLReference.name) == system_ID) {
+    if (stod(HRLReference.name) == clusterID) {
 	    //ROS_WARN("THIS ONE IS FOR ME!!!!");
 
         //Grab the new cluster reference
@@ -101,6 +101,14 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         localZTarget = HRLReference.data[2];
 
         cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
+    }
+    else if (stod(HRLReference.name) == 0) {
+        if (mode == 3) {
+            mode = 1;
+        }
+        else if (mode != 3) {
+            mode = 3;
+        }
     }
 }
 
@@ -143,7 +151,6 @@ int main(int argc, char **argv) {
 
     cluster2GPS(clusterRally1X,clusterRally1Y,agentAlt,&rally1Lat,&rally1Lon,&rally1Alt);
     cluster2GPS(clusterRally2X,clusterRally2Y,agentAlt,&rally2Lat,&rally2Lon,&rally2Alt);
-    
 
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
@@ -152,6 +159,10 @@ int main(int argc, char **argv) {
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 5, HRLReference_cb);
 
     ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 5, true );
+
+    targetLat = rally1Lat;
+    targetLon = rally1Lon;
+    targetAlt = rally1Alt;
 
     while (ros::ok()) {
 
@@ -185,7 +196,7 @@ int main(int argc, char **argv) {
             break;
         case 3 : 
             //Live HRL
-            ROS_WARN("LIVE HRL");
+            //ROS_WARN("LIVE HRL");
             pos_msg.pose.position.latitude = targetLat;
             pos_msg.pose.position.longitude = targetLon;
             pos_msg.pose.position.altitude = targetAlt;
@@ -204,4 +215,3 @@ int main(int argc, char **argv) {
     }
 return 0;
 }
-

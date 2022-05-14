@@ -25,7 +25,7 @@ mavros_msgs::DebugValue HRLReference;
 std::string file_var;
 int system_ID;
 float heightFixed = -3.0;
-geo_converter location;
+geo_converter thing;
 
 float liveX;
 float liveY;

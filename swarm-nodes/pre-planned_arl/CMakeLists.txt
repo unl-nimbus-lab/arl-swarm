@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   mavros
   mavlink
   mavros_msgs
+  custom_libs
 )
 	
 generate_messages(
