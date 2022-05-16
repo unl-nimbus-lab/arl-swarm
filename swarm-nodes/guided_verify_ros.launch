@@ -1,0 +1,33 @@
+<launch>
+  <!-- use "device:baudrate" for apm, "device" for asctec -->
+  <arg name="comm_port"                 default="/dev/ttyS0:921600"/>
+
+  <!-- allowed autopilots: "asctec" or "arducopter" -->
+  <arg name="autopilot"                 default="arducopter" />
+
+ <!-- apm/px4 needs a handler for translation, plus a mavros node -->
+<group if="$(eval autopilot=='arducopter')">
+
+    <include file="$(find mavros)/launch/apm.launch">
+      <arg name="fcu_url" value="$(arg comm_port)"/>
+    </include>
+
+    <node pkg="rosservice" type="rosservice" name="setter" args="call --wait /mavros/set_stream_rate 0 100 1" />
+
+  </group>
+
+
+	<arg name="bag_path" default="/home/ubuntu/bags/" />
+	<arg name="bag_name" default="latest"/>
+
+	<node pkg="rosbag" type="record" name="record" output="screen" args="-a -O $(arg bag_path)$(arg bag_name).bag">
+
+	</node  >
+
+<!--   <node name="pre_hrl_node" pkg="pre_hrl" type="pre_hrl_node" output="screen" /> 
+
+    <node name="fake_gps_node" pkg="fake_gps" type="fake_gps_node" output="screen" />
+
+    <node name="hrl_lqi_node" pkg="hrl_lqi" type="hrl_lqi_node" output="screen" /> -->
+
+</launch>

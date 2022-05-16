@@ -1,0 +1,8 @@
+# Topics
+gps_topic: "/hrl/gps/"
+
+# Handler Params
+port: "/dev/ttyS0"
+baudrate: 230400
+source_system: 230
+source_component: 3
