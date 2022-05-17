@@ -18,6 +18,7 @@ bool finalPositionFlag = true;
 
 mavros_msgs::DebugValue modeBroadcast;
 mavros_msgs::DebugValue HRLReference;
+mavros_msgs::DebugValue agentAcknowledgement;
 
 geo_converter convObject;
 
@@ -69,6 +70,10 @@ double targetLat;
 double targetLon;
 double targetAlt;
 
+//Acknowledgement things
+bool acknowledgmentFlag = false;
+char acknowledgemntID[3];
+
 void cluster2GPS (double xIn, double yIn, double zIn, double *lat, double *lon, double *alt) {
     //Convert a cluster's relative reference in meters to an agent's gps reference in lat,lon,alt
     double xTarget = xIn + clusterXOffset;
@@ -94,6 +99,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //TODO: if name == 0 -> set home location
     if (stod(HRLReference.name) == clusterID) {
 	    //ROS_WARN("THIS ONE IS FOR ME!!!!");
+        acknowledgmentFlag = 1; //"I am going to send an acknowledgement"
 
         //Grab the new cluster reference
         localXTarget = HRLReference.data[0];
@@ -101,6 +107,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         localZTarget = HRLReference.data[2];
 
         cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
+        agentAcknowledgement.name = system_ID*-1;
+        agentAcknowledgement.type = 1;
+        agentAcknowledgement.header.stamp = ros::Time::now();
     }
     else if (stod(HRLReference.name) == 0) {
         if (mode == 3) {
@@ -108,6 +117,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         }
         else if (mode != 3) {
             mode = 3;
+	    ROS_WARN("Backdoor into Live");
         }
     }
 }
@@ -159,6 +169,7 @@ int main(int argc, char **argv) {
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 5, HRLReference_cb);
 
     ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 5, true );
+    ros::Publisher ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true );
 
     targetLat = rally1Lat;
     targetLon = rally1Lon;
@@ -210,6 +221,14 @@ int main(int argc, char **argv) {
     }
         pos_msg.header.stamp = ros::Time::now();
         wp_pub.publish( pos_msg );
+        if (acknowledgmentFlag == true) {
+            acknowledgmentFlag = false;
+            ROS_WARN("I need to send an acknowledgement");
+            agentAcknowledgement.type = 4;
+            agentAcknowledgement.header.stamp = ros::Time::now();
+            agentAcknowledgement.value_int = system_ID * -1;
+            ak_pub.publish(agentAcknowledgement);
+        }
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }

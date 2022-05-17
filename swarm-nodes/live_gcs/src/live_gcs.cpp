@@ -16,7 +16,15 @@ int yTarget;
 int zTarget;
 char buffer[3];
 
-//mavros_msgs::DebugValue HRLReference;
+mavros_msgs::DebugValue acknowledgement_msg;
+
+void acknowledgment_cb (const mavros_msgs::DebugValue::ConstPtr& msg) {
+    acknowledgement_msg = *msg;
+    int id = acknowledgement_msg.value_int;
+    if (id < 0) {
+        std::cout << "Agent " << id*-1 << " acknowledges new reference\n";
+    }
+}
 
 int main(int argc, char **argv) {
 
@@ -24,6 +32,8 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     ros::Publisher wp_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true );
+    
+    ros::Subscriber acknowledgement_sub = nh.subscribe("/mavros/debug_value/named_value_int", 5, acknowledgment_cb);
 
     while (ros::ok()) {
 	
