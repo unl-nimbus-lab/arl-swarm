@@ -172,12 +172,12 @@ int main(int argc, char **argv) {
 
     FILE * debug;
     debug = fopen ("startupDebug.txt", "w");
-    fprintf(debug, "System ID is: %d\n", system_ID);
-    fprintf(debug, "Cluster ID is: %d\n", clusterID);
-    fprintf(debug, "Cluster Position is: %d\n", clusterPosition);
-    fprintf(debug, "Cluster Size is: %d\n", clusterSize);
-    fprintf(debug, "Cluster Radius is: %d\n", clusterRadius);
-    fprintf(debug, "Agent Alt is: %d\n", agentAlt);
+    fprintf(debug, "System ID is: %f\n", system_ID);
+    fprintf(debug, "Cluster ID is: %f\n", clusterID);
+    fprintf(debug, "Cluster Position is: %f\n", clusterPosition);
+    fprintf(debug, "Cluster Size is: %f\n", clusterSize);
+    fprintf(debug, "Cluster Radius is: %f\n", clusterRadius);
+    fprintf(debug, "Agent Alt is: %f\n", agentAlt);
 
     close(debug);
 
