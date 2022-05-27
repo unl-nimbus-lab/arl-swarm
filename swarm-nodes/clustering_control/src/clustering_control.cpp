@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
     fprintf(debug, "Cluster Radius is: %f\n", clusterRadius);
     fprintf(debug, "Agent Alt is: %f\n", agentAlt);
 
-    close(debug);
+    fclose(debug);
 
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);
