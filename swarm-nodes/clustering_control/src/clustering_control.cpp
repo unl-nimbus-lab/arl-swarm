@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <stdio.h>
+#include <stdlib.h>
 #include "custom_libs/geo_converter.hpp"
 
 #define PI 3.14159265
@@ -167,6 +169,17 @@ int main(int argc, char **argv) {
     std::cout << "Cluster Rally 1Y: " << clusterRally1Y << std::endl;
     std::cout << "Cluster Rally 2X: " << clusterRally2X << std::endl;
     std::cout << "Cluster Rally 2Y: " << clusterRally2Y << std::endl;
+
+    FILE * debug;
+    debug = fopen ("startupDebug.txt", "w");
+    fprintf(debug, "System ID is: %d\n", system_ID);
+    fprintf(debug, "Cluster ID is: %d\n", clusterID);
+    fprintf(debug, "Cluster Position is: %d\n", clusterPosition);
+    fprintf(debug, "Cluster Size is: %d\n", clusterSize);
+    fprintf(debug, "Cluster Radius is: %d\n", clusterRadius);
+    fprintf(debug, "Agent Alt is: %d\n", agentAlt);
+
+    close(debug);
 
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);
