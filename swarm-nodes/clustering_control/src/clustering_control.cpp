@@ -94,11 +94,10 @@ void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //Get the new local cluster reference and turn into a global reference for the
     //vehicle to track
-    ROS_WARN("DEBUG_VECTOR_RECEIVED");
+    //ROS_WARN("DEBUG_VECTOR_RECEIVED");
     HRLReference = *msg;
     //TODO: if name == 0 -> set home location
     if (stod(HRLReference.name) == clusterID) {
-	    //ROS_WARN("THIS ONE IS FOR ME!!!!");
         acknowledgmentFlag = 1; //"I am going to send an acknowledgement"
 
         //Grab the new cluster reference
@@ -154,7 +153,21 @@ int main(int argc, char **argv) {
     clusterRally1Y  = std::stod(argv[11]);
     clusterRally2X  = std::stod(argv[12]);
     clusterRally2Y  = std::stod(argv[13]);
-    
+
+    std::cout << "System ID is: " << system_ID << std::endl;
+    std::cout << "Cluster ID is: " << clusterID << std::endl;
+    std::cout << "Cluster Position is: " << clusterPosition << std::endl;
+    std::cout << "Cluster Size is: " << clusterSize << std::endl;
+    std::cout << "Cluster Radius is: " << clusterRadius << std::endl;
+    std::cout << "Agent Alt is: " << agentAlt << std::endl;
+    std::cout << "Home Lat is: " << homeLat << std::endl;
+    std::cout << "Home Lon is: " << homeLon << std::endl;
+    std::cout << "Home Alt is: " << homeAlt << std::endl;
+    std::cout << "Cluster Rally 1X: " << clusterRally1X << std::endl;
+    std::cout << "Cluster Rally 1Y: " << clusterRally1Y << std::endl;
+    std::cout << "Cluster Rally 2X: " << clusterRally2X << std::endl;
+    std::cout << "Cluster Rally 2Y: " << clusterRally2Y << std::endl;
+
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);
     clusterYOffset = calculate_y_offset(clusterRadius, clusterSize, clusterPosition);
@@ -211,12 +224,6 @@ int main(int argc, char **argv) {
             pos_msg.pose.position.latitude = targetLat;
             pos_msg.pose.position.longitude = targetLon;
             pos_msg.pose.position.altitude = targetAlt;
-
-            //pos_msg.pose.orientation.x =
-            //pos_msg.pose.orientation.y =
-            //pos_msg.pose.orientation.z =
-            //pos_msg.pose.orientation.w =
-
             break;
     }
         pos_msg.header.stamp = ros::Time::now();
