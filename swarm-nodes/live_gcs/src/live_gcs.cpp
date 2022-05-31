@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "live_gcs");
     ros::NodeHandle nh;
 
-    ros::Publisher wp_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true );
+    ros::Publisher wp_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 5, true );
     
     ros::Subscriber acknowledgement_sub = nh.subscribe("/mavros/debug_value/named_value_int", 5, acknowledgment_cb);
 

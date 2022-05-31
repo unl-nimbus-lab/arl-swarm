@@ -113,10 +113,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         agentAcknowledgement.header.stamp = ros::Time::now();
     }
     else if (stod(HRLReference.name) == 0) {
-        if (mode == 3) {
-            mode = 1;
-        }
-        else if (mode != 3) {
+        if (mode != 3) {
             mode = 3;
 	    ROS_WARN("Backdoor into Live");
         }
@@ -184,6 +181,9 @@ int main(int argc, char **argv) {
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);
     clusterYOffset = calculate_y_offset(clusterRadius, clusterSize, clusterPosition);
+
+    std::cout << "Cluster X offset: " << clusterXOffset << std::endl;
+    std::cout << "Cluster Y offset: " << clusterYOffset << std::endl;
 
     cluster2GPS(clusterRally1X,clusterRally1Y,agentAlt,&rally1Lat,&rally1Lon,&rally1Alt);
     cluster2GPS(clusterRally2X,clusterRally2Y,agentAlt,&rally2Lat,&rally2Lon,&rally2Alt);
