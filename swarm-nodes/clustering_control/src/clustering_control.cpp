@@ -105,7 +105,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         //Grab the new cluster reference
         localXTarget = HRLReference.data[0];
         localYTarget = HRLReference.data[1];
-        localZTarget = HRLReference.data[2];
+        localZTarget = HRLReference.data[2] + agentAlt;
 
         cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
         agentAcknowledgement.name = system_ID*-1;
@@ -170,16 +170,16 @@ int main(int argc, char **argv) {
     std::cout << "Cluster Rally 2X: " << clusterRally2X << std::endl;
     std::cout << "Cluster Rally 2Y: " << clusterRally2Y << std::endl;
 
-    FILE * debug;
-    debug = fopen ("startupDebug.txt", "w");
-    fprintf(debug, "System ID is: %f\n", system_ID);
-    fprintf(debug, "Cluster ID is: %f\n", clusterID);
-    fprintf(debug, "Cluster Position is: %f\n", clusterPosition);
-    fprintf(debug, "Cluster Size is: %f\n", clusterSize);
-    fprintf(debug, "Cluster Radius is: %f\n", clusterRadius);
-    fprintf(debug, "Agent Alt is: %f\n", agentAlt);
+    // FILE * debug;
+    // debug = fopen ("startupDebug.txt", "w");
+    // fprintf(debug, "System ID is: %f\n", system_ID);
+    // fprintf(debug, "Cluster ID is: %f\n", clusterID);
+    // fprintf(debug, "Cluster Position is: %f\n", clusterPosition);
+    // fprintf(debug, "Cluster Size is: %f\n", clusterSize);
+    // fprintf(debug, "Cluster Radius is: %f\n", clusterRadius);
+    // fprintf(debug, "Agent Alt is: %f\n", agentAlt);
 
-    fclose(debug);
+    // fclose(debug);
 
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);

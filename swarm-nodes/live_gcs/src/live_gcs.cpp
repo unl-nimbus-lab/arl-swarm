@@ -19,6 +19,7 @@ char buffer[3];
 mavros_msgs::DebugValue acknowledgement_msg;
 
 void acknowledgment_cb (const mavros_msgs::DebugValue::ConstPtr& msg) {
+    ROS_WARN("Got a Debug Message");
     acknowledgement_msg = *msg;
     int id = acknowledgement_msg.value_int;
     if (id < 0) {
