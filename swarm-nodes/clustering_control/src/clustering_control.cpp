@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
             agentAcknowledgement.type = 4;
             agentAcknowledgement.header.stamp = ros::Time::now();
             agentAcknowledgement.value_int = system_ID * -1;
-            ak_pub.publish(agentAcknowledgement);
+            //ak_pub.publish(agentAcknowledgement);
         }
         ros::Duration(0.5).sleep();
         ros::spinOnce();
