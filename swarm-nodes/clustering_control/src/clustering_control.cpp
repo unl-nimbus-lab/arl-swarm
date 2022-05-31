@@ -107,6 +107,10 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         localYTarget = HRLReference.data[1];
         localZTarget = HRLReference.data[2] + agentAlt;
 
+        std::cout << "X: " << localXTarget << std::endl;
+        std::cout << "Y: " << localYTarget << std::endl;
+        std::cout << "Z: " << localZTarget << std::endl;
+
         cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
         agentAcknowledgement.name = system_ID*-1;
         agentAcknowledgement.type = 1;
