@@ -81,8 +81,8 @@ void cluster2GPS (double xIn, double yIn, double zIn, double *lat, double *lon, 
     double xTarget = xIn + clusterXOffset;
     double yTarget = yIn + clusterYOffset;
 
-    *lat = convObject.meters_to_lat(homeLat, homeLon, localYTarget);
-    *lon = convObject.meters_to_lon(homeLat, homeLon, localXTarget);
+    *lat = convObject.meters_to_lat(homeLat, homeLon, xTarget);
+    *lon = convObject.meters_to_lon(homeLat, homeLon, yTarget);
     *alt = zIn + homeAlt;
 }
 
@@ -107,9 +107,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         localYTarget = HRLReference.data[1];
         localZTarget = HRLReference.data[2] + agentAlt;
 
-        std::cout << "X: " << localXTarget << std::endl;
-        std::cout << "Y: " << localYTarget << std::endl;
-        std::cout << "Z: " << localZTarget << std::endl;
+        //std::cout << "X: " << localXTarget << std::endl;
+        //std::cout << "Y: " << localYTarget << std::endl;
+        //std::cout << "Z: " << localZTarget << std::endl;
 
         cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
         agentAcknowledgement.name = system_ID*-1;
