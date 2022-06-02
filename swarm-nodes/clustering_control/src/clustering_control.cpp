@@ -13,6 +13,9 @@
 #include "custom_libs/geo_converter.hpp"
 
 #define PI 3.14159265
+#define NAMED_VALUE_VECT 1
+#define NAMED_VAUE_FLOAT 3
+#define NAMED_VALUE_INT 4
 
 int mode = 1;
 bool initialPositionFlag = true;
@@ -75,6 +78,44 @@ double targetAlt;
 //Acknowledgement things
 bool acknowledgmentFlag = false;
 char acknowledgemntID[3];
+int *override = new int;
+*override = 0;
+
+void parseCommand(std::string message, int *cluster, int *command) {
+    //Process a command of the form:
+    //CXXX#XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "#" identifies the command
+    int length = message.size();
+    char tempCluster[10];
+    char tempCommand[10];
+    int tempIndexCluster = 0;
+    int tempIndexCommand = 0;
+    for (int i = 0; i < length; i++) {
+        //Find the Cluster
+        if (message[i] == 'C') {
+            for (int j = (i + 1); j < 10; j++) {
+                if (message[j] == '#') {
+                    i = j - 1;
+                    break;
+                }
+                else {
+                    tempCluster[tempIndexCluster] = message[j];
+                    tempIndexCluster++;
+                }
+            }
+        }
+        //Find the Command
+        else if (message[i] == '#') {
+            int remainingLength = (length - 1) - i;
+            for (int j = i + 1; j < (i+ 1 + remainingLength); j++) {
+                tempCommand[tempIndexCommand] = message[j];
+                tempIndexCommand++;
+            }
+        }
+    }
+    *cluster = atoi(tempCluster);
+    *command = atoi(tempCommand);
+}
 
 void cluster2GPS (double xIn, double yIn, double zIn, double *lat, double *lon, double *alt) {
     //Convert a cluster's relative reference in meters to an agent's gps reference in lat,lon,alt
@@ -93,37 +134,6 @@ void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //ROS_INFO("[%i",mode);
 }
 
-void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
-    //Get the new local cluster reference and turn into a global reference for the
-    //vehicle to track
-    //ROS_WARN("DEBUG_VECTOR_RECEIVED");
-    HRLReference = *msg;
-    //TODO: if name == 0 -> set home location
-    if (stod(HRLReference.name) == clusterID) {
-        acknowledgmentFlag = 1; //"I am going to send an acknowledgement"
-
-        //Grab the new cluster reference
-        localXTarget = HRLReference.data[0];
-        localYTarget = HRLReference.data[1];
-        localZTarget = HRLReference.data[2] + agentAlt;
-
-        //std::cout << "X: " << localXTarget << std::endl;
-        //std::cout << "Y: " << localYTarget << std::endl;
-        //std::cout << "Z: " << localZTarget << std::endl;
-
-        cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
-        agentAcknowledgement.name = system_ID*-1;
-        agentAcknowledgement.type = 1;
-        agentAcknowledgement.header.stamp = ros::Time::now();
-    }
-    else if (stod(HRLReference.name) == 0) {
-        if (mode != 3) {
-            mode = 3;
-	    ROS_WARN("Backdoor into Live");
-        }
-    }
-}
-
 double calculate_x_offset (double clusterRadius, double clusterSize, double clusterPosition) {
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     double separation = 360 / clusterSize; //Angular distance between agents in a cluster
@@ -138,6 +148,82 @@ double calculate_y_offset (double clusterRadius, double clusterSize, double clus
     double n = (clusterPosition - 1);
     double offset = clusterRadius*sin(PI/180*(separation*n));
     return offset;
+}
+
+void acknowledge(int agentID,int* command) {
+    //just build the message
+    agentAcknowledgement.type = NAMED_VALUE_FLOAT;
+    agentAcknowledgement.header.stamp = ros::Time::now();
+    
+    //build and publish the acknowledgement
+    sprintf(str, "A%d#%d",ID,*command);
+    char str[10];
+    ak_pub.publish(agentAcknowledgement);
+}
+
+void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    HRLReference = *msg;
+
+    int *command = new int;
+    int *cluster = new int;
+
+    //Parse the command
+    parseCommand(HRLReference.name, cluster, command);
+
+    if (*cluster == 0) { //backdoor case, doesn't matter to the cluster
+        //mode switch to dynamic repositioning
+        mode = 3;
+        //send acknowledgement
+        acknowledge(system_ID,*override);
+    }
+    else if (*cluster == clusterID) {
+        switch (*command) {
+            case 1: //mode switch
+                //set the mode
+                mode = HRLReference.data[0];
+                //send acknowledgement
+                acknowledge(system_ID,*command);
+                break;
+            case 2: //repositioning location
+                //set the reference
+                //Grab the new cluster reference
+                localXTarget = HRLReference.data[0];
+                localYTarget = HRLReference.data[1];
+                localZTarget = HRLReference.data[2] + agentAlt;
+
+                //std::cout << "X: " << localXTarget << std::endl;
+                //std::cout << "Y: " << localYTarget << std::endl;
+                //std::cout << "Z: " << localZTarget << std::endl;
+                cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
+                //send acknowledgement
+                acknowledge(system_ID,*command);
+                break;
+        }
+    }
+    //TODO: if name == 0 -> set home location
+    // if (stod(HRLReference.name) == clusterID) {
+    //     acknowledgmentFlag = 1; //"I am going to send an acknowledgement"
+
+    //     //Grab the new cluster reference
+    //     localXTarget = HRLReference.data[0];
+    //     localYTarget = HRLReference.data[1];
+    //     localZTarget = HRLReference.data[2] + agentAlt;
+
+    //     //std::cout << "X: " << localXTarget << std::endl;
+    //     //std::cout << "Y: " << localYTarget << std::endl;
+    //     //std::cout << "Z: " << localZTarget << std::endl;
+
+    //     cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
+    //     agentAcknowledgement.name = system_ID*-1;
+    //     agentAcknowledgement.type = 1;
+    //     agentAcknowledgement.header.stamp = ros::Time::now();
+    // }
+    // else if (stod(HRLReference.name) == 0) {
+    //     if (mode != 3) {
+    //         mode = 3;
+	//     ROS_WARN("Backdoor into Live");
+    //     }
+    // }
 }
 
 int main(int argc, char **argv) {
@@ -171,17 +257,6 @@ int main(int argc, char **argv) {
     std::cout << "Cluster Rally 2X: " << clusterRally2X << std::endl;
     std::cout << "Cluster Rally 2Y: " << clusterRally2Y << std::endl;
 
-    // FILE * debug;
-    // debug = fopen ("startupDebug.txt", "w");
-    // fprintf(debug, "System ID is: %f\n", system_ID);
-    // fprintf(debug, "Cluster ID is: %f\n", clusterID);
-    // fprintf(debug, "Cluster Position is: %f\n", clusterPosition);
-    // fprintf(debug, "Cluster Size is: %f\n", clusterSize);
-    // fprintf(debug, "Cluster Radius is: %f\n", clusterRadius);
-    // fprintf(debug, "Agent Alt is: %f\n", agentAlt);
-
-    // fclose(debug);
-
     //Calculate where the agent should be relative to the origin based off its "spot" in the cluster
     clusterXOffset = calculate_x_offset(clusterRadius, clusterSize, clusterPosition);
     clusterYOffset = calculate_y_offset(clusterRadius, clusterSize, clusterPosition);
@@ -195,11 +270,11 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
 
-    ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 5, stateBroadcast_cb);
-    ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 5, HRLReference_cb);
+    ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, stateBroadcast_cb);
+    ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
 
-    ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 5, true );
-    ros::Publisher ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true );
+    ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
+    ros::Publisher ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
 
     targetLat = rally1Lat;
     targetLon = rally1Lon;
@@ -258,3 +333,31 @@ int main(int argc, char **argv) {
     }
 return 0;
 }
+
+//This might be helpful
+
+// # Msg for Debug MAVLink API
+// #
+// # Supported types:
+// # DEBUG			https://mavlink.io/en/messages/common.html#DEBUG
+// # DEBUG_VECTOR			https://mavlink.io/en/messages/common.html#DEBUG_VECT
+// # NAMED_VALUE_FLOAT		https://mavlink.io/en/messages/common.html#NAMED_VALUE_FLOAT
+// # NAMED_VALUE_INT		https://mavlink.io/en/messages/common.html#NAMED_VALUE_INT
+// # @TODO: add support for DEBUG_ARRAY (https://github.com/mavlink/mavlink/pull/734)
+
+// std_msgs/Header header
+
+// int32 index			# index value of DEBUG value (-1 if not indexed)
+
+// string name			# value name/key
+
+// float32 value_float		# float value for NAMED_VALUE_FLOAT and DEBUG
+// int32 value_int		# int value for NAMED_VALUE_INT
+// float32[] data			# DEBUG vector or array
+
+// uint8 type
+// uint8 TYPE_DEBUG		= 0
+// uint8 TYPE_DEBUG_VECT		= 1
+// uint8 TYPE_DEBUG_ARRAY		= 2
+// uint8 TYPE_NAMED_VALUE_FLOAT	= 3
+// uint8 TYPE_NAMED_VALUE_INT	= 4
