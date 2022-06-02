@@ -159,6 +159,7 @@ void acknowledge(int agentID,int* command) {
     //build and publish the acknowledgement
     char str[10];
     sprintf(str, "A%d#%d",agentID,*command);
+    agentAcknowledgement.name = str; 
     ak_pub.publish(agentAcknowledgement);
 }
 
