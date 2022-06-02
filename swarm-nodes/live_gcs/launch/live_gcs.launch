@@ -1,6 +1,7 @@
 <launch>
 
     <node pkg="live_gcs" name="live_gcs" type="live_gcs" output="screen" ></node>
+	<node pkg="live_gcs" name="ack" type="ack" output="screen" ></node>
 
 	<arg name="tgt_system" default="1" />
 	<arg name="tgt_component" default="1" />

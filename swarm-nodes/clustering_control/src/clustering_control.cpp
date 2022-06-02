@@ -14,7 +14,7 @@
 
 #define PI 3.14159265
 #define NAMED_VALUE_VECT 1
-#define NAMED_VAUE_FLOAT 3
+#define NAMED_VALUE_FLOAT 3
 #define NAMED_VALUE_INT 4
 
 int mode = 1;
@@ -79,7 +79,8 @@ double targetAlt;
 bool acknowledgmentFlag = false;
 char acknowledgemntID[3];
 int *override = new int;
-*override = 0;
+ros::NodeHandle nh;
+ros::Publisher ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
 
 void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
@@ -156,8 +157,8 @@ void acknowledge(int agentID,int* command) {
     agentAcknowledgement.header.stamp = ros::Time::now();
     
     //build and publish the acknowledgement
-    sprintf(str, "A%d#%d",ID,*command);
     char str[10];
+    sprintf(str, "A%d#%d",agentID,*command);
     ak_pub.publish(agentAcknowledgement);
 }
 
@@ -174,7 +175,8 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         //mode switch to dynamic repositioning
         mode = 3;
         //send acknowledgement
-        acknowledge(system_ID,*override);
+        *override = 0;
+        acknowledge(system_ID,override);
     }
     else if (*cluster == clusterID) {
         switch (*command) {
@@ -182,7 +184,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 //set the mode
                 mode = HRLReference.data[0];
                 //send acknowledgement
-                acknowledge(system_ID,*command);
+                acknowledge(system_ID,command);
                 break;
             case 2: //repositioning location
                 //set the reference
@@ -196,34 +198,10 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 //std::cout << "Z: " << localZTarget << std::endl;
                 cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
                 //send acknowledgement
-                acknowledge(system_ID,*command);
+                acknowledge(system_ID,command);
                 break;
         }
     }
-    //TODO: if name == 0 -> set home location
-    // if (stod(HRLReference.name) == clusterID) {
-    //     acknowledgmentFlag = 1; //"I am going to send an acknowledgement"
-
-    //     //Grab the new cluster reference
-    //     localXTarget = HRLReference.data[0];
-    //     localYTarget = HRLReference.data[1];
-    //     localZTarget = HRLReference.data[2] + agentAlt;
-
-    //     //std::cout << "X: " << localXTarget << std::endl;
-    //     //std::cout << "Y: " << localYTarget << std::endl;
-    //     //std::cout << "Z: " << localZTarget << std::endl;
-
-    //     cluster2GPS (localXTarget, localYTarget, localZTarget, &targetLat, &targetLon, &targetAlt);
-    //     agentAcknowledgement.name = system_ID*-1;
-    //     agentAcknowledgement.type = 1;
-    //     agentAcknowledgement.header.stamp = ros::Time::now();
-    // }
-    // else if (stod(HRLReference.name) == 0) {
-    //     if (mode != 3) {
-    //         mode = 3;
-	//     ROS_WARN("Backdoor into Live");
-    //     }
-    // }
 }
 
 int main(int argc, char **argv) {
@@ -268,13 +246,12 @@ int main(int argc, char **argv) {
     cluster2GPS(clusterRally2X,clusterRally2Y,agentAlt,&rally2Lat,&rally2Lon,&rally2Alt);
 
     ros::init(argc, argv, "clustering_control");
-    ros::NodeHandle nh;
-
-    ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, stateBroadcast_cb);
+    
+    //ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, stateBroadcast_cb);
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
 
     ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
-    ros::Publisher ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
+    
 
     targetLat = rally1Lat;
     targetLon = rally1Lon;
@@ -283,8 +260,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
 
     geographic_msgs::GeoPoseStamped pos_msg ;
-
-    // State machine as switch 
+ 
     switch(mode) {
 
         case 0 :
@@ -318,18 +294,10 @@ int main(int argc, char **argv) {
             pos_msg.pose.position.altitude = targetAlt;
             break;
     }
-        pos_msg.header.stamp = ros::Time::now();
-        wp_pub.publish( pos_msg );
-        if (acknowledgmentFlag == true) {
-            acknowledgmentFlag = false;
-            ROS_WARN("I need to send an acknowledgement");
-            agentAcknowledgement.type = 4;
-            agentAcknowledgement.header.stamp = ros::Time::now();
-            agentAcknowledgement.value_int = system_ID * -1;
-            //ak_pub.publish(agentAcknowledgement);
-        }
-        ros::Duration(0.5).sleep();
-        ros::spinOnce();
+    pos_msg.header.stamp = ros::Time::now();
+    wp_pub.publish( pos_msg );
+    ros::Duration(0.5).sleep();
+    ros::spinOnce();
     }
 return 0;
 }
