@@ -24,6 +24,7 @@ bool finalPositionFlag = true;
 mavros_msgs::DebugValue modeBroadcast;
 mavros_msgs::DebugValue HRLReference;
 mavros_msgs::DebugValue agentAcknowledgement;
+mavros_msgs::DebugValue bootAcknowledgeMsg;
 
 geo_converter convObject;
 
@@ -80,6 +81,7 @@ bool acknowledgmentFlag = false;
 char acknowledgemntID[3];
 int *override = new int;
 ros::Publisher ak_pub;
+ros::Publisher wp_pub;
 
 
 void parseCommand(std::string message, int *cluster, int *command) {
@@ -152,7 +154,6 @@ double calculate_y_offset (double clusterRadius, double clusterSize, double clus
 }
 
 void acknowledge(int agentID,int* command) {
-    //just build the message
     agentAcknowledgement.type = NAMED_VALUE_FLOAT;
     agentAcknowledgement.header.stamp = ros::Time::now();
     
@@ -161,6 +162,17 @@ void acknowledge(int agentID,int* command) {
     sprintf(str, "A%d#%d",agentID,*command);
     agentAcknowledgement.name = str; 
     ak_pub.publish(agentAcknowledgement);
+}
+
+void bootAcknowledge(int agentID) {
+    bootAcknowledgeMsg.type = NAMED_VALUE_INT;
+    bootAcknowledgeMsg.header.stamp = ros::Time::now();
+
+    //build and publish the acknowledgement
+    char str[10];
+    sprintf(str, "A%d#%d",agentID,0);
+    bootAcknowledgeMsg.name = str;
+    ak_pub.publish(bootAcknowledgeMsg);
 }
 
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
@@ -254,12 +266,13 @@ int main(int argc, char **argv) {
 
     
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
-    ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
+    wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
     
-
     targetLat = rally1Lat;
     targetLon = rally1Lon;
     targetAlt = rally1Alt;
+
+    bootAcknowledge(system_ID);
 
     while (ros::ok()) {
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 mavros_msgs::DebugValue acknowledgement_msg;
+mavros_msgs::DebugValue boot_msg;
 
 int *agent = new int;
 int *command = new int;
@@ -53,12 +54,19 @@ void acknowledgment_cb (const mavros_msgs::DebugValue::ConstPtr& msg) {
     printf("Agent %d acknowleged command %d\n",*agent,*command);
 }
 
+void boot_cb (const mavros_msgs::DebugValue::ConstPtr& msg) {
+    boot_msg = *msg;
+    parseCommand(boot_msg.name,agent,command);
+    printf("Agent %d has booted",*agent);
+}
+
 int main(int argc, char **argv) {
 
     ros::init(argc, argv, "ack");
     ros::NodeHandle nh;
 
     ros::Subscriber acknowledgement_sub = nh.subscribe("/mavros/debug_value/named_value_float", 100, acknowledgment_cb);
+    ros::Subscriber boot_sub = nh.subscribe("/mavros/debug_value/named_value_int",100,boot_cb);
 
     ros::spin();
 }
