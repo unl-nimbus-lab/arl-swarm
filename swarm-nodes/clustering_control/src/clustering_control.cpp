@@ -172,7 +172,7 @@ void bootAcknowledge(int agentID) {
     char str[10];
     sprintf(str, "A%d#%d",agentID,0);
     bootAcknowledgeMsg.name = str;
-    ak_pub.publish(bootAcknowledgeMsg);
+    //ak_pub.publish(bootAcknowledgeMsg);
 }
 
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
