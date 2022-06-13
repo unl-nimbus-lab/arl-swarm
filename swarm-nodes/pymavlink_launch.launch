@@ -1,0 +1,5 @@
+<launch>
+
+   <node name="posthrl_mvlnk" pkg="pymavlink_posthrl" type="pos_via_mvlink.py" output="screen" /> 
+
+</launch>

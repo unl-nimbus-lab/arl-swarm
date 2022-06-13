@@ -1,0 +1,20 @@
+// This is the header file for the id conversion to idx
+
+#ifndef ID_TO_IDX_H
+#define ID_TO_IDX_H
+
+
+#include <math.h>
+
+class id_to_idx{
+
+        public:
+
+		int get_state_idx(int id, int *groups) ; // Given the id , this returns the idx on the state array before transforming
+		int get_integral_idx(int id,int *groups) ; // Given the id , this returns the idx on the integral array before transforming
+
+};
+
+
+
+#endif
