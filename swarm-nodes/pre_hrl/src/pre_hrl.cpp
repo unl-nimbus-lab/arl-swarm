@@ -90,7 +90,7 @@ std::string topic_to_hrl = "/swarm/global_states/" ;
 
 void gpsCallback(swarm_msgs::gps new_msg ){
 
-	// This function reads the callback messgaes, re-arrange them to the specific order of the formation
+	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
 	int ag_id = new_msg.id ;
 
 	// Get the corresponding index in the transformed state space given an agent id
@@ -147,18 +147,22 @@ void integralStateCallback(mavros_msgs::DebugValue debug_msg){
 	// This function waits for debug msg with integral value and updates the state array
 
 	//int groups[2] = {2 , 1};
+	char msg_type ;
+	if(debug_msg.name[0] == 'I'){
 
-	// Get the id and the idx from he debus msg
-	int id = (int) debug_msg.data[0];
-	int idx = id2idx.get_integral_idx(id, groups);
+		// Get the id and the idx from he debus msg
+		int id = (int) debug_msg.data[0];
+		int idx = id2idx.get_integral_idx(id, groups);
 
-	float intgrl_x = debug_msg.data[1] ;
-	float intgrl_y = debug_msg.data[2] ;
+		float intgrl_x = debug_msg.data[1] ;
+		float intgrl_y = debug_msg.data[2] ;
 
-	// Mutex to access the state array and update the cooresponding location 
-	const std::lock_guard<std::mutex> lock(state_mutex);
-	state[idx] = intgrl_x ;
-	state[idx+1] = intgrl_y ;
+		// Mutex to access the state array and update the cooresponding location 
+		const std::lock_guard<std::mutex> lock(state_mutex);
+		state[idx] = intgrl_x ;
+		state[idx+1] = intgrl_y ;
+
+	}
 }
 
 
@@ -230,9 +234,12 @@ void statePublisher()
 }
 
 
-void set_base_latlon(float lat, float lon){
-	base_lat = lat ;
-	base_lon = lon ;
+void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
+	base_lat = b_lat ;
+	base_lon = b_lon ;
+
+	target_lat = t_lat ;
+        target_lon = t_lon ;
 }
 
 
@@ -258,12 +265,17 @@ int main( int argc, char** argv )
 	ros::Subscriber signal_callback = hl.subscribe("/swarm/signal/local", 100, signalCallback );
 
 
-	float b_lat ;
-	float b_lon ;
+	float b_lat , t_lat ;
+	float b_lon , t_lon ;
+
+
 	hl.getParam("/custom_params/base_lat", b_lat);
 	hl.getParam("/custom_params/base_lon", b_lon);
 
-	set_base_latlon(b_lat, b_lon);
+        hl.getParam("/custom_params/target_lat", t_lat);
+        hl.getParam("/custom_params/target_lon", t_lon);
+
+	set_latlon(b_lat, b_lon, t_lat, t_lon);
 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function

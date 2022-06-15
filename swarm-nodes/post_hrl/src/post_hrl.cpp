@@ -322,12 +322,13 @@ void integralPublisher(){
 		intgrl_msg.header.stamp = ros::Time::now();
 
 		intgrl_msg.type = 1 ;
-		intgrl_msg.name = std::to_string(my_idx);
+		intgrl_msg.name = 'I';
 		intgrl_msg.data.resize(3);
 
+		intgrl_msg.data[0] = my_idx ;
 	        intrgl_mutex.lock();
-        	intgrl_msg.data[0] = intgrl_x ;
-		intgrl_msg.data[1] = intgrl_y ;
+        	intgrl_msg.data[1] = intgrl_x ;
+		intgrl_msg.data[2] = intgrl_y ;
         	intrgl_mutex.unlock();
 
 		intgrl_pub.publish(intgrl_msg);
