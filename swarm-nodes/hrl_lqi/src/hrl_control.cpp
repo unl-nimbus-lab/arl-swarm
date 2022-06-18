@@ -20,9 +20,9 @@
 #include <swarm_msgs/gps.h>
 
 #define ROS_NODE_NAME "hrl_lqi"
-#define CONTROLLER_RATE 50 //4   // Rate in Hz 
+#define CONTROLLER_RATE 4 //4   // Rate in Hz 
 
-#define MY_ID 1 
+#define MY_ID 1
 
 using json = nlohmann::json;
 using namespace Eigen;
@@ -77,12 +77,22 @@ void HRLController(Sys s )
 
 	swarm_msgs::GlobalStates post_hrl_msg ;
 
-	// Compute the indices
-	int groups[1] = {1};
+	// Assign the group info from the config file
+	int n_groups;
+	nh.getParam("/custom_params/n_groups",n_groups);
+
+//	int groups[1] = {1}; // This is original and works
+
+	int groups[n_groups];
+	std::vector<int> temp_groups;
+	nh.getParam("/custom_params/groups",temp_groups);
+
+	for(int i=0; i<n_groups; i++){
+		groups[i]=temp_groups[i];
+	}
 
 	int ag_state_idx = id2idx.get_state_idx(MY_ID, groups); // get the index of the real agent conversion from the Transformed space
 
-//	ROS_INFO(" ########### ag_state_idx  ########### : %d",ag_state_idx);
 
 	// Create new variables for the system matrix
 	MatrixXd K = s.K ;
@@ -91,6 +101,20 @@ void HRLController(Sys s )
 	MatrixXd T = s.Tr ;
 	MatrixXd aug_state = s.Aug ;
 	MatrixXd target_state = s.Tgt ;
+
+	// This commente4d code is a half-hearted effort to calculate the augmented states in the code. This prevents you to have a differet aug_state matrix pre-calculated through matlab.
+/*	// Define a variable with the size equals to the number of groups
+	MatrixXd aug_state(A.rows(),1);
+
+	int aug_state_idx = id2idx.get_aug_state_idx(MY_ID, groups);
+	// TODO : get the aug state from the param list. Pre-calculation saves time
+
+        for (int i = 0, n_groups = sizeof(groups)/sizeof(groups[0]) ;  i < n_groups ; i++)
+        {
+		aug_state(i,0);
+        }
+
+*/
 
 	MatrixXd T_inverse = T.inverse() ;
 
@@ -148,7 +172,11 @@ int main( int argc, char** argv )
 {
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
 
-	std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json" ;// "sys_mats_1ag.json";
+	ros::NodeHandle hrl_nd_hl;
+//	std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json" ;// "sys_mats_1ag.json";
+
+	std::string path_to_json ;
+	hrl_nd_hl.getParam("/custom_params/path_to_state_mtx",path_to_json);
 
 	//Read the json file
 	json_reader jr ;
@@ -159,8 +187,8 @@ int main( int argc, char** argv )
 	ROS_INFO(" N : %d", n);
 	init_states(n);
 
-        ros::NodeHandle hrl_nd_hl;
         ros::Subscriber prehrl_callback = hrl_nd_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
+
 
 	// TODO : Complete and test the local position adjustment. 
 	// Create seperate threads for processes with specific Hz requirements

@@ -12,7 +12,7 @@ class id_to_idx{
 
 		int get_state_idx(int id, int *groups) ; // Given the id , this returns the idx on the state array before transforming
 		int get_integral_idx(int id,int *groups) ; // Given the id , this returns the idx on the integral array before transforming
-
+		int get_aug_state_idx(int id,int *groups) ; // Given the id , this returns the idx on the augmented state
 };
 
 

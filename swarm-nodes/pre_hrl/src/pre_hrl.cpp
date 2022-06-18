@@ -243,6 +243,25 @@ void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
 }
 
 
+void init_vars(ros::NodeHandle hl){
+
+	// Assign parameters from the config file
+        float b_lat , t_lat ;
+        float b_lon , t_lon ;
+
+        hl.getParam("/custom_params/base_lat", b_lat);
+        hl.getParam("/custom_params/base_lon", b_lon);
+
+        hl.getParam("/custom_params/target_lat", t_lat);
+        hl.getParam("/custom_params/target_lon", t_lon);
+
+        base_lat = b_lat ;
+        base_lon = b_lon ;
+
+        target_lat = t_lat ;
+        target_lon = t_lon ;
+}
+
 
 int main( int argc, char** argv )
 {
@@ -250,6 +269,7 @@ int main( int argc, char** argv )
 	ros::NodeHandle hl;
 
 //        std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/org_state-matrix.json" ;// "state-matrix.json";
+	 init_vars(hl);
 
         // Path to the json file
         std::string path_to_json ;
@@ -263,19 +283,6 @@ int main( int argc, char** argv )
 	ros::Subscriber intgrl_state_callback = hl.subscribe("/mavros/debug_value/debug_vector", 100, integralStateCallback);
 	ros::Subscriber hrl_next_state_callback = hl.subscribe( "/swarm/next_states/global", 100, nextStateHRLCallback );
 	ros::Subscriber signal_callback = hl.subscribe("/swarm/signal/local", 100, signalCallback );
-
-
-	float b_lat , t_lat ;
-	float b_lon , t_lon ;
-
-
-	hl.getParam("/custom_params/base_lat", b_lat);
-	hl.getParam("/custom_params/base_lon", b_lon);
-
-        hl.getParam("/custom_params/target_lat", t_lat);
-        hl.getParam("/custom_params/target_lon", t_lon);
-
-	set_latlon(b_lat, b_lon, t_lat, t_lon);
 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function

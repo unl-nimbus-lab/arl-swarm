@@ -1,7 +1,21 @@
+n_agents: 2
+n_groups: 1
+groups: 
+- 1
+
 base_lat: 40.8328860 
 base_lon: -96.6958694 
 
 target_lat: 40.8327215
 target_lon: -96.6958784
 
-path_to_state_mtx: "/home/ubuntu/catkin_ws/src/hrl_lqi/src/org_state-matrix.json"
+target_loc_x : 0.5
+target_loc_y : -18
+
+path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
+
+path_to_state_mtx: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json"
+
+dist_to_targets_x: [0.2, 0.3]
+dist_to_targets_y: [0.6, 0.7]
+

@@ -14,7 +14,8 @@ int id_to_idx::get_state_idx(int id, int *groups){
         int members_before_this_group = 0 ; // Accumulates the agent count in each group
         int members_including_this_group = 0 ;
 
-         // TODO : Make sure the agents are IDs from 1 .. N .. if IDed from 0 ... N, change id-1 to id
+         // if the agents are IDs from 1 .. N : keep id-1 instead of id
+	 // if IDed from 0 ... N, change id-1 to id
         for(int i=0 ; i<n_groups ; i++){
 
                 members_including_this_group = members_including_this_group + groups[i];
@@ -47,7 +48,8 @@ int id_to_idx::get_integral_idx(int id, int *groups){
         int members_before_this_group = 0 ; // Accumulates the agent count in each group
         int members_including_this_group = 0 ;
 
-         // TODO : Make sure the agents are IDs from 1 .. N .. if IDed from 0 ... N, change id-1 to id
+	 // if the agents are IDs from 1 .. N : keep id-1 instead of id 
+         // if IDed from 0 ... N, change id-1 to id
         for(int i=0 ; i<n_groups ; i++){
 
                 members_including_this_group = members_including_this_group + groups[i];
@@ -63,4 +65,33 @@ int id_to_idx::get_integral_idx(int id, int *groups){
         }
 
         return idx ;
+}
+
+int id_to_idx::get_aug_state_idx(int id, int *groups){
+        // This function returns the array index of the state to be augmented w.r.t the agent group
+	int n_dim = 2 ;
+	int n_states = 2 ;
+
+	int idx = 0 ;
+
+	// size of the groups array
+        int n_groups = sizeof(groups)/sizeof(groups[0]);
+
+	// To accumulate the number of agents in each group
+	int temp_idx = 0 ;
+
+	// If agents are IDed from 1...N, change id to (id-1)
+	// If agents are IDed from 0...N, keep id, don't do  (id-1)
+	for(int i=0 ; i<n_groups ; i++){
+
+		temp_idx += groups[i] ;
+
+		// Check if the agent belongs to the current group
+		if(id-temp_idx < 0){
+			idx = (groups[i]-1)*n_dim*n_states + 1 + temp_idx ;
+		}
+	}
+
+	return idx ;
+
 }

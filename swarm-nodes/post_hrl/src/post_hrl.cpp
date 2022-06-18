@@ -196,11 +196,11 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 //		ROS_INFO(" pos+vel msg to fcu to y direction: %f", vel_pos_msg.twist.angular.y );
 
 
-		ROS_INFO(" To pos+vel x - local_x : %f , y - local_y : %f , vx : %f , vy : %f   ", x - local_x, y - local_y, vx, vy );
+//		ROS_INFO(" To pos+vel x - local_x : %f , y - local_y : %f , vx : %f , vy : %f   ", x - local_x, y - local_y, vx, vy );
 
 
-                ROS_INFO(" local_x : %f", local_x );
-                ROS_INFO(" local_y : %f", local_y );
+//                ROS_INFO(" local_x : %f", local_x );
+//                ROS_INFO(" local_y : %f", local_y );
 
 
 
@@ -316,6 +316,8 @@ void integralPublisher(){
 	// This function publishes the integral value from the 
 	mavros_msgs::DebugValue intgrl_msg ;
 
+	ROS_INFO(" ####### inside integral  published ######" );
+
         while (ros::ok()) {
 
                 ros::Rate loop_rate(CONTROLLER_RATE);
@@ -325,7 +327,7 @@ void integralPublisher(){
 		intgrl_msg.name = 'I';
 		intgrl_msg.data.resize(3);
 
-		intgrl_msg.data[0] = my_idx ;
+		intgrl_msg.data[0] = (float) my_idx ;
 	        intrgl_mutex.lock();
         	intgrl_msg.data[1] = intgrl_x ;
 		intgrl_msg.data[2] = intgrl_y ;
@@ -352,7 +354,7 @@ int main( int argc, char** argv )
         ros::NodeHandle post_hrl_hl;
         ros::Subscriber hrl_callback = post_hrl_hl.subscribe("/swarm/next_states/global", 100, HRLCallback);
 	ros::Subscriber local_pos_callback = post_hrl_hl.subscribe("/mavros/global_position/local", 100, localPosCallback);
-	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
+//	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
 
 
   //      std::thread signal_publisher (signalPublisher); //Sperate thread for the publisher function
