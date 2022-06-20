@@ -1,21 +1,46 @@
+#Own agent id
+agent_id: 1
+
+# General info on the swarm
 n_agents: 2
 n_groups: 1
+
+#How agnets are groupped. This is a verticle list
+#e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
+#groups:
+#-2
+#-3
 groups: 
 - 1
 
-base_lat: 40.8328860 
-base_lon: -96.6958694 
 
+# Latitude and longitude info of the two base (where all agents reference to zero)
+base_lat: 40.8328148
+base_lon: -96.6957025
+
+#base_lat_old: 40.8328860 
+#base_lon_old: -96.6958694 
+
+# base for experiments at QP
+#base_lat_QP: 40.8328148
+#base_lon_QP: -96.6957025
+
+# Latitude and longitude info of the taregts
+# TODO: this is only for one target. Need to expand to a list for multiple targets
 target_lat: 40.8327215
 target_lon: -96.6958784
 
 target_loc_x : 0.5
 target_loc_y : -18
 
-path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
+#path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
 
-path_to_state_mtx: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json"
+# Path to the JSON file conntaining A,B,K matrices
+path_to_state_mtx: "/home/ubuntu/catkin_ws_online_hrl/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json"
 
-dist_to_targets_x: [0.2, 0.3]
-dist_to_targets_y: [0.6, 0.7]
+# X and Y directional distances to the taregt from the base coord. 
+# For now, pre-calculate them from Matlab and set them here. 
+# TODO: Write more code to do that calulation in c++ and share it within the whole workspace.  
+dist_to_targets_x: [-12.5 ]
+dist_to_targets_y: [-11.09]
 

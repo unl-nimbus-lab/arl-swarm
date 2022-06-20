@@ -31,6 +31,7 @@ What it does is it publishes either
 #include <swarm_msgs/gps.h>
 #include <swarm_msgs/signal.h>
 #include <mavros_msgs/DebugValue.h>
+#include <swarm_msgs/GlobalStates.h>
 //#include <mavros_msgs/Mavlink.h>
 
 
@@ -60,22 +61,26 @@ geo_converter gc ; // object to call gps coordinate converter functions
 bool flag_when_mgs_published = false ;
 std::mutex flag_mutex ;
 std::mutex intrgl_mutex ;
+std::mutex current_mutex ;
 
 // Hackery hack ! change this when re-fectoring
 // This records distance from the base of the (0,0) coordinate
-float distance_from_base_zero_x = 0.0 ;
-float distance_from_base_zero_y = 0.0 ;
-bool base_update = true ;
+//float distance_from_base_zero_x = 0.0 ;
+//float distance_from_base_zero_y = 0.0 ;
+//bool base_update = true ;
 
 // Stores the coordinates where the last position msg was published
-double last_updated_x = 0.0 ;
-double last_updated_y = 0.0 ;
+//double last_updated_x = 0.0 ;
+//double last_updated_y = 0.0 ;
 
+// Stores the current distance of the drone w.r.t. the base.
+double current_x = 0.0 ;
+double current_y = 0.0 ;
 
 // records the initial local distance from the 
-bool init_local_set = true ;
-double fcu_local_distance_to_armed_x = 0.0 ; // records the distance from the power up to the start of the algorithm
-double fcu_local_distance_to_armed_y = 0.0 ;
+//bool init_local_set = true ;
+//double fcu_local_distance_to_armed_x = 0.0 ; // records the distance from the power up to the start of the algorithm
+//double fcu_local_distance_to_armed_y = 0.0 ;
 
 double local_x = 0.0 ;
 double local_y = 0.0 ;
@@ -83,6 +88,9 @@ double local_y = 0.0 ;
 double intgrl_x = 0.0 ;
 double intgrl_y = 0.0 ;
 
+// Agent current x-y distances to the target
+double own_target_x = 0.0 ;
+double own_target_y = 0.0 ;
 
 int my_idx = 0 ; 
 
@@ -118,8 +126,20 @@ void init_vars(){
 	vel_pos_pub = nh.advertise<geometry_msgs::TwistStamped> ( "/mavros/setpoint_position_velocity/cmd_pos_vel", 1, true ); //topic for the Cube
 	intgrl_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true ); // topic to send the integral values to other agents
 
+}
+
+
+void preHRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
+
+        // This function reads the callback messgaes to get the current position of the drone w.r.t the base
+
+        const std::lock_guard<std::mutex> lock(current_mutex);
+	current_x = msg->states[my_idx];
+	current_y = msg->states[my_idx+1];
 
 }
+
+
 
 void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
         // This function listens to output from the hrl algorithm, checks the distance to move and publishes if the distance is beyond a threshold
@@ -135,12 +155,12 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 	intgrl_y = msg->states[my_idx+5];
 	intrgl_mutex.unlock();
 
-	if(base_update){
-                //sets the base distance so that the net change in position after the algorithm starts executing can be detected
-                distance_from_base_zero_x = x ;
-                distance_from_base_zero_y = y ;
-                base_update = false ;
-        }
+//	if(base_update){
+//                //sets the base distance so that the net change in position after the algorithm starts executing can be detected
+//                distance_from_base_zero_x = x ;
+//                distance_from_base_zero_y = y ;
+//                base_update = false ;
+//        }
 
 	vel_pos_msg.header.stamp = ros::Time::now();
 //	mavto_msg.header.stamp = ros::Time::now();
@@ -163,12 +183,12 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
                 if(vy < -1*MAX_VEL_THRESHOLD){ vy = -1*MAX_VEL_THRESHOLD; }
 
 
-                pos_msg.pose.position.x = x - local_x;// - distance_from_base_zero_x + fcu_local_distance_to_armed_x ; // deduct distance_from_base_zero_x to get distance relative to base(0,0). Add fcu_local_distance_to_armed_xto  offset from the drone's local(0,0).
-                pos_msg.pose.position.y = y - local_y;// - distance_from_base_zero_y + fcu_local_distance_to_armed_y ;
-                pos_msg.pose.position.z = FIXED_HEIGHT ;
+//                pos_msg.pose.position.x = x - local_x;// - distance_from_base_zero_x + fcu_local_distance_to_armed_x ; // deduct distance_from_base_zero_x to get distance relative to base(0,0). Add fcu_local_distance_to_armed_xto  offset from the drone's local(0,0).
+//                pos_msg.pose.position.y = y - local_y;// - distance_from_base_zero_y + fcu_local_distance_to_armed_y ;
+//                pos_msg.pose.position.z = FIXED_HEIGHT ;
 
-		vel_msg.linear.x = vx ;
-		vel_msg.linear.y = vy ;
+//		vel_msg.linear.x = vx ;
+//		vel_msg.linear.y = vy ;
 
 
 		// These lines are for sending the velocity and the position values to fcu
@@ -186,12 +206,15 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
                 vel_pos_msg.twist.linear.y = vy ;
 		vel_pos_msg.twist.linear.y = 0.0 ;
 
-                vel_pos_msg.twist.angular.x = 0 - x;// - local_x ; // angular for position
-                vel_pos_msg.twist.angular.y = tgty - y ;
-                vel_pos_msg.twist.angular.z = 0.0 ;
 
-		vel_msg.linear.x = 0.0 ;
-                vel_msg.linear.y = -1.0 ;
+		current_mutex.lock();
+                vel_pos_msg.twist.angular.x = x - current_x + own_target_x ;// - local_x ; // angular for position
+                vel_pos_msg.twist.angular.y = y - current_y + own_target_y;
+                vel_pos_msg.twist.angular.z = 0.0 ;
+		current_mutex.unlock();
+
+//		vel_msg.linear.x = 0.0 ;
+//               vel_msg.linear.y = -1.0 ;
 
 //		ROS_INFO(" pos+vel msg to fcu to y direction: %f", vel_pos_msg.twist.angular.y );
 
@@ -199,10 +222,11 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 //		ROS_INFO(" To pos+vel x - local_x : %f , y - local_y : %f , vx : %f , vy : %f   ", x - local_x, y - local_y, vx, vy );
 
 
-//                ROS_INFO(" local_x : %f", local_x );
-//                ROS_INFO(" local_y : %f", local_y );
+                ROS_INFO(" x - current_x : %f", x - current_x );
+                ROS_INFO(" y - current_y : %f", y - current_y );
 
-
+                ROS_INFO(" own_target_x : %f", own_target_x );
+                ROS_INFO(" own_target_y : %f", own_target_y );
 
 /*		mavto_msg.payload64 = push_back(x);
 		mavto_msg.payload64 = push_back(y);
@@ -265,6 +289,7 @@ void rcCallback(const mavros_msgs::RCIn::ConstPtr& msg){
 }
 
 
+/*
 void localPosCallback(const nav_msgs::Odometry::ConstPtr& msg){
 	// This function reads local positon messages and records the local position in x,y directions
 	if(init_local_set){
@@ -278,7 +303,16 @@ void localPosCallback(const nav_msgs::Odometry::ConstPtr& msg){
 	local_y = msg->pose.pose.position.y ;
 
 }
+*/
 
+void distToTgTCallback(const mavros_msgs::DebugValue::ConstPtr& msg){
+	// Records current state values
+
+	own_target_x = msg->data[0];
+	own_target_y = msg->data[1];
+
+}
+/*
 void signalPublisher(){
 	// This function is created to send a signal to a different thread when a msg is published but it's not been used now
 
@@ -311,6 +345,7 @@ void signalPublisher(){
         }
 
 }
+*/
 
 void integralPublisher(){
 	// This function publishes the integral value from the 
@@ -344,7 +379,6 @@ void integralPublisher(){
 
 }
 
-
 int main( int argc, char** argv )
 {
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
@@ -353,9 +387,10 @@ int main( int argc, char** argv )
 
         ros::NodeHandle post_hrl_hl;
         ros::Subscriber hrl_callback = post_hrl_hl.subscribe("/swarm/next_states/global", 100, HRLCallback);
-	ros::Subscriber local_pos_callback = post_hrl_hl.subscribe("/mavros/global_position/local", 100, localPosCallback);
+//	ros::Subscriber local_pos_callback = post_hrl_hl.subscribe("/mavros/global_position/local", 100, localPosCallback);
 //	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
-
+        ros::Subscriber prehrl_callback = post_hrl_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
+        ros::Subscriber dist_to_tgt_callback = post_hrl_hl.subscribe("/swarm/dist_to_target/", 100, distToTgTCallback);
 
   //      std::thread signal_publisher (signalPublisher); //Sperate thread for the publisher function
 

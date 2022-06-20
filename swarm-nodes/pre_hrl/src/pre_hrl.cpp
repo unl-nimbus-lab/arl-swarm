@@ -44,6 +44,8 @@ I am directly accessing global variables where I should not be doing. That's bec
 #include <swarm_msgs/gps.h>
 #include <swarm_msgs/signal.h>
 #include <mavros_msgs/DebugValue.h>
+#include <mavros_msgs/SwarmGPS.h>
+#include <mavros_msgs/SwarmOdom.h>
 #include <chrono>
 #include <time.h>
 
@@ -79,50 +81,57 @@ float target_lon = -96.60885620373058 ;
 */
 
 /* QP stuff */
-float base_lat = 40.8328860 ;
-float base_lon = -96.6958694 ;
+float base_lat = 9999.99 ;
+float base_lon = 9999.99 ;
 
-float target_lat = 40.8327215 ;
-float target_lon = -96.6958784 ;
+float target_lat = 9999.99 ;
+float target_lon = 9999.99 ;
 
+float own_target_x ;
+float own_target_y ;
 
 std::string topic_to_hrl = "/swarm/global_states/" ;
+std::string topic_to_dist_to_target = "/swarm/dist_to_target/" ;
 
-void gpsCallback(swarm_msgs::gps new_msg ){
+
+void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 
 	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
-	int ag_id = new_msg.id ;
+	int ag_id = new_msg->system_id ;
 
 	// Get the corresponding index in the transformed state space given an agent id
 	int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
 	int ag_itgrl_idx = id2idx.get_integral_idx(ag_id, groups);
 
 	// Calculate state values from the new msg
-//	float ag_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,new_msg.lon) ;// x state with respect to the base (0,0)
-//	float ag_y = gc.lat_to_meters_signed(base_lat,base_lon, new_msg.lat,base_lon) ;// y state with respect to the base (0,0)
-	float ag_vx = new_msg.vx ;
-	float ag_vy = new_msg.vy ;
+	float ag_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,new_msg->longitude) ;// x state with respect to the base (0,0)
+	float ag_y = gc.lat_to_meters_signed(base_lat,base_lon, new_msg->latitude,base_lon) ;// y state with respect to the base (0,0)
+//	float ag_vx = new_msg.vx ;
+//	float ag_vy = new_msg.vy ;
 
 
 	// Newly added ... #############
-	float ag_x = new_msg.lon ;
-        float ag_y = new_msg.lat ;
-
-
+//	float ag_x = new_msg.lon ;
+//        float ag_y = new_msg.lat ;
 
 
 	// Update the integral state if the id is its id
 	if ( std::abs(ag_id - MY_ID) < 0.000000001 ){
 
-//		float ag_tgt_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,target_lon) ;// x distance to taregt with respect to the base (0,0)
-//		float ag_tgt_y = gc.lat_to_meters_signed(base_lat,base_lon, target_lat,base_lon) ;// y distance to taregt with respect to the base (0,0) 
+		float ag_tgt_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,target_lon) ;// x distance to taregt with respect to the base (0,0)
+		float ag_tgt_y = gc.lat_to_meters_signed(base_lat,base_lon, target_lat,base_lon) ;// y distance to taregt with respect to the base (0,0) 
 
 		// Newly added ... #############
-		float ag_tgt_x = 0.0 ;
-		float ag_tgt_y = -18.3 ;
+//		float ag_tgt_x = 0.0 ;
+//		float ag_tgt_y = -18.3 ;
 
 		intgrl_state[0] += (ag_x - ag_tgt_x)*INTGRL_MTPL ; // multiply by a scaler to reduce the magnitiude 
 		intgrl_state[1] += (ag_y - ag_tgt_y)*INTGRL_MTPL ; // multiply by a scaller to reduce the magnitiude 
+
+		//And save the current locations as well
+		own_target_x = ag_tgt_x - ag_x ;
+		own_target_y = ag_tgt_y - ag_y  ;
+
 	}
 
 
@@ -131,8 +140,8 @@ void gpsCallback(swarm_msgs::gps new_msg ){
 	// Copy the value from the estimator to the state variable
 	state[ag_state_idx] = ag_x ;
 	state[ag_state_idx+1] = ag_y ;
-	state[ag_state_idx+2] = ag_vx ;
-	state[ag_state_idx+3] = ag_vy ;
+	//state[ag_state_idx+2] = ag_vx ;
+	//state[ag_state_idx+3] = ag_vy ;
 
 	// Copy the integral states to the state vector
 	if ( std::abs(ag_id - MY_ID) < 0.000000001 ){
@@ -142,20 +151,38 @@ void gpsCallback(swarm_msgs::gps new_msg ){
 
 }
 
+void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr& new_msg){
 
-void integralStateCallback(mavros_msgs::DebugValue debug_msg){
+        // This function reads the callback messgaes, re-arranges them to the specific order of th>
+        int ag_id = new_msg->system_id ;
+
+        // Get the corresponding index in the transformed state space given an agent id
+        int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
+
+	float ag_vx = new_msg->twist.twist.linear.x ;
+        float ag_vy = new_msg->twist.twist.linear.y ;
+
+	const std::lock_guard<std::mutex> lock(state_mutex);
+        // Copy the value from the estimator to the state variable
+        state[ag_state_idx+2] = ag_vx ;
+        state[ag_state_idx+3] = ag_vy ;
+
+
+}
+
+void integralStateCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg){
 	// This function waits for debug msg with integral value and updates the state array
 
 	//int groups[2] = {2 , 1};
 	char msg_type ;
-	if(debug_msg.name[0] == 'I'){
+	if(debug_msg->name[0] == 'I'){
 
 		// Get the id and the idx from he debus msg
-		int id = (int) debug_msg.data[0];
+		int id = (int) debug_msg->data[0];
 		int idx = id2idx.get_integral_idx(id, groups);
 
-		float intgrl_x = debug_msg.data[1] ;
-		float intgrl_y = debug_msg.data[2] ;
+		float intgrl_x = debug_msg->data[1] ;
+		float intgrl_y = debug_msg->data[2] ;
 
 		// Mutex to access the state array and update the cooresponding location 
 		const std::lock_guard<std::mutex> lock(state_mutex);
@@ -187,7 +214,7 @@ void statePublisher()
 	clock_t t ;
 	t = clock() ;
 	ros::NodeHandle h_sp ; // Handle for state publishing
-	ros::Publisher state_publisher = h_sp.advertise<swarm_msgs::GlobalStates> ( topic_to_hrl , 1, true );
+	ros::Publisher state_publisher = h_sp.advertise<swarm_msgs::GlobalStates> (topic_to_hrl , 1, true );
 
 	// Create a new msg
 	swarm_msgs::GlobalStates msg ;
@@ -233,6 +260,34 @@ void statePublisher()
 
 }
 
+void distToTaregtPublisher(){
+	// This function publishes the distance to the taregt
+	// This does not have a thread-safe mechanism. Non-critical functions should not block the critical function 'gpsCallback'
+
+        ros::NodeHandle h_tp ; // Handle for state publishing
+        ros::Publisher dist_publisher = h_tp.advertise<mavros_msgs::DebugValue> (topic_to_dist_to_target ,1, true);
+
+	mavros_msgs::DebugValue msg ;
+
+        while (ros::ok()) {
+
+                ros::Rate loop_rate(CONTROLLER_RATE);
+
+		msg.data.clear();
+                msg.header.stamp = ros::Time::now();
+
+		msg.data.resize(3);
+		msg.data[0] = own_target_x ;
+		msg.data[1] = own_target_y;
+
+		dist_publisher.publish(msg);
+
+                ros::spinOnce();
+                loop_rate.sleep();
+        }
+
+
+}
 
 void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
 	base_lat = b_lat ;
@@ -269,7 +324,7 @@ int main( int argc, char** argv )
 	ros::NodeHandle hl;
 
 //        std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/org_state-matrix.json" ;// "state-matrix.json";
-	 init_vars(hl);
+	init_vars(hl);
 
         // Path to the json file
         std::string path_to_json ;
@@ -279,16 +334,20 @@ int main( int argc, char** argv )
         json_reader jr ;
         Sys ss = jr.readJSON(path_to_json);
 
-	ros::Subscriber gps_callback = hl.subscribe("/hrl/gps", 100, gpsCallback );
+	ros::Subscriber gps_callback = hl.subscribe("/mavros/global_position/swarm", 100, gpsCallback );
+	ros::Subscriber velocity_callback = hl.subscribe("/mavros/global_position/swarm_vel",100,velocityCallback);
 	ros::Subscriber intgrl_state_callback = hl.subscribe("/mavros/debug_value/debug_vector", 100, integralStateCallback);
 	ros::Subscriber hrl_next_state_callback = hl.subscribe( "/swarm/next_states/global", 100, nextStateHRLCallback );
 	ros::Subscriber signal_callback = hl.subscribe("/swarm/signal/local", 100, signalCallback );
 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function
+	std::thread dist_to_target_publisher (distToTaregtPublisher); // Sperate thread to publish the distance to target for the agent
+
 
 	// join the threads at the end
 	state_publisher.join() ;
+	dist_to_target_publisher.join();
 
 	ros::spin();
 

@@ -132,8 +132,8 @@ void HRLController(Sys s )
 		//Access states here
 		state_mutex.lock();
 
-		ROS_INFO(" current_states X: %f", state(ag_state_idx) );
-                ROS_INFO(" current_states Y : %f", state(ag_state_idx + 1) );
+//		ROS_INFO(" current_states X: %f", state(ag_state_idx) );
+//                ROS_INFO(" current_states Y : %f", state(ag_state_idx + 1) );
 
 		//Calculate U here
 		// TODO Finish the controller implementation
