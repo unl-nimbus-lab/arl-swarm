@@ -47,7 +47,9 @@ What it does is it publishes either
 #define CIRCLE_R 1.0
 #define FIXED_HEIGHT 4
 
-#define MAX_VEL_THRESHOLD 0.7
+#define MAX_VEL_THRESHOLD 0.7 //was 0.7
+#define MAX_OFFSET_THRESHOLD 2.5
+#define MIN_OFFSET_THRESHOLD 0.5
 
 bool tmp_flg =  false ;
 bool scnd_flg = false ;
@@ -206,10 +208,32 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
                 vel_pos_msg.twist.linear.y = vy ;
 		vel_pos_msg.twist.linear.y = 0.0 ;
 
+		float target_sign_x= 1 ;
+		float target_sign_y= 1 ;
+
+		if(own_target_x < 0){target_sign_x= -1;}
+		if(own_target_y < 0){target_sign_y= -1;}
+
+		float offset_x = (own_target_x)*(own_target_x)*0.5*target_sign_x;
+		float offset_y = (own_target_y)*(own_target_y)*0.5*target_sign_y;
+
+		if(own_target_x > MAX_OFFSET_THRESHOLD ){ offset_x = MAX_OFFSET_THRESHOLD ;}
+		if(own_target_x < MIN_OFFSET_THRESHOLD && own_target_x >= 0.0 ) {offset_x = 0.0;}
+
+		if(own_target_x < -1*MAX_OFFSET_THRESHOLD ){ offset_x = -1*MAX_OFFSET_THRESHOLD ;}
+                if(own_target_x > -1*MIN_OFFSET_THRESHOLD && own_target_x <= 0.0 ) {offset_x = 0.0;}
+
+
+                if(own_target_y > MAX_OFFSET_THRESHOLD ){ offset_y = MAX_OFFSET_THRESHOLD ;}
+                if(own_target_y < MIN_OFFSET_THRESHOLD && own_target_y >= 0.0 ) {offset_y = 0.0;}
+
+                if(own_target_y < -1*MAX_OFFSET_THRESHOLD ){ offset_y = -1*MAX_OFFSET_THRESHOLD ;}
+                if(own_target_y > -1*MIN_OFFSET_THRESHOLD && own_target_y <= 0.0 ) {offset_y = 0.0;}
+
 
 		current_mutex.lock();
-                vel_pos_msg.twist.angular.x = x - current_x + own_target_x ;// - local_x ; // angular for position
-                vel_pos_msg.twist.angular.y = y - current_y + own_target_y;
+                vel_pos_msg.twist.angular.x = x - current_x + offset_x ;// - local_x ; // angular for position
+                vel_pos_msg.twist.angular.y = y - current_y + offset_y;
                 vel_pos_msg.twist.angular.z = 0.0 ;
 		current_mutex.unlock();
 
@@ -225,8 +249,17 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
                 ROS_INFO(" x - current_x : %f", x - current_x );
                 ROS_INFO(" y - current_y : %f", y - current_y );
 
+                ROS_INFO(" vx : %f", vx );
+                ROS_INFO(" vy : %f", vy );
+
+                ROS_INFO(" vel_pos_msg.twist.angular.x : %f", vel_pos_msg.twist.angular.x );
+                ROS_INFO(" vel_pos_msg.twist.angular.y : %f", vel_pos_msg.twist.angular.y );
+
                 ROS_INFO(" own_target_x : %f", own_target_x );
                 ROS_INFO(" own_target_y : %f", own_target_y );
+
+                ROS_INFO(" offset_x : %f", offset_x );
+                ROS_INFO(" offset_y : %f", offset_y );
 
 /*		mavto_msg.payload64 = push_back(x);
 		mavto_msg.payload64 = push_back(y);
@@ -248,21 +281,23 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 //		ROS_INFO(" pos_msg.pose.position.y : %f", pos_msg.pose.position.y );
 
 		// Send a signal when the hrl distance exceeds the threshold.
-		flag_mutex.lock();
-		flag_when_mgs_published = true ;
-		flag_mutex.unlock();
+//		flag_mutex.lock();
+//		flag_when_mgs_published = true ;
+//		flag_mutex.unlock();
 //	}
 
 //	wp_pub.publish(vel_pos_msg);
 //	vel_pos_pub.publish(vel_pos_msg);
 //	vel_pub.publish(vel_msg);
 
-	scnd_flg = true ;
+/*	scnd_flg = true ;
 	if(tmp_flg && scnd_flg){
 		vel_pos_pub.publish(vel_pos_msg);
 		tmp_flg = false;
 //		scnd_flg = false ;
 	}
+*/
+	vel_pos_pub.publish(vel_pos_msg);
 
 //	st_pv.send_setpoint_pos_velocity(pos_msg.header.stamp.nsec/100, 3,0.0)
 //	if(counter == CONTROLLER_RATE/2){

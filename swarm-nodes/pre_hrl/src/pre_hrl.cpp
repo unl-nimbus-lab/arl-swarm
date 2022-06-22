@@ -1,4 +1,3 @@
-
 /* This implements the preparation of the complete state space for the HRL-LQI controller.
 Here's how the states must be arranged to be fed into the hrl_lqr to compute the transformed states. 
 Assume the groups are [2 1]. Group 1 has 2 agents, group 2 has 1 agent.
@@ -97,8 +96,8 @@ std::string topic_to_dist_to_target = "/swarm/dist_to_target/" ;
 void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 
 	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
-	int ag_id = new_msg->system_id ;
-
+	//int ag_id = new_msg->system_id ;
+	int ag_id = 1 ;
 	// Get the corresponding index in the transformed state space given an agent id
 	int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
 	int ag_itgrl_idx = id2idx.get_integral_idx(ag_id, groups);
