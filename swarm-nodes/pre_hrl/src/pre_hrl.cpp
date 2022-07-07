@@ -51,7 +51,7 @@ I am directly accessing global variables where I should not be doing. That's bec
 #define ROS_NODE_NAME "pre_hrl"
 #define CONTROLLER_RATE 8    // Rate in Hz
 
-#define MY_ID 1
+#define MY_ID 2
 
 #define INTGRL_MTPL 0.01 // A scalar multiplier to ewduce the magnitude of the integral state
 
