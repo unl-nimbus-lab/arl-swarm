@@ -38,5 +38,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(live_gcs src/live_gcs.cpp)
+add_executable(ack src/ack.cpp)
 
 target_link_libraries(live_gcs ${catkin_LIBRARIES})
+target_link_libraries(ack ${catkin_LIBRARIES})
