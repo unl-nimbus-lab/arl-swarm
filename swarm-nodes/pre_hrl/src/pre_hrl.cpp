@@ -49,20 +49,20 @@ I am directly accessing global variables where I should not be doing. That's bec
 #include <time.h>
 
 #define ROS_NODE_NAME "pre_hrl"
-#define CONTROLLER_RATE 8    // Rate in Hz
+#define CONTROLLER_RATE 8 //8    // Rate in Hz
 
 #define MY_ID 2
 
 #define INTGRL_MTPL 0.01 // A scalar multiplier to ewduce the magnitude of the integral state
 
-float state[6] = {0.0} ; // stores all the states
-float intgrl_state[2] = {0.0} ;
+float state[12] = {0.0} ; // stores all the states
+float intgrl_state[4] = {0.0} ;
 std::mutex state_mutex ; // mutex for state variable
 
 geo_converter gc ; // object to call gps coordinate converter functions
 id_to_idx id2idx ;
 
-int groups[1] = {1};
+int groups[1] = {2};
 
 swarm_msgs::GlobalStates hrl_msg ;
 std::mutex hrl_msg_mutex ;
@@ -93,11 +93,20 @@ std::string topic_to_hrl = "/swarm/global_states/" ;
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/" ;
 
 
+
+int ag2_msg_count = 0 ;
+int ag13_msg_count = 0 ;
+
 void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 
 	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
 	//int ag_id = new_msg->system_id ;
-	int ag_id = 1 ;
+
+	int incoming_ag_id = new_msg->system_id ;
+
+	int ag_id = 2 ;
+        if(incoming_ag_id == 13){ag_id = 1 ;}
+
 	// Get the corresponding index in the transformed state space given an agent id
 	int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
 	int ag_itgrl_idx = id2idx.get_integral_idx(ag_id, groups);
@@ -109,20 +118,12 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 //	float ag_vy = new_msg.vy ;
 
 
-	// Newly added ... #############
-//	float ag_x = new_msg.lon ;
-//        float ag_y = new_msg.lat ;
-
 
 	// Update the integral state if the id is its id
 	if ( std::abs(ag_id - MY_ID) < 0.000000001 ){
 
 		float ag_tgt_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,target_lon) ;// x distance to taregt with respect to the base (0,0)
 		float ag_tgt_y = gc.lat_to_meters_signed(base_lat,base_lon, target_lat,base_lon) ;// y distance to taregt with respect to the base (0,0) 
-
-		// Newly added ... #############
-//		float ag_tgt_x = 0.0 ;
-//		float ag_tgt_y = -18.3 ;
 
 		intgrl_state[0] += (ag_x - ag_tgt_x)*INTGRL_MTPL ; // multiply by a scaler to reduce the magnitiude 
 		intgrl_state[1] += (ag_y - ag_tgt_y)*INTGRL_MTPL ; // multiply by a scaller to reduce the magnitiude 
@@ -132,6 +133,7 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 		own_target_y = ag_tgt_y - ag_y  ;
 
 	}
+
 
 
 	// Re-arrange stuff
@@ -147,6 +149,13 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 		state[ag_itgrl_idx] = intgrl_state[0];
 		state[ag_itgrl_idx+1] = intgrl_state[1];
 	}
+
+	if(incoming_ag_id == 13){
+		ag13_msg_count++ ;
+	}else{
+		ag2_msg_count++ ;
+	}
+
 
 }
 
@@ -183,11 +192,12 @@ void integralStateCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg){
 		float intgrl_x = debug_msg->data[1] ;
 		float intgrl_y = debug_msg->data[2] ;
 
-		// Mutex to access the state array and update the cooresponding location 
-		const std::lock_guard<std::mutex> lock(state_mutex);
-		state[idx] = intgrl_x ;
-		state[idx+1] = intgrl_y ;
-
+		if ( std::abs(id - MY_ID) > 0.1 ){
+			// Mutex to access the state array and update the cooresponding location 
+			const std::lock_guard<std::mutex> lock(state_mutex);
+			state[idx] = intgrl_x ;
+			state[idx+1] = intgrl_y ;
+		}
 	}
 }
 
@@ -296,6 +306,31 @@ void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
         target_lon = t_lon ;
 }
 
+void displayHZ()
+{
+
+	int ag2_prev = 0;
+	int ag13_prev = 0;
+
+	while (ros::ok()) {
+
+       		ros::Rate loop_rate(1);
+
+		ROS_INFO(" Agent 2 HZ : %d", ag2_msg_count - ag2_prev );
+		ROS_INFO(" Agent 2 HZ : %d", ag13_msg_count - ag13_prev );
+
+		ag2_prev = ag2_msg_count ; 
+		ag13_prev =  ag13_msg_count ;
+
+                ros::spinOnce();
+                loop_rate.sleep();
+
+	}
+
+
+}
+
+
 
 void init_vars(ros::NodeHandle hl){
 
@@ -343,10 +378,12 @@ int main( int argc, char** argv )
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function
 	std::thread dist_to_target_publisher (distToTaregtPublisher); // Sperate thread to publish the distance to target for the agent
 
+	std::thread display_hz (displayHZ);
 
 	// join the threads at the end
 	state_publisher.join() ;
 	dist_to_target_publisher.join();
+	display_hz.join();
 
 	ros::spin();
 

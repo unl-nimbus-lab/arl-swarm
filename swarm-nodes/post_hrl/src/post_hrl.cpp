@@ -1,3 +1,4 @@
+
 /* This function does two things for the swarm project. However, none of the objectives are implemented due to various isses with arducopter
 1. Checks if the next location to move is within a threshold
 2. If the threshold exceeds, a setpoint_local command is published to the fcu
@@ -41,9 +42,9 @@ What it does is it publishes either
 //setpoint_posvel_plg
 
 #define ROS_NODE_NAME "post_hrl"
-#define CONTROLLER_RATE 4    // Rate in Hz 
+#define CONTROLLER_RATE 50    // Rate in Hz 
 
-#define MY_ID 1 
+#define MY_ID 2 
 #define CIRCLE_R 1.0
 #define FIXED_HEIGHT 4
 
@@ -94,7 +95,7 @@ double intgrl_y = 0.0 ;
 double own_target_x = 0.0 ;
 double own_target_y = 0.0 ;
 
-int my_idx = 0 ; 
+int my_idx = 2 ; 
 
 float tgty = -18.3 ;
 
@@ -165,6 +166,7 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 //        }
 
 	vel_pos_msg.header.stamp = ros::Time::now();
+//	pos_msg.header.stamp = ros::Time::now();
 //	mavto_msg.header.stamp = ros::Time::now();
 
 
@@ -235,7 +237,12 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
                 vel_pos_msg.twist.angular.x = x - current_x + offset_x ;// - local_x ; // angular for position
                 vel_pos_msg.twist.angular.y = y - current_y + offset_y;
                 vel_pos_msg.twist.angular.z = 0.0 ;
+
 		current_mutex.unlock();
+
+//                pos_msg.pose.position.x = x - current_x + offset_x ;
+//                pos_msg.pose.position.y = y - current_y + offset_y ;
+
 
 //		vel_msg.linear.x = 0.0 ;
 //               vel_msg.linear.y = -1.0 ;
@@ -297,6 +304,9 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 //		scnd_flg = false ;
 	}
 */
+
+
+//	wp_pub.publish(pos_msg);
 	vel_pos_pub.publish(vel_pos_msg);
 
 //	st_pv.send_setpoint_pos_velocity(pos_msg.header.stamp.nsec/100, 3,0.0)
