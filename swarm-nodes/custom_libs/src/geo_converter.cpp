@@ -2,7 +2,7 @@
 #include "custom_libs/geo_converter.hpp"
 
 double geo_converter::gps_to_meters(double lat1, double lon1, double lat2, double lon2){
-	// This gives the distance beteen two gps coordiantes in meters
+	// This gives the distance between two gps coordinates in meters
 
 	double dLat = lat2*M_PI/180 - lat1*M_PI/180 ;
 	double dLon = lon2*M_PI/180 - lon1*M_PI/180 ;
@@ -16,7 +16,7 @@ double geo_converter::gps_to_meters(double lat1, double lon1, double lat2, doubl
 
 
 double geo_converter::lon_to_meters_signed(double lat1, double lon1, double lat2, double lon2){
-        // This gives the distance beteen two gps coordiantes in meters
+        // This gives the distance between two gps coordinates in meters
 
         double dLat = lat2*M_PI/180 - lat1*M_PI/180 ;
         double dLon = lon2*M_PI/180 - lon1*M_PI/180 ;
@@ -35,7 +35,7 @@ double geo_converter::lon_to_meters_signed(double lat1, double lon1, double lat2
 }
 
 double geo_converter::lat_to_meters_signed(double lat1, double lon1, double lat2, double lon2){
-        // This gives the distance beteen two gps coordiantes in meters
+        // This gives the distance between two gps coordinates in meters
 
         double dLat = lat2*M_PI/180 - lat1*M_PI/180 ;
         double dLon = lon2*M_PI/180 - lon1*M_PI/180 ;
@@ -55,8 +55,7 @@ double geo_converter::lat_to_meters_signed(double lat1, double lon1, double lat2
 
 double geo_converter::meters_to_lat(double base_lat, double base_lon, double d ){
 
-	// This gives the latitde from a base lat,lon coordinnates and a particualr distance with a bearing of 0 degrees
-
+	// This gives the latitude from a base lat,lon coordinates and a particular distance with a bearing of 0 degrees.
 	double base_lat_rads = base_lat*M_PI/180 ;
 	double base_lon_rads = base_lon*M_PI/180 ;
 
@@ -72,7 +71,7 @@ double geo_converter::meters_to_lat(double base_lat, double base_lon, double d )
 
 double geo_converter::meters_to_lon(double base_lat, double base_lon, double d ){ 
 
-        // This gives the longitude from a base lat,lon coordinnates and a particualr distance with a bearing of 90 degrees
+        // This gives the longitude from a base lat,lon coordinates and a particular distance with a bearing of 90 degrees
 
         double base_lat_rads = base_lat*M_PI/180 ;
         double base_lon_rads = base_lon*M_PI/180 ;
