@@ -70,15 +70,6 @@ std::mutex hrl_msg_mutex ;
 bool use_gps = true ;
 std::mutex signal_mutex ;
 
-
-/* Havlock stuff
-float base_lat = 40.8522108472926 ;
-float base_lon = -96.60822380671102 ;
-
-float target_lat = 40.852158006872756 ;
-float target_lon = -96.60885620373058 ;
-*/
-
 /* QP stuff */
 float base_lat = 9999.99 ;
 float base_lon = 9999.99 ;
@@ -93,19 +84,15 @@ std::string topic_to_hrl = "/swarm/global_states/" ;
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/" ;
 
 
-
-int ag2_msg_count = 0 ;
-int ag13_msg_count = 0 ;
-
 void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 
 	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
-	//int ag_id = new_msg->system_id ;
 
 	int incoming_ag_id = new_msg->system_id ;
 
 	int ag_id = 2 ;
-        if(incoming_ag_id == 13){ag_id = 1 ;}
+        
+   if(incoming_ag_id == 13){ag_id = 1 ;}
 
 	// Get the corresponding index in the transformed state space given an agent id
 	int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
@@ -114,9 +101,6 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 	// Calculate state values from the new msg
 	float ag_x = gc.lon_to_meters_signed(base_lat,base_lon, base_lat,new_msg->longitude) ;// x state with respect to the base (0,0)
 	float ag_y = gc.lat_to_meters_signed(base_lat,base_lon, new_msg->latitude,base_lon) ;// y state with respect to the base (0,0)
-//	float ag_vx = new_msg.vx ;
-//	float ag_vy = new_msg.vy ;
-
 
 
 	// Update the integral state if the id is its id
@@ -135,25 +119,17 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 	}
 
 
-
 	// Re-arrange stuff
 	const std::lock_guard<std::mutex> lock(state_mutex);
-	// Copy the value from the estimator to the state variable
+	// Copy the value from the fcu to the state variable
 	state[ag_state_idx] = ag_x ;
 	state[ag_state_idx+1] = ag_y ;
-	//state[ag_state_idx+2] = ag_vx ;
-	//state[ag_state_idx+3] = ag_vy ;
+
 
 	// Copy the integral states to the state vector
 	if ( std::abs(ag_id - MY_ID) < 0.000000001 ){
 		state[ag_itgrl_idx] = intgrl_state[0];
 		state[ag_itgrl_idx+1] = intgrl_state[1];
-	}
-
-	if(incoming_ag_id == 13){
-		ag13_msg_count++ ;
-	}else{
-		ag2_msg_count++ ;
 	}
 
 
@@ -174,7 +150,6 @@ void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr& new_msg){
         // Copy the value from the estimator to the state variable
         state[ag_state_idx+2] = ag_vx ;
         state[ag_state_idx+3] = ag_vy ;
-
 
 }
 
@@ -206,12 +181,6 @@ void nextStateHRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg)
 {
 	const std::lock_guard<std::mutex> lock(hrl_msg_mutex);
 	hrl_msg.states = msg->states;
-}
-
-void signalCallback(const swarm_msgs::signal::ConstPtr& msg)
-{
-	const std::lock_guard<std::mutex> lock(signal_mutex);
-	use_gps = msg -> signal ;
 }
 
 
@@ -246,7 +215,7 @@ void statePublisher()
 		std::copy(state, state+sizeof_state, duplicate_state);
 
 		// Release the lock
-                state_mutex.unlock();
+      state_mutex.unlock();
 
 		// All states are avaibale. ready to publish
 		msg.header.stamp = ros::Time::now();
@@ -257,7 +226,6 @@ void statePublisher()
 			//ROS_INFO(" state : %d  value : %f ", i, duplicate_state[i]);
 
 		}
-
 			t = clock() ;
 
 		// Publish to the /swarm/global_states topic
@@ -273,17 +241,17 @@ void distToTaregtPublisher(){
 	// This function publishes the distance to the taregt
 	// This does not have a thread-safe mechanism. Non-critical functions should not block the critical function 'gpsCallback'
 
-        ros::NodeHandle h_tp ; // Handle for state publishing
-        ros::Publisher dist_publisher = h_tp.advertise<mavros_msgs::DebugValue> (topic_to_dist_to_target ,1, true);
+   ros::NodeHandle h_tp ; // Handle for state publishing
+   ros::Publisher dist_publisher = h_tp.advertise<mavros_msgs::DebugValue> (topic_to_dist_to_target ,1, true);
 
 	mavros_msgs::DebugValue msg ;
 
-        while (ros::ok()) {
+   while (ros::ok()) {
 
-                ros::Rate loop_rate(CONTROLLER_RATE);
+      ros::Rate loop_rate(CONTROLLER_RATE);
 
 		msg.data.clear();
-                msg.header.stamp = ros::Time::now();
+      msg.header.stamp = ros::Time::now();
 
 		msg.data.resize(3);
 		msg.data[0] = own_target_x ;
@@ -291,10 +259,10 @@ void distToTaregtPublisher(){
 
 		dist_publisher.publish(msg);
 
-                ros::spinOnce();
-                loop_rate.sleep();
-        }
-
+      ros::spinOnce();
+      loop_rate.sleep();
+     
+   }
 
 }
 
@@ -303,34 +271,8 @@ void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
 	base_lon = b_lon ;
 
 	target_lat = t_lat ;
-        target_lon = t_lon ;
+   target_lon = t_lon ;
 }
-
-void displayHZ()
-{
-
-	int ag2_prev = 0;
-	int ag13_prev = 0;
-
-	while (ros::ok()) {
-
-       		ros::Rate loop_rate(1);
-
-		ROS_INFO(" Agent 2 HZ : %d", ag2_msg_count - ag2_prev );
-		ROS_INFO(" Agent 2 HZ : %d", ag13_msg_count - ag13_prev );
-
-		ag2_prev = ag2_msg_count ; 
-		ag13_prev =  ag13_msg_count ;
-
-                ros::spinOnce();
-                loop_rate.sleep();
-
-	}
-
-
-}
-
-
 
 void init_vars(ros::NodeHandle hl){
 
@@ -357,33 +299,29 @@ int main( int argc, char** argv )
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
 	ros::NodeHandle hl;
 
-//        std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/org_state-matrix.json" ;// "state-matrix.json";
+// std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/org_state-matrix.json" ;// "state-matrix.json";
 	init_vars(hl);
 
-        // Path to the json file
-        std::string path_to_json ;
-        hl.getParam("/custom_params/path_to_state_mtx",path_to_json);
+   // Path to the json file
+   std::string path_to_json ;
+   hl.getParam("/custom_params/path_to_state_mtx",path_to_json);
 
-        //Read the json file
-        json_reader jr ;
-        Sys ss = jr.readJSON(path_to_json);
+   //Read the json file
+   json_reader jr ;
+   Sys ss = jr.readJSON(path_to_json);
 
 	ros::Subscriber gps_callback = hl.subscribe("/mavros/global_position/swarm", 100, gpsCallback );
 	ros::Subscriber velocity_callback = hl.subscribe("/mavros/global_position/swarm_vel",100,velocityCallback);
 	ros::Subscriber intgrl_state_callback = hl.subscribe("/mavros/debug_value/debug_vector", 100, integralStateCallback);
 	ros::Subscriber hrl_next_state_callback = hl.subscribe( "/swarm/next_states/global", 100, nextStateHRLCallback );
-	ros::Subscriber signal_callback = hl.subscribe("/swarm/signal/local", 100, signalCallback );
 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function
 	std::thread dist_to_target_publisher (distToTaregtPublisher); // Sperate thread to publish the distance to target for the agent
 
-	std::thread display_hz (displayHZ);
-
 	// join the threads at the end
 	state_publisher.join() ;
 	dist_to_target_publisher.join();
-	display_hz.join();
 
 	ros::spin();
 
