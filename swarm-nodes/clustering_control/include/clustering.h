@@ -138,20 +138,20 @@ double agent::circleYOffset() {
     return offset;
 }
 
-void agent::displayCommandlineArguments(){
+void agent::displayCommandlineArguments() {
     //Display command line arguments for debugging
-    // fprint("System ID is: %d", hrlAgent.getSysid());
-    // fprint("Cluster ID is: %d", hrlAgent.getClusterid());
-    // fprint("Cluster Order is: %d", hrlAgent.getClusterOrder());
-    // fprint("Cluster Size is: %d", hrlAgent.getClusterSize());
-    // fprint("Agent Altitude is: %d", hrlAgent.getClusterid());
-    // fprint("Cluster Radius is: %d", hrlAgent.getClusterRadius());
-    // fprint("Home Lat is: %d", hrlAgent.getHomeLat());
-    // fprint("Home Lon is: %d", hrlAgent.getHomeLon());
-    // fprint("Home Alt is: %d", hrlAgent.getHomeAlt());
-    // fprint("Cluster Rally X is: %d", hrlAgent.getClusterRallyX());
-    // fprint("Cluster Rally Y is: %d", hrlAgent.getClusterRallyY());
-    // fprint("Cluster Rally Z is: %d", hrlAgent.getClusterRallyZ());
+    printf("System ID is: %f", SYSID);
+    printf("Cluster ID is: %f", CLUSTERID);
+    printf("Cluster Order is: %f", CLUSTER_ORDER);
+    printf("Cluster Size is: %f", CLUSTER_SIZE);
+    printf("Agent Altitude is: %f", AGENT_ALT);
+    printf("Cluster Radius is: %f", CLUSTER_RADIUS);
+    printf("Home Lat is: %f", GLOBAL_ORIGIN.LAT);
+    printf("Home Lon is: %f", GLOBAL_ORIGIN.LON);
+    printf("Home Alt is: %f", GLOBAL_ORIGIN.ALT);
+    printf("Cluster Rally X is: %f", CLUSTER_RALLY.LAT);
+    printf("Cluster Rally Y is: %f", CLUSTER_RALLY.LON);
+    printf("Cluster Rally Z is: %f", CLUSTER_RALLY.ALT);
 }
 
 void agent::setSysid(double id) {
