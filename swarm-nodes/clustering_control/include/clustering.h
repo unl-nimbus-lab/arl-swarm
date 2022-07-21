@@ -140,18 +140,18 @@ double agent::circleYOffset() {
 
 void agent::displayCommandlineArguments() {
     //Display command line arguments for debugging
-    printf("System ID is: %f", SYSID);
-    printf("Cluster ID is: %f", CLUSTERID);
-    printf("Cluster Order is: %f", CLUSTER_ORDER);
-    printf("Cluster Size is: %f", CLUSTER_SIZE);
-    printf("Agent Altitude is: %f", AGENT_ALT);
-    printf("Cluster Radius is: %f", CLUSTER_RADIUS);
-    printf("Home Lat is: %f", GLOBAL_ORIGIN.LAT);
-    printf("Home Lon is: %f", GLOBAL_ORIGIN.LON);
-    printf("Home Alt is: %f", GLOBAL_ORIGIN.ALT);
-    printf("Cluster Rally X is: %f", CLUSTER_RALLY.LAT);
-    printf("Cluster Rally Y is: %f", CLUSTER_RALLY.LON);
-    printf("Cluster Rally Z is: %f", CLUSTER_RALLY.ALT);
+    printf("System ID is: %f \n", SYSID);
+    printf("Cluster ID is: %f \n", CLUSTERID);
+    printf("Cluster Order is: %f \n", CLUSTER_ORDER);
+    printf("Cluster Size is: %f \n", CLUSTER_SIZE);
+    printf("Agent Altitude is: %f \n", AGENT_ALT);
+    printf("Cluster Radius is: %f \n", CLUSTER_RADIUS);
+    printf("Home Lat is: %f \n", GLOBAL_ORIGIN.LAT);
+    printf("Home Lon is: %f \n", GLOBAL_ORIGIN.LON);
+    printf("Home Alt is: %f \n", GLOBAL_ORIGIN.ALT);
+    printf("Cluster Rally X is: %f \n", CLUSTER_RALLY.LAT);
+    printf("Cluster Rally Y is: %f \n", CLUSTER_RALLY.LON);
+    printf("Cluster Rally Z is: %f \n", CLUSTER_RALLY.ALT);
 }
 
 void agent::setSysid(double id) {

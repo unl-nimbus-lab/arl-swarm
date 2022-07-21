@@ -46,42 +46,42 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     int *command = new int;
     char entity = HRLReference.name[0];  //[S]warm, [C]luster, or [A]gent
     parseCommand(HRLReference.name, targetEntity, command);
-    switch(entity) {
-        case 'C': //Cluster-level command
-            switch(*command) {
-                case 0: //Ping (just send an acknowedgemet back)
-                    acknowledge(hrlAgent.getSysid(), command);
-                    break;
-                case 1:  //Change HRL_FLIGHTMODE to payload value
-                    hrlAgent.setFlightMode(HRLReference.data[0]);
-                    hrlAgent.setPositionTarget();
-                    acknowledge(hrlAgent.getSysid(), command);
-                    break;
-                case 2: //Change CLUSTER_LOCAL_TARGET to payload
-                    hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
-                    hrlAgent.setPositionTarget();
-                    acknowledge(hrlAgent.getSysid(), command);
-                    break;
-                case 3: //Change CLUSTER_RADIUS to payload
-                    hrlAgent.setClusterRadius(HRLReference.data[0]);
-                    hrlAgent.setClusterOffsets();
-                    hrlAgent.setPositionTarget();
-                    acknowledge(hrlAgent.getSysid(), command);
-                    break;
-                case 4: //Change the Cluster type
-                    hrlAgent.setClusterType(HRLReference.data[0]);
-                    hrlAgent.setClusterOffsets();
-                    hrlAgent.setPositionTarget();
-                    acknowledge(hrlAgent.getSysid(), command);
-                    break;
-            };
-            break;
-    };
+        switch(entity) {
+            case 'C': //Cluster-level command
+                switch(*command) {
+                    case 0: //Ping (just send an acknowedgemet back)
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 1:  //Change HRL_FLIGHTMODE to payload value
+                        hrlAgent.setFlightMode(HRLReference.data[0]);
+                        hrlAgent.setPositionTarget();
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 2: //Change CLUSTER_LOCAL_TARGET to payload
+                        hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                        hrlAgent.setPositionTarget();
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 3: //Change CLUSTER_RADIUS to payload
+                        hrlAgent.setClusterRadius(HRLReference.data[0]);
+                        hrlAgent.setClusterOffsets();
+                        hrlAgent.setPositionTarget();
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 4: //Change the Cluster type
+                        hrlAgent.setClusterType(HRLReference.data[0]);
+                        hrlAgent.setClusterOffsets();
+                        hrlAgent.setPositionTarget();
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                };
+                break;
+        };
 }
 
 
 //TODO:
-//ACKNOWLEDGEMENTS
+//ACKNOWLEDGEMENTS -- DONE?
 //FTL
 //SUPPORT FOR LINEAR CLUSTER TYPE
 //CLEANUP STARTUP
