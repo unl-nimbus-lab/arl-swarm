@@ -69,6 +69,7 @@ class agent {
         int getFlightMode();
 
         void setFTLTarget(double lat, double lon, double alt);
+        void setFTLTargetSystem(int target);
         void setGPSOffsets();
         double latOffset();
         double lonOffset();
@@ -123,6 +124,7 @@ void agent::setPositionTarget() {
 
 void agent::setFlightMode(int mode) {
     HRL_FLIGHTMODE = mode;
+    printf("Flight mode set to %d",mode);
 }
 
 void agent::setClusterOffsets() {
@@ -146,6 +148,7 @@ void agent::setGPSOffsets() {
     GPS_OFFSETS.LAT = latOffset();
     GPS_OFFSETS.LON = lonOffset();
     GPS_OFFSETS.ALT = AGENT_ALT;
+    printf("GPS offSets Set");
 }
 
 double agent::latOffset() {
@@ -266,10 +269,12 @@ void agent::setClusterLocalTarget(double x, double y, double z) {
     CLUSTER_LOCAL_TARGET.X = x;
     CLUSTER_LOCAL_TARGET.Y = y;
     CLUSTER_LOCAL_TARGET.Z = z;
+    printf("Cluster local target set to: %f, %f, %f",x,y,z);
 }
 
 void agent::setClusterType(int type) {
     CLUSTER_TYPE = type;
+    printf("Cluster changed to type %d\n",type);
 }
 
 void acknowledge(int agentID,int* command) {
@@ -309,6 +314,11 @@ void agent::setFTLTarget(double lat, double lon, double alt) {
     FTL_TARGET.LAT = lat;
     FTL_TARGET.LON = lon;
     FTL_TARGET.ALT = alt;
+}
+
+void agent::setFTLTargetSystem(int target) {
+    FTL_TARGET_SYSTEM = target;
+    printf("FTL Target set to %d\n",target);
 }
 
 
