@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     std::cout << "Enter Cluster ID: ";
     std::cin >> ID;
-    std::cout << "Enter Command #";
+    std::cout << "Enter Command #: ";
     std::cin >> command;
     std::cout << "Payload 0 (X): ";
     std::cin >> xTarget;

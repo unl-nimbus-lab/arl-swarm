@@ -81,7 +81,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 
 
 //TODO:
-//ACKNOWLEDGEMENTS -- DONE?
+//ACKNOWLEDGEMENTS -- DONE? -- Kinda
 //FTL
 //SUPPORT FOR LINEAR CLUSTER TYPE
 //CLEANUP STARTUP

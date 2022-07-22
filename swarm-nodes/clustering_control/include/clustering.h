@@ -48,7 +48,6 @@ class agent {
         void setAgentAlt(double alt);
         void setHome(double lat, double lon, double alt);
         void setRally(double x, double y);
-        
         void setFlightMode(int mode);
         void setClusterOffsets();
         void setPositionTarget();
@@ -60,6 +59,10 @@ class agent {
 
         double circleXOffset();
         double circleYOffset();
+
+        double calculateXLineOffset();
+        double calculateYLineOffset();
+
         geographic_msgs::GeoPoseStamped pos_msg;
     private:
         double SYSID;
@@ -70,13 +73,11 @@ class agent {
         int CLUSTER_TYPE = 1;
         double CLUSTER_RADIUS;
         double AGENT_ALT;
-
         struct {
             double X;
             double Y;
             double Z;
         } CLUSTER_OFFSETS, AGENT_LOCAL_TARGET, CLUSTER_LOCAL_TARGET;
-
         struct {
             double LAT;
             double LON;
@@ -120,6 +121,9 @@ void agent::setClusterOffsets() {
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
         case 2: //Line cluster formation
+            CLUSTER_OFFSETS.X = calculateXLineOffset();
+            CLUSTER_OFFSETS.Y = calculateYLineOffset();
+            CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
     }
 }
@@ -250,4 +254,15 @@ void acknowledge(int agentID,int* command) {
 double agent::getSysid() {
     return SYSID;
 }
+
+double agent::calculateXLineOffset() {
+    double length = (CLUSTER_SIZE - 1) * CLUSTER_RADIUS;
+    double offset = (CLUSTER_ORDER - 1) * length;
+    return offset;
+}
+
+double agent::calculateYLineOffset() {
+    return 0;
+}
+
 #endif
