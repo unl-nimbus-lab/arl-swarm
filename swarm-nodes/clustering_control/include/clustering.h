@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "mavros_msgs/DebugValue.h"
+#include "mavros_msgs/SwarmGPS.h"
 #include "geographic_msgs/GeoPoseStamped.h"
 #include <std_msgs/String.h>
 #include <sstream>
@@ -35,6 +36,7 @@ geo_converter convObject;
 void parseCommand(std::string message, int *cluster, int *command);
 void handleCommand(int *cluster, int *command);
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
+void FTL_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 
 //agent class:
@@ -63,6 +65,15 @@ class agent {
         double calculateXLineOffset();
         double calculateYLineOffset();
 
+        int getFTLTarget();
+        int getFlightMode();
+
+        void setFTLTarget(double lat, double lon, double alt);
+        void setGPSOffsets();
+        double latOffset();
+        double lonOffset();
+
+
         geographic_msgs::GeoPoseStamped pos_msg;
     private:
         double SYSID;
@@ -73,6 +84,7 @@ class agent {
         int CLUSTER_TYPE = 1;
         double CLUSTER_RADIUS;
         double AGENT_ALT;
+        int FTL_TARGET_SYSTEM = 4;
         struct {
             double X;
             double Y;
@@ -82,7 +94,7 @@ class agent {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, CLUSTER_RALLY, GLOBAL_ORIGIN;
+        } AGENT_RALLY, CLUSTER_RALLY, GLOBAL_ORIGIN, FTL_TARGET, GPS_OFFSETS;
         
 };
 
@@ -101,9 +113,10 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
         case 2: //Follow the Leader
-            //Target Tracking coordinates in local frame
-            //set as cluster local target
-            //follow steps in case 1
+            setGPSOffsets();
+            pos_msg.pose.position.latitude = FTL_TARGET.LAT + GPS_OFFSETS.LAT;
+            pos_msg.pose.position.longitude = FTL_TARGET.LON + GPS_OFFSETS.LON;
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + GPS_OFFSETS.ALT;
             break;
     };
 }
@@ -126,6 +139,25 @@ void agent::setClusterOffsets() {
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
     }
+}
+
+void agent::setGPSOffsets() {
+    //Set the offsets for Follow the Leader
+    GPS_OFFSETS.LAT = latOffset();
+    GPS_OFFSETS.LON = lonOffset();
+    GPS_OFFSETS.ALT = AGENT_ALT;
+}
+
+double agent::latOffset() {
+    //Calculate the cluster offset in terms of Latitude
+    double latOffset = convObject.meters_to_lat(FTL_TARGET.LAT,FTL_TARGET.LON,CLUSTER_LOCAL_TARGET.X);
+    return latOffset;
+}
+
+double agent::lonOffset() {
+    //Calculate the cluster offset in terms of Longitude
+    double lonOffset = convObject.meters_to_lon(FTL_TARGET.LAT,FTL_TARGET.LON,CLUSTER_LOCAL_TARGET.Y);
+    return lonOffset;
 }
 
 double agent::circleXOffset() {
@@ -264,5 +296,20 @@ double agent::calculateXLineOffset() {
 double agent::calculateYLineOffset() {
     return 0;
 }
+
+int agent::getFTLTarget() {
+    return FTL_TARGET_SYSTEM;
+}
+
+int agent::getFlightMode() {
+    return HRL_FLIGHTMODE;
+}
+
+void agent::setFTLTarget(double lat, double lon, double alt) {
+    FTL_TARGET.LAT = lat;
+    FTL_TARGET.LON = lon;
+    FTL_TARGET.ALT = alt;
+}
+
 
 #endif

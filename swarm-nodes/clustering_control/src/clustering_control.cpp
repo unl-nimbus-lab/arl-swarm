@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
+    ros::Subscriber swarmState_sub = nh.subscribe("/mavros/global_position/swarm",10, FTL_cb);
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
@@ -79,6 +80,12 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         };
 }
 
+void FTL_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
+    mavros_msgs::SwarmGPS Target = *msg;
+    if (Target.system_id == hrlAgent.getFTLTarget()) {
+        hrlAgent.setFTLTarget(Target.latitude,Target.longitude,Target.altitude);
+    }
+}
 
 //TODO:
 //ACKNOWLEDGEMENTS -- DONE? -- Kinda
