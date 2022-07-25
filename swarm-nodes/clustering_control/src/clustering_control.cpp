@@ -48,6 +48,44 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     char entity = HRLReference.name[0];  //[S]warm, [C]luster, or [A]gent
     parseCommand(HRLReference.name, targetEntity, command);
         switch(entity) {
+            case 'A':
+                switch(*command) {
+                    case 0: //Ping (just send an acknowledgement back)
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 1: //Set the SYSID (THIS IS VERY DANGROUS, MAYBE DONT USE!!!)
+                        hrlAgent.setSysid(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 2: //Set the cluster ID
+                        hrlAgent.setClusterid(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 3: //set the HRL flight mode
+                        hrlAgent.setFlightMode(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 4: //set the cluster order
+                        hrlAgent.setClusterOrder(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 5: //Set the cluster size
+                        hrlAgent.setClusterSize(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 6: //Set the agent altitude
+                        hrlAgent.setAgentAlt(HRLReference.data[0]);
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 7: //TODO
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+                    case 8: //TODO
+                        acknowledge(hrlAgent.getSysid(), command);
+                        break;
+
+                };
+                break;
             case 'C': //Cluster-level command
                 switch(*command) {
                     case 0: //Ping (just send an acknowedgemet back)
