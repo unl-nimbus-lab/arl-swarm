@@ -73,7 +73,7 @@ COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
 COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
-COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
+# COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
