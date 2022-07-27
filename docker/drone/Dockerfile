@@ -76,7 +76,7 @@ COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
+# RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
 
 # Overlay the ROS environment on top of the existing environment
