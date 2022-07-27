@@ -137,6 +137,7 @@ void FTL_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
             //given in delta-latitude and delta-longitude from the FTL Target.
             hrlAgent.setGPSOffsets();
             hrlAgent.setPositionTarget();
+            hrlAgent.FTL_TARGET_SET = true;
         }
     }
 }

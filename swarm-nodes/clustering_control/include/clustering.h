@@ -80,7 +80,8 @@ class agent {
         void setAgentLocalTarget(double x, double y, double z);
 
         geographic_msgs::GeoPoseStamped pos_msg;
-        
+        bool FTL_TARGET_SET = false; //Inidcates if any FTL TARGET is set
+
     private:
         double SYSID;               //Unique ID of this agent within the swarm
         double CLUSTERID;           //ID of the cluster this agent belongs to 
@@ -149,6 +150,15 @@ void agent::setAgentLocalTarget(double x, double y, double z) {
 }
 
 void agent::setFlightMode(int mode) {
+    if (mode == 2) {//If trying to set to FTL,
+        if (FTL_TARGET_SET == true) {//Okay to try to FTL
+            mode = 2; 
+        }
+        else {//Not okay to FTL
+            printf("No GPS data from FTL target, Reverting to Guided Clustering");
+            mode = 1;
+        }
+    }
     HRL_FLIGHTMODE = mode;
     printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
 }
@@ -325,7 +335,7 @@ double agent::getSysid() {
 double agent::calculateXLineOffset() {
     double length = (CLUSTER_SIZE - 1) * CLUSTER_RADIUS;
     double offset = (CLUSTER_ORDER - 1) * length;
-    offset = offset - length / 2;
+    offset = offset - length / 2; //Need to think about this one some more
     return offset;
 }
 
