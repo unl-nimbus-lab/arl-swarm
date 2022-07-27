@@ -58,37 +58,37 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 if (*targetEntity == hrlAgent.getSysid()) {
                     switch(*command) {
                         case 0: //Ping (just send an acknowledgement back)
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //cknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 1: //Set the SYSID (THIS IS VERY DANGROUS, MAYBE DONT USE!!!)
                             //hrlAgent.setSysid(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 2: //Set the cluster ID
-                            hrlAgent.setClusterid(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //hrlAgent.setClusterid(HRLReference.data[0]);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 3: //set the HRL flight mode
-                            hrlAgent.setFlightMode(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //hrlAgent.setFlightMode(HRLReference.data[0]);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 4: //set the cluster order
-                            hrlAgent.setClusterOrder(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //hrlAgent.setClusterOrder(HRLReference.data[0]);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 5: //Set the cluster size
-                            hrlAgent.setClusterSize(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //hrlAgent.setClusterSize(HRLReference.data[0]);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 6: //Set the agent altitude
-                            hrlAgent.setAgentAlt(HRLReference.data[0]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //hrlAgent.setAgentAlt(HRLReference.data[0]);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 7: //TODO
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 8: //TODO
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         };
                 }
