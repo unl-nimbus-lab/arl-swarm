@@ -77,7 +77,7 @@ COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 
 # Build the catkin workspace
 # RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && catkin build -j1
+#    && catkin build -j1
 
 # Overlay the ROS environment on top of the existing environment
 COPY docker/drone/ros_entrypoint.sh /
