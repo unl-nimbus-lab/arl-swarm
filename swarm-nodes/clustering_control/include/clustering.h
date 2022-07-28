@@ -132,8 +132,12 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
         case 2: //Follow the Leader
-            pos_msg.pose.position.latitude = FTL_TARGET.LAT + GPS_OFFSETS.LAT;
-            pos_msg.pose.position.longitude = FTL_TARGET.LON + GPS_OFFSETS.LON;
+            // pos_msg.pose.position.latitude = FTL_TARGET.LAT + GPS_OFFSETS.LAT;
+            // pos_msg.pose.position.longitude = FTL_TARGET.LON + GPS_OFFSETS.LON;
+            // pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + GPS_OFFSETS.ALT;
+
+            pos_msg.pose.position.latitude = GPS_OFFSETS.LAT;
+            pos_msg.pose.position.longitude = GPS_OFFSETS.LON;
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + GPS_OFFSETS.ALT;
             break;
         case 3: //Individual Agent Control //Not sure if we need this
