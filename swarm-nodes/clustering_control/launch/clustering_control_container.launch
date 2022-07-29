@@ -13,7 +13,7 @@
 	<arg name="rally1Lon" default="" />
 
     <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon)"/> 
-	<node pkg="clustering_control" name="gps_handler" type="gps_handler" />
+	<!--node pkg="clustering_control" name="gps_handler" type="gps_handler" /-->
 	<arg name="fcu_url" default=""/>
 	<arg name="gcs_url" default="" />
 	<arg name="tgt_system" default="" />
