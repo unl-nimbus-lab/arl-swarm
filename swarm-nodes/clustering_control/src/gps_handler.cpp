@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     //Subscribers
-    ros::Subscriber swarmState_sub = nh.subscribe("/mavros/global_position/swarm",1, gps_cb);
+    ros::Subscriber swarmState_sub = nh.subscribe("/mavros/global_position/swarm",30, gps_cb);
 
     //Publishers
     ros::Publisher gps_pub = nh.advertise<sensor_msgs::NavSatFix> ( "/ftl_target", 1, true );

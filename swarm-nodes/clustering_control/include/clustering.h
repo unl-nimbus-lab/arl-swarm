@@ -101,7 +101,7 @@ class agent {
         void setPublish(bool logic);
 
         geographic_msgs::GeoPoseStamped pos_msg;
-        bool FTL_TARGET_SET = false; //Inidcates if any FTL TARGET is set
+        bool FTL_TARGET_SET = true; //Inidcates if any FTL TARGET is set
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
