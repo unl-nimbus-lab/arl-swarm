@@ -39,5 +39,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(clustering_control src/clustering_control.cpp)
+add_executable(gps_handler src/gps_handler.cpp)
 
 target_link_libraries(clustering_control ${catkin_LIBRARIES})
+target_link_libraries(gps_handler ${catkin_LIBRARIES})

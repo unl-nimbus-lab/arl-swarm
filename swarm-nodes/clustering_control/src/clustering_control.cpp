@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
-    ros::Subscriber swarmState_sub = nh.subscribe("/mavros/global_position/swarm",10, FTL_cb);
+    ros::Subscriber swarmState_sub = nh.subscribe("/ftl_target",1, FTL_cb);
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
@@ -57,38 +57,38 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
             case 'A':
                 if (*targetEntity == hrlAgent.getSysid()) {
                     switch(*command) {
-                        case 0: //Ping (just send an acknowledgement back)
-                            //cknowledge(hrlAgent.getSysid(), command);
+                        case PING: //Ping (just send an acknowledgement back)
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 1: //Set the SYSID (THIS IS VERY DANGROUS, MAYBE DONT USE!!!)
+                        case CHANGE_SYSID: //Set the SYSID (THIS IS VERY DANGROUS, MAYBE DONT USE!!!)
                             //hrlAgent.setSysid(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 2: //Set the cluster ID
-                            //hrlAgent.setClusterid(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                        case CHANGE_CLUSTER_ID: //Set the cluster ID
+                            hrlAgent.setClusterid(HRLReference.data[0]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 3: //set the HRL flight mode
-                            //hrlAgent.setFlightMode(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                        case CHANGE_FLIGHT_MODE: //set the HRL flight mode
+                            hrlAgent.setFlightMode(HRLReference.data[0]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 4: //set the cluster order
-                            //hrlAgent.setClusterOrder(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                        case CHANGE_CLUSTER_ORDER: //set the cluster order
+                            hrlAgent.setClusterOrder(HRLReference.data[0]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 5: //Set the cluster size
-                            //hrlAgent.setClusterSize(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                        case CHANGE_CLUSTER_SIZE: //Set the cluster size
+                            hrlAgent.setClusterSize(HRLReference.data[0]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 6: //Set the agent altitude
-                            //hrlAgent.setAgentAlt(HRLReference.data[0]);
-                            //acknowledge(hrlAgent.getSysid(), command);
+                        case CHANGE_AGENT_ALTITUDE: //Set the agent altitude
+                            hrlAgent.setAgentAlt(HRLReference.data[0]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 7: //TODO
-                            //acknowledge(hrlAgent.getSysid(), command);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case 8: //TODO
-                            //acknowledge(hrlAgent.getSysid(), command);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
                         };
                 }
@@ -96,54 +96,59 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
             case 'C': //Cluster-level command
                 if (*targetEntity == hrlAgent.getClusterid()) {
                     switch(*command) {
-                        case 0: //Ping (just send an acknowedgemet back)
+                        case PING: //Ping (just send an acknowedgemet back)
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 1:  //Change HRL_FLIGHTMODE to payload value
+                        case CHANGE_FLIGHT_MODE:  //Change HRL_FLIGHTMODE to payload value
                             hrlAgent.setFlightMode(HRLReference.data[0]);
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 2: //Change CLUSTER_LOCAL_TARGET to payload
+                        case CHANGE_POSITION: //Change CLUSTER_LOCAL_TARGET to payload
                             hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 3: //Change CLUSTER_RADIUS to payload
+                        case CHANGE_RADIUS: //Change CLUSTER_RADIUS to payload
                             hrlAgent.setClusterRadius(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case 4: //Change the Cluster type
+                        case CHANGE_TYPE: //Change the Cluster type
                             hrlAgent.setClusterType(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
+                        case CHANGE_PUBLISH: // start/stop publishing setpoints
+                            if (HRLReference.data[0] == 0) //turn off publishing
+                                hrlAgent.setPublish(false);
+                            else 
+                                hrlAgent.setPublish(true);
                     };
                 }
                 break;
         };
 }
 
-void FTL_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
+void FTL_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
     //This function updates the FTL Target struct and FTL Cluster offsets
-    mavros_msgs::SwarmGPS Target = *msg;
-    if (Target.system_id == hrlAgent.getFTLTarget()) {
-        if (Target.latitude != 0 && Target.longitude != 0) { //Minimal protection against invalid target coords
-            hrlAgent.setFTLTarget(Target.latitude,Target.longitude,Target.altitude);
-            //Since we don't have a function that goes from lat/lon -> x/y meters, the FTL offsets are 
-            //given in delta-latitude and delta-longitude from the FTL Target.
-            hrlAgent.setGPSOffsets();
-            hrlAgent.setPositionTarget();
-            hrlAgent.FTL_TARGET_SET = true;
-        }
+    if (hrlAgent.getFlightMode() == CLUSTER_FTL) {
+        Target = *msg;
+        hrlAgent.setFTLTarget(Target.latitude,Target.longitude,Target.altitude);
+        //Since we don't have a function that goes from lat/lon -> x/y meters, the FTL offsets are 
+        //given in delta-latitude and delta-longitude from the FTL Target.
+        hrlAgent.setGPSOffsets();
+        hrlAgent.setPositionTarget();
+        hrlAgent.FTL_TARGET_SET = true;
+        
     }
 }
 
 //TODO:
 //ACKNOWLEDGEMENTS -- DONE -- TESTED
-//FTL -- DONE -- EDITS
+//FTL -- DONE -- EDITS 
 //SUPPORT FOR LINEAR CLUSTER TYPE -- DONE 
 //CLEANUP STARTUP DOOED
+

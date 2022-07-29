@@ -24,7 +24,7 @@ void parseCommand(std::string message, int *cluster, int *command) {
     int tempIndexCommand = 0;
     //Find the Cluster
     for (int i = 0; i < length; i++) {
-        if (message[i] == 'A') {
+        if (message[i] == 'K') {
             for (int j = (i + 1); j < 10; j++) {
                 if (message[j] == '#') {
                     i = j - 1;
