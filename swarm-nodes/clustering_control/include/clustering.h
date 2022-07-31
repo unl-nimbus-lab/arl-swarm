@@ -6,7 +6,6 @@
 #include "mavros_msgs/DebugValue.h"
 #include "mavros_msgs/SwarmGPS.h"
 #include "geographic_msgs/GeoPoseStamped.h"
-#include "sensor_msgs/NavSatFix.h"
 #include <std_msgs/String.h>
 #include <sstream>
 #include <iostream>
@@ -27,7 +26,6 @@
 
 //HRL Flightmodes
 #define CLUSTER_GUIDED 1
-#define CLUSTER_FTL 2
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -55,14 +53,12 @@ ros::Publisher wp_pub;
 mavros_msgs::DebugValue modeBroadcast;
 mavros_msgs::DebugValue agentAcknowledgement;
 mavros_msgs::DebugValue bootAcknowledgeMsg;
-sensor_msgs::NavSatFix Target;
 geo_converter convObject;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
 void handleCommand(int *cluster, int *command);
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
-void FTL_cb(const sensor_msgs::NavSatFix::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 
 //agent class:
@@ -90,18 +86,12 @@ class agent {
         double circleYOffset();
         double calculateXLineOffset();
         double calculateYLineOffset();
-        int getFTLTarget();
         int getFlightMode();
-        void setFTLTarget(double lat, double lon, double alt);
-        void setFTLTargetSystem(int target);
-        void setGPSOffsets();
         double latOffset();
         double lonOffset();
         void setAgentLocalTarget(double x, double y, double z);
         void setPublish(bool logic);
-
         geographic_msgs::GeoPoseStamped pos_msg;
-        bool FTL_TARGET_SET = true; //Inidcates if any FTL TARGET is set
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
@@ -112,7 +102,6 @@ class agent {
         int CLUSTER_TYPE = 1;       //Organization of agents within the cluster 1) Circle 2) Line
         double CLUSTER_RADIUS;      //Dimension of the cluster
         double AGENT_ALT;           //Height (in meters) above "GLOBAL ORIGIN"
-        int FTL_TARGET_SYSTEM = 4;  //The agent within the swarm the cluster will track in "follow the leader"
         bool PUBLISH = false;       //O-k to begin publishing messages to the FCU
         struct {
             double X;
@@ -126,12 +115,10 @@ class agent {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, GLOBAL_ORIGIN, FTL_TARGET, GPS_OFFSETS;
+        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS;
         //Agent Rally: Not used
         //Cluster Rally: Not used
         //Global Origin: Common world frame for the swarm
-        //FTL Target: coordinates of the Follow the leader target
-        //This agent's Lat/Lon offsets for tracking FTL target
 };
 
 void agent::setPositionTarget() {
@@ -153,17 +140,6 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
-        case CLUSTER_FTL: //Follow the Leader
-            // pos_msg.pose.position.latitude = FTL_TARGET.LAT + GPS_OFFSETS.LAT;
-            // pos_msg.pose.position.longitude = FTL_TARGET.LON + GPS_OFFSETS.LON;
-            // pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + GPS_OFFSETS.ALT;
-
-            pos_msg.pose.position.latitude = GPS_OFFSETS.LAT;
-            pos_msg.pose.position.longitude = GPS_OFFSETS.LON;
-            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + GPS_OFFSETS.ALT;
-            break;
-        case 3: //Individual Agent Control //Not sure if we need this
-            break;
     };
 }
 
@@ -176,15 +152,6 @@ void agent::setAgentLocalTarget(double x, double y, double z) {
 }
 
 void agent::setFlightMode(int mode) {
-    if (mode == 2) {//If trying to set to FTL,
-        if (FTL_TARGET_SET == true) {//Okay to try to FTL
-            mode = 2; 
-        }
-        else {//Not okay to FTL
-            printf("No GPS data from FTL target, Reverting to Guided Clustering");
-            mode = 1;
-        }
-    }
     HRL_FLIGHTMODE = mode;
     printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
 }
@@ -205,25 +172,6 @@ void agent::setClusterOffsets() {
     }
 }
 
-void agent::setGPSOffsets() {
-    //Set the offsets for Follow the Leader
-    GPS_OFFSETS.LAT = latOffset();
-    GPS_OFFSETS.LON = lonOffset();
-    GPS_OFFSETS.ALT = AGENT_ALT;
-    printf("GPS offSets Set\n");
-}
-
-double agent::latOffset() {
-    //Calculate the cluster offset in terms of Latitude
-    double latOffset = convObject.meters_to_lat(FTL_TARGET.LAT,FTL_TARGET.LON,CLUSTER_LOCAL_TARGET.X);
-    return latOffset;
-}
-
-double agent::lonOffset() {
-    //Calculate the cluster offset in terms of Longitude
-    double lonOffset = convObject.meters_to_lon(FTL_TARGET.LAT,FTL_TARGET.LON,CLUSTER_LOCAL_TARGET.Y);
-    return lonOffset;
-}
 
 double agent::circleXOffset() {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
@@ -369,23 +317,9 @@ double agent::calculateYLineOffset() {
     return 0;
 }
 
-int agent::getFTLTarget() {
-    return FTL_TARGET_SYSTEM;
-}
 
 int agent::getFlightMode() {
     return HRL_FLIGHTMODE;
-}
-
-void agent::setFTLTarget(double lat, double lon, double alt) {
-    FTL_TARGET.LAT = lat;
-    FTL_TARGET.LON = lon;
-    FTL_TARGET.ALT = alt;
-}
-
-void agent::setFTLTargetSystem(int target) {
-    FTL_TARGET_SYSTEM = target;
-    printf("FTL Target set to %d\n",target);
 }
 
 double agent::getClusterid() {

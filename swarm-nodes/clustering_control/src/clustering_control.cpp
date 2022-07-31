@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
-    ros::Subscriber swarmState_sub = nh.subscribe("/ftl_target",1, FTL_cb);
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
@@ -132,23 +131,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         };
 }
 
-void FTL_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
-    //This function updates the FTL Target struct and FTL Cluster offsets
-    if (hrlAgent.getFlightMode() == CLUSTER_FTL) {
-        Target = *msg;
-        hrlAgent.setFTLTarget(Target.latitude,Target.longitude,Target.altitude);
-        //Since we don't have a function that goes from lat/lon -> x/y meters, the FTL offsets are 
-        //given in delta-latitude and delta-longitude from the FTL Target.
-        hrlAgent.setGPSOffsets();
-        hrlAgent.setPositionTarget();
-        hrlAgent.FTL_TARGET_SET = true;
-        
-    }
-}
-
 //TODO:
 //ACKNOWLEDGEMENTS -- DONE -- TESTED
-//FTL -- DONE -- EDITS 
+//FTL -- DONE -- EDITS -- REMOVE
 //SUPPORT FOR LINEAR CLUSTER TYPE -- DONE 
 //CLEANUP STARTUP DOOED
 
