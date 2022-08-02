@@ -30,8 +30,10 @@ int main(int argc, char **argv) {
 
    
     while (ros::ok()) {
-        hrlAgent.pos_msg.header.stamp = ros::Time::now();
-        wp_pub.publish( hrlAgent.pos_msg );
+        if (hrlAgent.getPublish() == true) {
+            hrlAgent.pos_msg.header.stamp = ros::Time::now();
+            wp_pub.publish( hrlAgent.pos_msg );
+        }
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
@@ -133,7 +135,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 
 //TODO:
 //ACKNOWLEDGEMENTS -- DONE -- TESTED
-//FTL -- DONE -- EDITS -- REMOVE
+//FTL -- DONE -- EDITS -- REMOVE -- DONE
 //SUPPORT FOR LINEAR CLUSTER TYPE -- DONE 
 //CLEANUP STARTUP DOOED
 

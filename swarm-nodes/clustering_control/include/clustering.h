@@ -25,6 +25,7 @@
 #define NAMED_VALUE_INT 4
 
 //HRL Flightmodes
+#define DONT_PUBLISH 0
 #define CLUSTER_GUIDED 1
 
 //Cluster Formation types
@@ -91,6 +92,7 @@ class agent {
         double lonOffset();
         void setAgentLocalTarget(double x, double y, double z);
         void setPublish(bool logic);
+        bool getPublish();
         geographic_msgs::GeoPoseStamped pos_msg;
 
     private:
@@ -128,8 +130,12 @@ void agent::setPositionTarget() {
     double tempx, tempy, tempz;
 
     switch (HRL_FLIGHTMODE) {
+        case DONT_PUBLISH:
+            //Don't publish anything to FCU, use this to prevent dynamic rollover after takeoff
+            setPublish(false);
         case CLUSTER_GUIDED: //Move the cluster in the local frame
             //Update "where the agent should be in the local frame"
+            setPublish(true);
             tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
             tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
             tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
@@ -328,6 +334,10 @@ double agent::getClusterid() {
 
 void agent::setPublish(bool logic) {
     PUBLISH = logic;
+}
+
+bool agent::getPublish() {
+    return PUBLISH;
 }
 
 #endif
