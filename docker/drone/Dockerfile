@@ -79,6 +79,10 @@ COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
 
+# Rosbag management
+COPY scripts/bag_manager.sh /
+RUN ["chmod","+x","/bag_manager.sh"]
+
 # Overlay the ROS environment on top of the existing environment
 COPY docker/drone/ros_entrypoint.sh /
 RUN ["chmod", "+x", "/ros_entrypoint.sh"]
