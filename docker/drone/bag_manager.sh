@@ -7,10 +7,12 @@
 path=$1
 max=$2
 
-while (($(ls $path | wc -l) > max));
-      do
-            fileToDelete=$(ls -t $path | tail -1);
-            absolutePath=$(echo $path/$fileToDelete);
-            rm $absolutePath
-            echo "$absolutePath was removed";
+while (($(ls $path | wc -l) > $max))
+	do
+		#echo "there are more than $max files in $path"
+		fileToDelete=$(ls -t $path | tail -1)
+		#echo "I am going to delete $fileToDelete"
+		pathToFileForDeletion=$path/$fileToDelete
+		echo "Deleting $pathToFileForDeletion"
+		rm $pathToFileForDeletion
 done
