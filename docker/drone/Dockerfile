@@ -80,8 +80,8 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
 
 # Rosbag management
-COPY docker/drone/bag_manager.sh /home
-RUN ["chmod","+x","/bag_manager.sh"]
+COPY docker/drone/bag_manager.sh /home/
+RUN ["chmod","+x","/home/bag_manager.sh"]
 
 # Overlay the ROS environment on top of the existing environment
 COPY docker/drone/ros_entrypoint.sh /
