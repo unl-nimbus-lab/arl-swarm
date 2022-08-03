@@ -80,7 +80,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
 
 # Rosbag management
-COPY scripts/bag_manager.sh /
+COPY scripts/bag_manager.sh /home
 RUN ["chmod","+x","/bag_manager.sh"]
 
 # Overlay the ROS environment on top of the existing environment
