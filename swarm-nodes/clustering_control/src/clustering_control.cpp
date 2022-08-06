@@ -131,8 +131,6 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPublish(false);
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-  
-                        case 
                     };
                 }
                 break;
