@@ -38,7 +38,8 @@
 #define CHANGE_POSITION 2
 #define CHANGE_RADIUS 3
 #define CHANGE_TYPE 4
-#define CHANGE_PUBLISH 5
+#define START_CLUSTER_GUIDED 5
+#define STOP_CLUSTER_GUIDED 6
 
 //Agent Commands
 

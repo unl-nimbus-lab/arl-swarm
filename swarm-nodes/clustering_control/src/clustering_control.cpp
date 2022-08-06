@@ -32,7 +32,8 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
-            wp_pub.publish( hrlAgent.pos_msg );
+            if (hrlAgent.getPublish())
+                wp_pub.publish( hrlAgent.pos_msg );
         }
         ros::Duration(0.5).sleep();
         ros::spinOnce();
@@ -122,11 +123,16 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case CHANGE_PUBLISH: // start/stop publishing setpoints
-                            if (HRLReference.data[0] == 0) //turn off publishing
-                                hrlAgent.setPublish(false);
-                            else 
-                                hrlAgent.setPublish(true);
+                        case START_CLUSTER_GUIDED:
+                            hrlAgent.setPublish(true);
+                            acknowledge(hrlAgent.getSysid(), command);
+                            break;  
+                        case STOP_CLUSTER_GUIDED:
+                            hrlAgent.setPublish(false);
+                            acknowledge(hrlAgent.getSysid(), command);
+                            break;
+  
+                        case 
                     };
                 }
                 break;
