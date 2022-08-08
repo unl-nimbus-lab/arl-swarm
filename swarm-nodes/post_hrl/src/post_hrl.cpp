@@ -86,7 +86,6 @@ geometry_msgs::PoseStamped pos_msg ;
 
 ros::Publisher vel_pub ;
 ros::Publisher vel_pos_pub ;
-ros::Publisher intgrl_pub;
 
 geometry_msgs::Twist vel_msg ;
 geometry_msgs::TwistStamped vel_pos_msg ;
@@ -105,7 +104,6 @@ void init_vars(){
       	wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true ); //topic for the Cube
 	vel_pub = nh.advertise<geometry_msgs::Twist> ( "/mavros/setpoint_velocity/cmd_vel_unstamped", 1, true ); //topic for the Cube
 	vel_pos_pub = nh.advertise<geometry_msgs::TwistStamped> ( "/mavros/setpoint_position_velocity/cmd_pos_vel", 1, true ); //topic for the Cube
-	intgrl_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 1, true ); // topic to send the integral values to other agents
 
 }
 
@@ -216,38 +214,6 @@ void distToTgTCallback(const mavros_msgs::DebugValue::ConstPtr& msg){
 }
 
 
-void integralPublisher(){
-	// This function publishes the integral value from the 
-	mavros_msgs::DebugValue intgrl_msg ;
-
-	ROS_INFO(" ####### inside integral  published ######" );
-
-        while (ros::ok()) {
-
-                ros::Rate loop_rate(CONTROLLER_RATE);
-		intgrl_msg.header.stamp = ros::Time::now();
-
-		intgrl_msg.type = 1 ;
-		intgrl_msg.name = 'I';
-		intgrl_msg.data.resize(3);
-
-		intgrl_msg.data[0] = (float) MY_ID ;
-	        intrgl_mutex.lock();
-        	intgrl_msg.data[1] = intgrl_x ;
-		intgrl_msg.data[2] = intgrl_y ;
-        	intrgl_mutex.unlock();
-
-		intgrl_pub.publish(intgrl_msg);
-
-		ros::spinOnce();
-                loop_rate.sleep();
-
-	}
-
-
-
-}
-
 int main( int argc, char** argv )
 {
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
@@ -260,11 +226,6 @@ int main( int argc, char** argv )
         ros::Subscriber prehrl_callback = post_hrl_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
         ros::Subscriber dist_to_tgt_callback = post_hrl_hl.subscribe("/swarm/dist_to_target/", 100, distToTgTCallback);
 
-
-	std::thread integral_publisher (integralPublisher); //Sperate thread for the integral publisher function
-
-       // join the threads at the end
-	integral_publisher.join();
 
 	ros::spin();
 	return 0;

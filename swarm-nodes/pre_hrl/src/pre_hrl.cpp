@@ -82,6 +82,7 @@ float own_target_y ;
 
 std::string topic_to_hrl = "/swarm/global_states/" ;
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/" ;
+std::string topic_to_debug_vector = "/mavros/debug_value/debug_vector" ;
 
 
 void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
@@ -274,6 +275,36 @@ void set_latlon(float b_lat, float b_lon, float t_lat, float t_lon){
    target_lon = t_lon ;
 }
 
+void integralStatelPublisher(){
+	// This function publishes the integral value from the 
+	mavros_msgs::DebugValue intgrl_msg ;
+
+	ROS_INFO(" ####### Ag 1 inside integral  published ######" );
+	ros::NodeHandle nh ;
+	ros::Publisher intgrl_pub = nh.advertise<mavros_msgs::DebugValue> ( "topic_to_debug_vector", 1, true ); // topic to send the integral values to other agents
+
+   while (ros::ok()) {
+
+      ros::Rate loop_rate(CONTROLLER_RATE);
+		intgrl_msg.header.stamp = ros::Time::now();
+
+		intgrl_msg.type = 1 ;
+		intgrl_msg.name = 'I';
+		intgrl_msg.data.resize(3);
+
+		intgrl_msg.data[0] = (float) MY_ID ;
+      intgrl_msg.data[1] = intgrl_state[0] ;
+		intgrl_msg.data[2] = intgrl_state[1] ;
+
+		intgrl_pub.publish(intgrl_msg);
+
+		ros::spinOnce();
+      loop_rate.sleep();
+
+	}
+
+}
+
 void init_vars(ros::NodeHandle hl){
 
 	// Assign parameters from the config file
@@ -318,11 +349,12 @@ int main( int argc, char** argv )
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function
 	std::thread dist_to_target_publisher (distToTaregtPublisher); // Sperate thread to publish the distance to target for the agent
-
+	std::thread integral_state_publisher (integralStatelPublisher); //Sperate thread for the publisher function
 	// join the threads at the end
 	state_publisher.join() ;
 	dist_to_target_publisher.join();
-
+	integral_state_publisher.join();
+	
 	ros::spin();
 
 	return 0;
