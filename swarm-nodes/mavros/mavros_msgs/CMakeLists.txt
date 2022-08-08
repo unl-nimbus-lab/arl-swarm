@@ -73,6 +73,7 @@ add_message_files(
   WheelOdomStamped.msg
   SwarmGPS.msg
   SwarmOdom.msg
+  SwarmVelocity.msg
 )
 
 add_service_files(

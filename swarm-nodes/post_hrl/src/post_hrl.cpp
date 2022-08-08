@@ -231,7 +231,7 @@ void integralPublisher(){
 		intgrl_msg.name = 'I';
 		intgrl_msg.data.resize(3);
 
-		intgrl_msg.data[0] = (float) my_idx ;
+		intgrl_msg.data[0] = (float) MY_ID ;
 	        intrgl_mutex.lock();
         	intgrl_msg.data[1] = intgrl_x ;
 		intgrl_msg.data[2] = intgrl_y ;
