@@ -4,13 +4,18 @@ services:
   frejya:
     # build: .
     image: ghcr.io/unl-nimbus-lab/arl-swarm/drone:latest
-    container_name: frejya
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    container_name: online_hrl
     network_mode: "host"
+    volumes:
+      - /home/ubuntu/rosbags:/home/rosbags
     devices: 
       - /dev/ttyUSB0:/dev/ttyUSB0
     command: >
-      /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/swarm-nodes/Freyja/freyja_controller.launch vicon_topic:=dummy comm_port:=/dev/ttyS0:921600"
+      /bin/bash -c "/home/bag_manager.sh /home/rosbags 5 &&
+                    source /home/catkin_ws/devel/setup.bash &&
+                    roslaunch src/swarm-nodes/test_launch.launch comm_port:=/dev/ttyS0:921600"
     restart: unless-stopped
     # volumes:
     #   - type: bind
