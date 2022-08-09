@@ -33,7 +33,7 @@
 
    <node name="pre_hrl_node" pkg="pre_hrl" type="pre_hrl_node" output="screen" /> 
 
- <!--   <node name="fake_gps_node" pkg="fake_gps" type="fake_gps_node" output="screen" /> ->
+ <!--   <node name="fake_gps_node" pkg="fake_gps" type="fake_gps_node" output="screen" /> -->
 
 <!--    <node name="hrl_lqi_node" pkg="hrl_lqi" type="hrl_lqi_node" output="screen" /> -->
 
