@@ -2,7 +2,7 @@
   <!-- use "device:baudrate" for apm, "device" for asctec -->
   <arg name="comm_port"                 default="/dev/ttyS0:921600"/>
 
-    <include file="/home/ubuntu/catkin_ws_mavros_exp/src/mavros/mavros/launch/apm.launch">
+    <include file="$(find pre_hrl)/../mavros/mavros/launch/apm.launch">
       <arg name="fcu_url" value="$(arg comm_port)"/>
     </include>
 
