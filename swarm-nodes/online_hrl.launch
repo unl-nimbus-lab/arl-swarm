@@ -1,0 +1,28 @@
+<launch>
+  <!-- use "device:baudrate" for apm, "device" for asctec -->
+  <arg name="comm_port"                 default="/dev/ttyS0:921600"/>
+
+    <include file="/home/ubuntu/catkin_ws_mavros_exp/src/mavros/mavros/launch/apm.launch">
+      <arg name="fcu_url" value="$(arg comm_port)"/>
+    </include>
+
+    <group ns="custom_params">
+        <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" />
+    </group>
+
+
+    <arg name="bag_path" default="/home/ubuntu/bags/" />
+    <arg name="bag_name" default="latest"/>
+
+    <node pkg="rosbag" type="record" name="record" output="screen" args="-a -O $(arg bag_path)$(arg bag_name).bag">
+
+    </node  >
+
+   <node name="pre_hrl_node" pkg="pre_hrl" type="pre_hrl_node" output="screen" />
+
+   <node name="hrl_lqi_node" pkg="hrl_lqi" type="hrl_lqi_node" output="screen" /> 
+
+   <node name="post_hrl_node" pkg="post_hrl" type="post_hrl_node" output="screen" /> 
+
+
+</launch>
