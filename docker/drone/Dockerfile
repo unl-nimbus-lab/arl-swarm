@@ -4,7 +4,7 @@ FROM arm64v8/ros:noetic-robot
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
     && mkdir /home/catkin_ws/src \
-    && mkdir /home/rosbags
+    && mkdir /home/rosbagsls
 
 # Setup the environments
 ENV LANG=C.UTF-8
@@ -83,7 +83,7 @@ COPY swarm-nodes/pre_hrl /home/catkin_ws/src/pre_hrl
 COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/post_hrl /home/catkin_ws/src/post_hrl
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
-
+COPY swarm-nodes/online_hrl.launch  /home/catkin_ws/src/online_hrl.launch
 
 # Rosbag management
 COPY docker/drone/bag_manager.sh /home/

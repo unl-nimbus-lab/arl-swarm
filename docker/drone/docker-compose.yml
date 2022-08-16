@@ -15,7 +15,10 @@ services:
     command: >
       /bin/bash -c "/home/bag_manager.sh /home/rosbags 5 &&
                     source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/swarm-nodes/test_launch.launch comm_port:=/dev/ttyS0:921600"
+                    roslaunch src/swarm-nodes/online_hrl.launch comm_port:=/dev/ttyS0:921600"
+
+    #roslaunch src/swarm-nodes/test_launch.launch comm_port:=/dev/ttyS0:921600"
+    
     restart: unless-stopped
     # volumes:
     #   - type: bind
