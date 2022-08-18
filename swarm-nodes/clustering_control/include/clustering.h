@@ -34,12 +34,13 @@
 
 //Cluster Commands
 #define PING 0
-#define CHANGE_FLIGHT_MODE 1
-#define CHANGE_POSITION 2
-#define CHANGE_RADIUS 3
-#define CHANGE_TYPE 4
-#define START_CLUSTER_GUIDED 5
-#define STOP_CLUSTER_GUIDED 6
+#define START_CLUSTER_GUIDED 1
+#define STOP_CLUSTER_GUIDED 2
+#define CHANGE_FLIGHT_MODE 3
+#define CHANGE_POSITION 4
+#define CHANGE_RADIUS 5
+#define CHANGE_TYPE 6
+
 
 //Agent Commands
 
@@ -299,14 +300,14 @@ void agent::setClusterType(int type) {
 }
 
 void acknowledge(int agentID,int* command) {
-    agentAcknowledgement.type = NAMED_VALUE_FLOAT;
-    agentAcknowledgement.header.stamp = ros::Time::now();
+    // agentAcknowledgement.type = NAMED_VALUE_FLOAT;
+    // agentAcknowledgement.header.stamp = ros::Time::now();
     
-    //build and publish the acknowledgement
-    char str[10];
-    sprintf(str, "K%d#%d", agentID, *command);
-    agentAcknowledgement.name = str; 
-    ak_pub.publish(agentAcknowledgement);
+    // //build and publish the acknowledgement
+    // char str[10];
+    // sprintf(str, "K%d#%d", agentID, *command);
+    // agentAcknowledgement.name = str; 
+    // ak_pub.publish(agentAcknowledgement);
 }
 
 double agent::getSysid() {
