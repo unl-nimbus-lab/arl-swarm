@@ -50,7 +50,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     int *command = new int;
     char entity = HRLReference.name[0];  //[S]warm, [C]luster, or [A]gent
     parseCommand(HRLReference.name, targetEntity, command);
-    printf("command parsed");
+    ROS_INFO("DEBUG COMMAND PARSED");
 
     /*Now that the target entitiy and command number are known, its time to do something with
     //the new information. In general, some private variable within the agent class is changed.

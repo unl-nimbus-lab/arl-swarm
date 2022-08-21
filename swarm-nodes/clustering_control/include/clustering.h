@@ -281,8 +281,6 @@ void parseCommand(std::string message, int *cluster, int *command) {
     }
     *cluster = atoi(tempCluster);
     *command = atoi(tempCommand);
-    printf("cluster: %d",*cluster);
-    printf("command: %d",*command);
 };
 
 void agent::setClusterLocalTarget(double x, double y, double z) {
