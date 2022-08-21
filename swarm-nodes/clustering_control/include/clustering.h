@@ -132,12 +132,8 @@ void agent::setPositionTarget() {
     double tempx, tempy, tempz;
 
     switch (HRL_FLIGHTMODE) {
-        case DONT_PUBLISH:
-            //Don't publish anything to FCU, use this to prevent dynamic rollover after takeoff
-            setPublish(false);
         case CLUSTER_GUIDED: //Move the cluster in the local frame
             //Update "where the agent should be in the local frame"
-            setPublish(true);
             tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
             tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
             tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
@@ -325,7 +321,6 @@ double agent::calculateYLineOffset() {
     return 0;
 }
 
-
 int agent::getFlightMode() {
     return HRL_FLIGHTMODE;
 }
@@ -336,6 +331,7 @@ double agent::getClusterid() {
 
 void agent::setPublish(bool logic) {
     PUBLISH = logic;
+    printf("Publish status is: %d\n", PUBLISH);
 }
 
 bool agent::getPublish() {
