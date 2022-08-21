@@ -134,6 +134,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             break;
                         case SET_HOME_POSITION:
                             hrlAgent.sethome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            acknowledge(hrlAgent.getSysid(), command);
                             break;
                         default:
                             printf("UNLISTED COMMAND ATTEMPTED");
