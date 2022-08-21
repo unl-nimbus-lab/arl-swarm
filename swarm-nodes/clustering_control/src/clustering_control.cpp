@@ -133,7 +133,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_HOME_POSITION:
-                            hrlAgent.sethome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
                         default:
