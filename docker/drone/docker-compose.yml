@@ -3,7 +3,7 @@ version: '3'
 services:
   mavros:
     #image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/drone:latest
-    image: clustering
+    image: clustering:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: mavros
