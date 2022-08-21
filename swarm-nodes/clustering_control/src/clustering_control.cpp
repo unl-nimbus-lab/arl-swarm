@@ -137,7 +137,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
                         default:
-                            printf("UNLISTED COMMAND ATTEMPTED");
+                            printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
                     };
                 }
@@ -159,7 +159,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 //START HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
 //STOP HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
 //UPDATE CLUSTER TARGET POSITION IN LOCAL FRAME -- NEEDS TESTED -- TESTED
-//SET HOME POSITION MANUALLY -- NEEDS TESTED
+//SET HOME POSITION MANUALLY -- NEEDS TESTED -- TESTED
 
 //NICE TO HAVE FUNCTIONALITY
 //SET HOME POSITION FROM LEADER
