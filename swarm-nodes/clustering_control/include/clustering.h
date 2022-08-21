@@ -40,7 +40,7 @@
 #define CHANGE_POSITION 4
 #define CHANGE_RADIUS 5
 #define CHANGE_TYPE 6
-
+#define SET_HOME_POSITION 7
 
 //Agent Commands
 
@@ -144,6 +144,9 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
+        default:
+            printf("INVALID FLIGHT MODE REQUESTED");
+            break;
     };
 }
 
@@ -173,6 +176,9 @@ void agent::setClusterOffsets() {
             CLUSTER_OFFSETS.Y = calculateYLineOffset();
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
+        default:
+            printf("INVALID CLUSTER TYPE ATTEMPTED");
+        break;
     }
 }
 

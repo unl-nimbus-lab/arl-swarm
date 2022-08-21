@@ -132,6 +132,12 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPublish(false);
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
+                        case SET_HOME_POSITION:
+                            hrlAgent.sethome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            break;
+                        default:
+                            printf("UNLISTED COMMAND ATTEMPTED");
+                            break;
                     };
                 }
                 break;
@@ -149,10 +155,10 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 
 //MINIMAL FUNCTIONALITY
 //CLUSTER:
-//START HRL COMMANDS/PUBLISHING -- NEEDS TESTED
-//STOP HRL COMMANDS/PUBLISHING -- NEEDS TESTED
-//UPDATE CLUSTER TARGET POSITION IN LOCAL FRAME -- NEEDS TESTED
-//UPDATE CLUSTER TARGET POSITION IN GLOBAL FRAME -- NEEDS TESTED
+//START HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
+//STOP HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
+//UPDATE CLUSTER TARGET POSITION IN LOCAL FRAME -- NEEDS TESTED -- TESTED
+//SET HOME POSITION MANUALLY -- NEEDS TESTED
 
 //NICE TO HAVE FUNCTIONALITY
 //SET HOME POSITION FROM LEADER
