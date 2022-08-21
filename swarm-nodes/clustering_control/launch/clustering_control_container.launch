@@ -35,6 +35,6 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<node pkg="rosbag" name="record" type="record" args="-a -o /home/rosbags/" />
+	<!--node pkg="rosbag" name="record" type="record" args="-a -o /home/rosbags/" /-->
 
 </launch>
