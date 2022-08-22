@@ -95,3 +95,33 @@ int id_to_idx::get_aug_state_idx(int id, int *groups){
 	return idx ;
 
 }
+
+int id_to_idx::get_group_nbr(int id, int *groups){
+        // This function returns the array index of the state to be augmented w.r.t the agent group
+        int n_dim = 2 ;
+        int n_states = 2 ;
+
+        int grp = 0 ;
+
+        // size of the groups array
+        int n_groups = sizeof(groups)/sizeof(groups[0]);
+
+        // To accumulate the number of agents in each group
+        int temp_idx = 0 ;
+
+        // If agents are IDed from 1...N, change id to (id-1)
+        // If agents are IDed from 0...N, keep id, don't do  (id-1)
+        for(int i=0 ; i<n_groups ; i++){
+
+                temp_idx += groups[i] ;
+
+                // Check if the agent belongs to the current group
+                if(id-temp_idx < 0){
+                        grp = i+1 ; // groups are id'ed from 1...N
+			break ;
+                }
+        }
+
+        return grp ;
+
+}

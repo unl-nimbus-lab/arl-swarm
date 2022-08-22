@@ -1,3 +1,10 @@
+# This fils contains the configuration parameters passed to the ros nodes
+# This uses a special list type data structure to hold multiple values under the same varibale name. 
+# Syntax is as follows
+# variable_name:
+# -<space>item1
+# -<space>item2
+
 #Own agent id
 agent_id: 1
 
@@ -7,36 +14,38 @@ n_groups: 1
 
 #How agnets are groupped. This is a verticle list
 #e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
-#groups:
-#-2
-#-3
-groups: 
-- 1
+groups:
+- 2
 
+# Latitude and longitude info of the taregts
+# When multiple taregtes are declared
+target_lat:
+- 40.8327215
+
+target_lon:
+- -96.6958784
+
+#Sample taregt at havelock 
+#target_lat: 40.8327215
+#target_lon: -96.6958784
 
 # Latitude and longitude info of the two base (where all agents reference to zero)
+#QP
 base_lat: 40.8328148
 base_lon: -96.6957025
 
-#base_lat_old: 40.8328860 
-#base_lon_old: -96.6958694 
+#Havelock
+#base_lat: 40.85199477467208 
+#base_lo: -96.60761519635601
 
-# base for experiments at QP
-#base_lat_QP: 40.8328148
-#base_lon_QP: -96.6957025
 
-# Latitude and longitude info of the taregts
-# TODO: this is only for one target. Need to expand to a list for multiple targets
-target_lat: 40.8327215
-target_lon: -96.6958784
-
-target_loc_x : 0.5
-target_loc_y : -18
+target_loc_x : -14.8155
+target_loc_y : -10.3861
 
 #path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
 
 # Path to the JSON file conntaining A,B,K matrices
-path_to_state_mtx: "/home/ubuntu/catkin_ws_online_hrl/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json"
+path_to_state_mtx: "/home/ubuntu/catkin_ws_mavros_exp/src/config/sys_mats_2ag_QP.json"
 
 # X and Y directional distances to the taregt from the base coord. 
 # For now, pre-calculate them from Matlab and set them here. 
@@ -44,3 +53,8 @@ path_to_state_mtx: "/home/ubuntu/catkin_ws_online_hrl/src/hrl_lqi/src/sys_mats_1
 dist_to_targets_x: [-12.5 ]
 dist_to_targets_y: [-11.09]
 
+# This maps the physical agent ids set at the Arducopter/FCU to the agents' local id used in by the HRL-LQI
+# The position of the list is the agent_id, list item is the id set by the FCU
+id_map:
+- 13
+- 2

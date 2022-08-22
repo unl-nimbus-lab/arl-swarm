@@ -20,9 +20,10 @@
 #include <swarm_msgs/gps.h>
 
 #define ROS_NODE_NAME "hrl_lqi"
-#define CONTROLLER_RATE 4 //4   // Rate in Hz 
+#define CONTROLLER_RATE 50 //4   // Rate in Hz 
 
-#define MY_ID 1
+//#define MY_ID 2
+int hrl_id ;
 
 using json = nlohmann::json;
 using namespace Eigen;
@@ -43,11 +44,18 @@ float local_y = 0.0 ;
 float adj_x = 0.0 ;
 float adj_y = 0.0 ;
 
-void init_states(int n){
+void init_states(int n,ros::NodeHandle hl){
 
 	// This generates a zero vector of the size of states in the experiment
 	const std::lock_guard<std::mutex> lock(state_mutex);
 	state = MatrixXd::Zero(n,1);
+
+	// Assign values from the param file
+	int id;
+        hl.getParam("/custom_params/hrl_id",id);
+	hrl_id = id ; // ID of the agent in the swarm. This is different from the dron ID
+
+
 }
 
 void preHRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
@@ -72,7 +80,7 @@ void HRLController(Sys s )
 	// This function calculates the conbtrol input to the system and propergates the system one time step forward to generate the new way points
 
 	// Publisher topic
-    ros::NodeHandle nh;
+        ros::NodeHandle nh;
 	ros::Publisher ns_pub = nh.advertise<swarm_msgs::GlobalStates> ( "/swarm/next_states/global", 1, true ); //topic for the Cube
 
 	swarm_msgs::GlobalStates post_hrl_msg ;
@@ -91,7 +99,7 @@ void HRLController(Sys s )
 		groups[i]=temp_groups[i];
 	}
 
-	int ag_state_idx = id2idx.get_state_idx(MY_ID, groups); // get the index of the real agent conversion from the Transformed space
+	int ag_state_idx = id2idx.get_state_idx(hrl_id, groups); // get the index of the real agent conversion from the Transformed space
 
 
 	// Create new variables for the system matrix
@@ -133,9 +141,10 @@ void HRLController(Sys s )
 		state_mutex.lock();
 
 //		ROS_INFO(" current_states X: %f", state(ag_state_idx) );
-//      ROS_INFO(" current_states Y : %f", state(ag_state_idx + 1) );
+//                ROS_INFO(" current_states Y : %f", state(ag_state_idx + 1) );
 
 		//Calculate U here
+		// TODO Finish the controller implementation
 		next_states = (A*time_delta - B*K*time_delta + MatrixXd::Identity(n,n))*(T*state-aug_state) - target_state*time_delta +aug_state ; 
 
 		// Release the lock
@@ -147,23 +156,22 @@ void HRLController(Sys s )
 
 		int sizeof_next_state = next_states.size() ;
 
-        // All states are avaibale. ready to publish
-        post_hrl_msg.header.stamp = ros::Time::now();
-        post_hrl_msg.states.clear();
+                // All states are avaibale. ready to publish
+                post_hrl_msg.header.stamp = ros::Time::now();
+                post_hrl_msg.states.clear();
 
 		// Copy the elements to the array
-       	for (int i = 0, nRows = next_states.rows() ;  i < nRows ; i++)
-        {
+        	for (int i = 0, nRows = next_states.rows() ;  i < nRows ; i++)
+        	{
 			post_hrl_msg.states.push_back(next_states(i,0));
-        }
+                }
 
 		ns_pub.publish(post_hrl_msg);
 
 		// TODO Record the states and control inputs if needed
 
 		ros::spinOnce();
-        loop_rate.sleep();
-
+        	loop_rate.sleep();
 	}
 
 }
@@ -173,6 +181,7 @@ int main( int argc, char** argv )
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
 
 	ros::NodeHandle hrl_nd_hl;
+//	std::string path_to_json = "/home/ubuntu/catkin_ws/src/hrl_lqi/src/sys_mats_1ag_QP_vel_adjsted.json" ;// "sys_mats_1ag.json";
 
 	std::string path_to_json ;
 	hrl_nd_hl.getParam("/custom_params/path_to_state_mtx",path_to_json);
@@ -184,10 +193,12 @@ int main( int argc, char** argv )
 	// Initialize the state
 	int n = ss.A.rows();
 	ROS_INFO(" N : %d", n);
-	init_states(n);
+	init_states(n,hrl_nd_hl);
 
-    ros::Subscriber prehrl_callback = hrl_nd_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
+        ros::Subscriber prehrl_callback = hrl_nd_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
 
+
+	// TODO : Complete and test the local position adjustment. 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread hrl_controller (HRLController, ss); //Sperate thread for the controller
 

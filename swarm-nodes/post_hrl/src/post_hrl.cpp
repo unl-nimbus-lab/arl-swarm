@@ -44,7 +44,7 @@ What it does is it publishes either
 #define ROS_NODE_NAME "post_hrl"
 #define CONTROLLER_RATE 50    // Rate in Hz 
 
-#define MY_ID 2 
+//#define MY_ID 2 
 #define CIRCLE_R 1.0 // Radius of the gps error
 #define FIXED_HEIGHT 4
 
@@ -52,7 +52,7 @@ What it does is it publishes either
 #define MAX_OFFSET_THRESHOLD 2.5 // Add this amount as max-offset to the distance calculated by the algo
 #define MIN_OFFSET_THRESHOLD 0.5 // Add this amount as min-offset to the distance calculated by the algo
 
-bool tmp_flg =  false ; 
+bool tmp_flg =  false ;
 bool scnd_flg = false ;
 
 using json = nlohmann::json; // Create an object for parsing the JSON matrix
@@ -64,6 +64,9 @@ bool flag_when_mgs_published = false ;
 std::mutex flag_mutex ;
 std::mutex intrgl_mutex ;
 std::mutex current_mutex ;
+
+int hrl_id ; // ID of the agent in the swarm. This is different from the dron ID
+int* groups = NULL; // vector to hold the agent clusters in the swarm
 
 // Stores the current distance of the drone w.r.t. the base.
 double current_x = 0.0 ;
@@ -79,7 +82,7 @@ double intgrl_y = 0.0 ;
 double own_target_x = 0.0 ;
 double own_target_y = 0.0 ;
 
-int my_idx = 2 ; 
+int my_idx ; 
 
 ros::Publisher wp_pub ;
 geometry_msgs::PoseStamped pos_msg ;
@@ -93,12 +96,27 @@ geometry_msgs::TwistStamped vel_pos_msg ;
 
 int counter = 0 ;
 
-void init_vars(){
+void init_vars(ros::NodeHandle hl){
 
 	// This function initialize variables for future use
-	int groups[1] = {1};
+
+        // Assign values from the param file
+        int id;
+        hl.getParam("/custom_params/hrl_id",id);
+        hrl_id = id ; // ID of the agent in the swarm. This is different from the dron ID
+
+	std::vector<int> group_list;
+	hl.getParam("/custom_params/groups",group_list);
+
+        // Clusteing of the agents
+        groups = new int[group_list.size()];
+        for(unsigned i=0; i < group_list.size(); i++) {
+               groups[i] = group_list[i] ;
+        }
+
+//	int groups[1] = {1};
 	id_to_idx id2idx ;
-	my_idx = id2idx.get_state_idx(MY_ID,groups);
+	my_idx = id2idx.get_state_idx(hrl_id,groups);
 
 	ros::NodeHandle nh;
       	wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true ); //topic for the Cube
@@ -148,7 +166,6 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
         // Record the velocity values in the message
         vel_pos_msg.twist.linear.x = vx ;
         vel_pos_msg.twist.linear.y = vy ;
-	vel_pos_msg.twist.linear.y = 0.0 ;
 
 	// Next lines add thresholds to the position values
 	//Determine the direction of the offset to be added
@@ -218,9 +235,9 @@ int main( int argc, char** argv )
 {
 	ros::init(argc, argv, ROS_NODE_NAME); //Initialize the node
 
-	init_vars();
+	ros::NodeHandle post_hrl_hl;
+	init_vars(post_hrl_hl);
 
-        ros::NodeHandle post_hrl_hl;
         ros::Subscriber hrl_callback = post_hrl_hl.subscribe("/swarm/next_states/global", 100, HRLCallback);
 //	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
         ros::Subscriber prehrl_callback = post_hrl_hl.subscribe("/swarm/global_states", 100, preHRLCallback);

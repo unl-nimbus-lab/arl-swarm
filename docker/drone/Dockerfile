@@ -4,7 +4,7 @@ FROM arm64v8/ros:noetic-robot
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
     && mkdir /home/catkin_ws/src \
-    && mkdir /home/rosbagsls
+    && mkdir /home/rosbags
 
 # Setup the environments
 ENV LANG=C.UTF-8
@@ -75,15 +75,19 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
 # Copy the configuration folder
 COPY swarm-nodes/config /home/catkin_ws/src/config
 
-
 # Copy the swarm ROS nodes into the image
 COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
-# COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 COPY swarm-nodes/pre_hrl /home/catkin_ws/src/pre_hrl
 COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/post_hrl /home/catkin_ws/src/post_hrl
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
+COPY swarm-nodes/config /home/catkin_ws/src/config
+
+# Copy the launch file
 COPY swarm-nodes/online_hrl.launch  /home/catkin_ws/src/online_hrl.launch
+
+# Catkin build again to build the swarm nodes
+RUN catkin build
 
 # Rosbag management
 COPY docker/drone/bag_manager.sh /home/

@@ -11,12 +11,7 @@
     </group>
 
 
-    <arg name="bag_path" default="/home/ubuntu/bags/" />
     <arg name="bag_name" default="latest"/>
-
-    <node pkg="rosbag" type="record" name="record" output="screen" args="-a -O $(arg bag_path)$(arg bag_name).bag">
-
-    </node  >
 
    <node name="pre_hrl_node" pkg="pre_hrl" type="pre_hrl_node" output="screen" />
 

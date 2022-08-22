@@ -10,9 +10,9 @@
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />
 
-	<include file="/home/ubuntu/catkin_ws_mavros_exp/src/mavros/mavros/launch/node.launch">
-		<arg name="pluginlists_yaml" value="/home/ubuntu/catkin_ws_mavros_exp/src/mavros/mavros/launch/apm_pluginlists.yaml" />
-		<arg name="config_yaml" value="/home/ubuntu/catkin_ws_mavros_exp/src/mavros/mavros/launch/apm_config.yaml" />
+	<include file="$(find mavros)/launch/node.launch">
+		<arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+		<arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
 
 		<arg name="fcu_url" value="$(arg fcu_url)" />
 		<arg name="gcs_url" value="$(arg gcs_url)" />
