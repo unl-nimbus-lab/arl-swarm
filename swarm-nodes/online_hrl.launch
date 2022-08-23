@@ -1,14 +1,21 @@
 <launch>
   <!-- use "device:baudrate" for apm, "device" for asctec -->
   <arg name="comm_port"                 default="/dev/ttyS0:921600"/>
+  <arg name="system_ID" default="" />
+  <arg name="tgt_system" default="" />
+
 
     <include file="$(find pre_hrl)/../mavros/mavros/launch/apm.launch">
       <arg name="fcu_url" value="$(arg comm_port)"/>
-    </include>
+      <arg name="tgt_system" value="$(arg tgt_system)" />  
+
+  </include>
 
     <group ns="custom_params">
         <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" />
     </group>
+
+
 
 
     <arg name="bag_name" default="latest"/>

@@ -15,7 +15,7 @@ services:
     command: >
       /bin/bash -c "/home/bag_manager.sh /home/rosbags 5 &&
                     source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch /home/catkin_ws/src/online_hrl.launch comm_port:=/dev/ttyS0:921600"
+                    roslaunch /home/catkin_ws/src/online_hrl.launch comm_port:=${PORT}:${BAUD} tgt_system:=${SYS_ID}"
     restart: unless-stopped
     # volumes:
     #   - type: bind
