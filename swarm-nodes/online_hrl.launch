@@ -3,7 +3,7 @@
   <arg name="comm_port"                 default="/dev/ttyS0:921600"/>
   <arg name="system_ID" default="" />
   <arg name="tgt_system" default="" />
-
+  <arg name="path_to_state_mtx" default="" />
 
     <include file="$(find pre_hrl)/../mavros/mavros/launch/apm.launch">
       <arg name="fcu_url" value="$(arg comm_port)"/>
@@ -12,7 +12,8 @@
   </include>
 
     <group ns="custom_params">
-        <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" />
+<!--        <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" /> -->
+	<rosparam file="/home/config/custom_param.yaml" />
     </group>
 
 

@@ -6,7 +6,7 @@
 # -<space>item2
 
 #Own agent id
-agent_id: 1
+hrl_id: 2
 
 # General info on the swarm
 n_agents: 2
