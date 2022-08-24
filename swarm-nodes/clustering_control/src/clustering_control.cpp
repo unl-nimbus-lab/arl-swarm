@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
-   
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
@@ -142,6 +141,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                     };
                 }
                 break;
+            default:
+                printf("INVALID COMMAND ID, SPECIFIY [S]WARM, [C]LUSTER, OR [A]GENT IN THE DUBG STRING\n");
+            break;
         };
 }
 

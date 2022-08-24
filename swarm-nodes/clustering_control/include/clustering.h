@@ -25,8 +25,8 @@
 #define NAMED_VALUE_INT 4
 
 //HRL Flightmodes
-#define DONT_PUBLISH 0
-#define CLUSTER_GUIDED 1
+#define CLUSTER_GUIDED_MODE 1
+#define CLUSTER_RALLY_MODE 2
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -41,6 +41,7 @@
 #define CHANGE_RADIUS 5
 #define CHANGE_TYPE 6
 #define SET_HOME_POSITION 7
+#define SET_LOCAL_RALLY 8
 
 //Agent Commands
 
@@ -132,11 +133,23 @@ void agent::setPositionTarget() {
     double tempx, tempy, tempz;
 
     switch (HRL_FLIGHTMODE) {
-        case CLUSTER_GUIDED: //Move the cluster in the local frame
+        case CLUSTER_GUIDED_MODE: //Move the cluster in the local frame
             //Update "where the agent should be in the local frame"
             tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
             tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
             tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
+            setAgentLocalTarget(tempx,tempy,tempz);
+
+            //Update the pos_msg based on agent local target and global origin
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.X);
+            pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
+        case CLUSTER_RALLY_MODE: //Move the cluster in the local frame
+            //Update "where the agent should be in the local frame"
+            tempx = CLUSTER_RALLY.X + CLUSTER_OFFSETS.X;
+            tempy = CLUSTER_RALLY.Y + CLUSTER_OFFSETS.Y;
+            tempz = CLUSTER_RALLY.Z + CLUSTER_OFFSETS.Z;
             setAgentLocalTarget(tempx,tempy,tempz);
 
             //Update the pos_msg based on agent local target and global origin
