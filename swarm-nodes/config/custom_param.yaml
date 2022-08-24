@@ -6,7 +6,7 @@
 # -<space>item2
 
 #Own agent id
-agent_id: 1
+hrl_id: 2
 
 # General info on the swarm
 n_agents: 2
@@ -45,7 +45,7 @@ target_loc_y : -10.3861
 #path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
 
 # Path to the JSON file conntaining A,B,K matrices
-path_to_state_mtx: "/home/ubuntu/catkin_ws_mavros_exp/src/config/sys_mats_2ag_QP.json"
+path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
 
 # X and Y directional distances to the taregt from the base coord. 
 # For now, pre-calculate them from Matlab and set them here. 

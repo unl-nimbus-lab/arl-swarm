@@ -4,15 +4,15 @@
 
 	<arg name="fcu_url" default="/dev/ttyS0:921600?ids=255,240" />
 	<arg name="gcs_url" default="" />
-	<arg name="tgt_system" default="2" />
+	<arg name="tgt_system" default="13" />
 	<arg name="tgt_component" default="1" />
 	<arg name="log_output" default="screen" />
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />
 
-	<include file="$(find mavros)/launch/node.launch">
-		<arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
-		<arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+	<include file="$(find pre_hrl)/../mavros/mavros/launch/node.launch">
+		<arg name="pluginlists_yaml" value="$(find pre_hrl)/../mavros/mavros/launch/apm_pluginlists.yaml" />
+		<arg name="config_yaml" value="$(find pre_hrl)/../mavros/mavros/launch/apm_config.yaml" />
 
 		<arg name="fcu_url" value="$(arg fcu_url)" />
 		<arg name="gcs_url" value="$(arg gcs_url)" />

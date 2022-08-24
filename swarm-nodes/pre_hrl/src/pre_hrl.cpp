@@ -231,9 +231,10 @@ void statePublisher()
 	swarm_msgs::GlobalStates msg ;
 
 	// Get the  array size of state ;
-	state_mutex.lock();
-	int sizeof_state = sizeof(state)/sizeof(state[0]);
-	state_mutex.unlock();
+//	state_mutex.lock();
+//	int sizeof_state = sizeof(state)/sizeof(state[0]);
+//	state_mutex.unlock();
+	int sizeof_state = N*6 ;
 
 	// Create a copy of the state array so that we can release the lock
 	float duplicate_state[sizeof_state];

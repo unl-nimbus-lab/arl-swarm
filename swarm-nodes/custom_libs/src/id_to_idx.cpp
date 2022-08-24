@@ -116,7 +116,7 @@ int id_to_idx::get_group_nbr(int id, int *groups){
                 temp_idx += groups[i] ;
 
                 // Check if the agent belongs to the current group
-                if(id-temp_idx < 0){
+                if(id-temp_idx <= 0){
                         grp = i+1 ; // groups are id'ed from 1...N
 			break ;
                 }
