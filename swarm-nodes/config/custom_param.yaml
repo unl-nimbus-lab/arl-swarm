@@ -9,25 +9,33 @@
 hrl_id: 2
 
 # General info on the swarm
-n_agents: 2
-n_groups: 1
+n_agents: 3
+n_groups: 2
 
 #How agnets are groupped. This is a verticle list
 #e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
 groups:
 - 2
+- 1
 
 # Latitude and longitude info of the taregts
 # When multiple taregtes are declared
 target_lat:
 - 40.8327215
+- 40.8328707
 
 target_lon:
 - -96.6958784
+- -96.6959139
 
 #Sample taregt at havelock 
+#target_lat: 40.8519614
+#target_lon: -96.6086566
+
+#Taregt at QP
 #target_lat: 40.8327215
 #target_lon: -96.6958784
+
 
 # Latitude and longitude info of the two base (where all agents reference to zero)
 #QP
@@ -35,9 +43,8 @@ base_lat: 40.8328148
 base_lon: -96.6957025
 
 #Havelock
-#base_lat: 40.85199477467208 
-#base_lo: -96.60761519635601
-
+#base_lat: 40.8522108472926
+#base_lo: -96.60822380671102
 
 target_loc_x : -14.8155
 target_loc_y : -10.3861
@@ -45,7 +52,8 @@ target_loc_y : -10.3861
 #path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
 
 # Path to the JSON file conntaining A,B,K matrices
-path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
+#path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
+path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_3ag_QP.json"
 
 # X and Y directional distances to the taregt from the base coord. 
 # For now, pre-calculate them from Matlab and set them here. 
@@ -58,3 +66,4 @@ dist_to_targets_y: [-11.09]
 id_map:
 - 13
 - 2
+- 11

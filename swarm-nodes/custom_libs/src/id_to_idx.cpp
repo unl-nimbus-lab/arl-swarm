@@ -24,7 +24,7 @@ int id_to_idx::get_state_idx(int id, int *groups){
                 if(members_including_this_group >= id){
                         // each agent in a group has 6 states. (pos+vel in x,y directions + 2 integral states)
                         int idx_for_past_memebrs = members_before_this_group*(n_dim*n_states + n_states) ;
-                        int idx_within_group = (id - members_before_this_group - 1)*(n_dim*n_states) ;
+                        int idx_within_group = (id - members_before_this_group - 1)*(n_dim) ;
                         idx = idx_for_past_memebrs + idx_within_group ;
                         break ;
                 }
@@ -121,7 +121,7 @@ int id_to_idx::get_velocity_idx(int id, int *groups){
                 if(members_including_this_group >= id){
                         // each agent in a group has 6 states. (pos+vel in x,y directions + 2 integral states)
                         int idx_for_past_memebrs = members_before_this_group*(n_dim*n_states + n_states) ;
-                        int idx_within_group = groups[i]*(n_dim) +  (id - members_before_this_group - 1)*(n_dim) ;
+                        int idx_within_group = groups[i]*(n_dim) +  (id - members_before_this_group -1)*(n_dim) ;
                         idx = idx_for_past_memebrs + idx_within_group ;
                         break ;
                 }
