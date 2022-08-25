@@ -82,7 +82,8 @@ double intgrl_y = 0.0 ;
 double own_target_x = 0.0 ;
 double own_target_y = 0.0 ;
 
-int my_idx ; 
+int my_pos_state_idx ; 
+int my_vel_state_idx ;
 
 ros::Publisher wp_pub ;
 geometry_msgs::PoseStamped pos_msg ;
@@ -116,7 +117,8 @@ void init_vars(ros::NodeHandle hl){
 
 //	int groups[1] = {1};
 	id_to_idx id2idx ;
-	my_idx = id2idx.get_state_idx(hrl_id,groups);
+	my_pos_state_idx = id2idx.get_state_idx(hrl_id,groups);
+	my_vel_state_idx = id2idx.get_velocity_idx(hrl_id, groups);
 
 	ros::NodeHandle nh;
       	wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true ); //topic for the Cube
@@ -131,8 +133,8 @@ void preHRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
         // This function reads the callback messgaes to get the current position of the drone w.r.t the base
 
         const std::lock_guard<std::mutex> lock(current_mutex);
-	current_x = msg->states[my_idx];
-	current_y = msg->states[my_idx+1];
+	current_x = msg->states[my_pos_state_idx];
+	current_y = msg->states[my_pos_state_idx+1];
 
 }
 
@@ -142,17 +144,19 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
         // This function listens to output from the hrl algorithm, checks the distance to move and publishes if the distance is beyond a threshold
 
 	// Copy messages from the states passed from hrl_lqi
-	double x = msg->states[my_idx];
-	double y = msg->states[my_idx+1];
 
-	double vx = msg->states[my_idx+2];
-	double vy = msg->states[my_idx+3];
 
-	intrgl_mutex.lock();
+	double x = msg->states[my_pos_state_idx];
+	double y = msg->states[my_pos_state_idx+1];
+
+	double vx = msg->states[my_vel_state_idx];
+	double vy = msg->states[my_vel_state_idx+1];
+
+/*	intrgl_mutex.lock();
 	intgrl_x = msg->states[my_idx+4];
 	intgrl_y = msg->states[my_idx+5];
 	intrgl_mutex.unlock();
-
+*/
 	vel_pos_msg.header.stamp = ros::Time::now();
 
 	// Apply thresholds to the velocity
