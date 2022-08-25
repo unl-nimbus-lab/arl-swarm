@@ -412,7 +412,7 @@ void init_vars(ros::NodeHandle hl){
         }
 
 	intgrl_state = new float[2];
-	for(unsigned i=0; i < intgrl_state.size(); i++) {
+	for(unsigned i=0; i < 2; i++) {
                intgrl_state[i] = 0.0 ;
     }
 
