@@ -13,12 +13,13 @@ int main(int argc, char **argv) {
     hrlAgent.setClusterRadius(std::stod(argv[5]));
     hrlAgent.setAgentAlt(std::stod(argv[6]));
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
-    hrlAgent.setRally(std::stod(argv[10]),std::stod(argv[11]));
+    hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
+    hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
     hrlAgent.setClusterOffsets();
-    hrlAgent.setClusterLocalTarget(hrlAgent.getRallyX(),hrlAgent.getRallyY(),hrlAgent.getAgentAlt());
+    hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
 
     //ROS Code:
@@ -106,18 +107,18 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case CHANGE_POSITION: //Change CLUSTER_LOCAL_TARGET to payload
+                        case SET_CLUSTER_LOCAL_POSITION: //Change CLUSTER_LOCAL_TARGET to payload
                             hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case CHANGE_RADIUS: //Change CLUSTER_RADIUS to payload
+                        case SET_CLUSTER_RADIUS: //Change CLUSTER_RADIUS to payload
                             hrlAgent.setClusterRadius(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case CHANGE_TYPE: //Change the Cluster type
+                        case SET_CLUSTER_TYPE: //Change the Cluster type
                             hrlAgent.setClusterType(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
@@ -133,6 +134,11 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             break;
                         case SET_HOME_POSITION:
                             hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            acknowledge(hrlAgent.getSysid(), command);
+                            break;
+                        case SET_CLUSTER_GLOBAL_POSITION:
+                            hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
                         default:

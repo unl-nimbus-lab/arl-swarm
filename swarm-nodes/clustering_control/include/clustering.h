@@ -25,8 +25,9 @@
 #define NAMED_VALUE_INT 4
 
 //HRL Flightmodes
-#define CLUSTER_GUIDED_MODE 1
+#define CLUSTER_GUIDED_LOCAL_MODE 1
 #define CLUSTER_RALLY_MODE 2
+#define CLUSTER_GUIDED_GLOBAL_MODE 3
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -37,11 +38,12 @@
 #define START_CLUSTER_GUIDED 1
 #define STOP_CLUSTER_GUIDED 2
 #define CHANGE_FLIGHT_MODE 3
-#define CHANGE_POSITION 4
-#define CHANGE_RADIUS 5
-#define CHANGE_TYPE 6
+#define SET_CLUSTER_LOCAL_POSITION 4
+#define SET_CLUSTER_RADIUS 5
+#define SET_CLUSTER_TYPE 6
 #define SET_HOME_POSITION 7
 #define SET_LOCAL_RALLY 8
+#define SET_CLUSTER_GLOBAL_POSITION 9
 
 //Agent Commands
 
@@ -75,9 +77,12 @@ class agent {
         void setClusterRadius(double radius);
         void setAgentAlt(double alt);
         void setHome(double lat, double lon, double alt);
-        void setRally(double x, double y);
-        double getRallyX();
-        double getRallyY();
+        void setRally1(double x, double y);
+        void setRally2(double x, double y);
+        double getRally1X();
+        double getRally1Y();
+        double getRally2X();
+        double getRally2Y();
         double getAgentAlt();
         void setFlightMode(int mode);
         void setClusterOffsets();
@@ -96,6 +101,7 @@ class agent {
         void setAgentLocalTarget(double x, double y, double z);
         void setPublish(bool logic);
         bool getPublish();
+        void setClusterGlobalTarget(double lat, double lon, double alt);
         geographic_msgs::GeoPoseStamped pos_msg;
 
     private:
@@ -112,7 +118,7 @@ class agent {
             double X;
             double Y;
             double Z;
-        } CLUSTER_OFFSETS, AGENT_LOCAL_TARGET, CLUSTER_LOCAL_TARGET, CLUSTER_RALLY;
+        } CLUSTER_OFFSETS, AGENT_LOCAL_TARGET, CLUSTER_LOCAL_TARGET, CLUSTER_RALLY1, CLUSTER_RALLY2;
         //Cluster Offsets: How far (in meters this agent should be offset from the cluster center)
         //Agent Local Target: Local Agent target after offsets applied
         //Cluster Local Target: Location (in meters) the center of the cluster should be relative to "GLOBAL ORIGIN"
@@ -120,10 +126,11 @@ class agent {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS;
+        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET;
         //Agent Rally: Not used
-        //Cluster Rally: Not used
+        //Cluster Rally: Locally saved point, unique to each cluster
         //Global Origin: Common world frame for the swarm
+        //CLUSTER_GLOBAL_TARGET: Target lat/lon/alt for the cluster
 };
 
 void agent::setPositionTarget() {
@@ -133,7 +140,7 @@ void agent::setPositionTarget() {
     double tempx, tempy, tempz;
 
     switch (HRL_FLIGHTMODE) {
-        case CLUSTER_GUIDED_MODE: //Move the cluster in the local frame
+        case CLUSTER_GUIDED_LOCAL_MODE: //Move the cluster in the local frame
             //Update "where the agent should be in the local frame"
             tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
             tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
@@ -147,15 +154,21 @@ void agent::setPositionTarget() {
             break;
         case CLUSTER_RALLY_MODE: //Move the cluster in the local frame
             //Update "where the agent should be in the local frame"
-            tempx = CLUSTER_RALLY.X + CLUSTER_OFFSETS.X;
-            tempy = CLUSTER_RALLY.Y + CLUSTER_OFFSETS.Y;
-            tempz = CLUSTER_RALLY.Z + CLUSTER_OFFSETS.Z;
+            tempx = CLUSTER_RALLY1.X + CLUSTER_OFFSETS.X;
+            tempy = CLUSTER_RALLY1.Y + CLUSTER_OFFSETS.Y;
+            tempz = CLUSTER_RALLY1.Z + CLUSTER_OFFSETS.Z;
             setAgentLocalTarget(tempx,tempy,tempz);
 
             //Update the pos_msg based on agent local target and global origin
             pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.X);
             pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
+        case CLUSTER_GUIDED_GLOBAL_MODE:
+            //Update "where the agent should be in the global frame"
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.X);
+            pos_msg.pose.position.longitude = convObject.meters_to_lon(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.Y);
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + CLUSTER_GLOBAL_TARGET.ALT;
             break;
         default:
             printf("INVALID FLIGHT MODE REQUESTED");
@@ -169,6 +182,13 @@ void agent::setAgentLocalTarget(double x, double y, double z) {
     AGENT_LOCAL_TARGET.Y = y;
     AGENT_LOCAL_TARGET.Z = z;
     printf("Agent Local Target Set: %f, %f, %f\n", AGENT_LOCAL_TARGET.X, AGENT_LOCAL_TARGET.Y, AGENT_LOCAL_TARGET.Z);
+}
+
+void agent::setClusterGlobalTarget(double lat, double lon, double alt) {
+    CLUSTER_GLOBAL_TARGET.LAT = lat;
+    CLUSTER_GLOBAL_TARGET.LON = lon;
+    CLUSTER_GLOBAL_TARGET.ALT = alt;
+    printf("Agent Global Target Set: %f, %f, %f\n", CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_GLOBAL_TARGET.ALT);
 }
 
 void agent::setFlightMode(int mode) {
@@ -194,7 +214,6 @@ void agent::setClusterOffsets() {
         break;
     }
 }
-
 
 double agent::circleXOffset() {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
@@ -247,19 +266,34 @@ void agent::setHome(double lat, double lon, double alt) {
     printf("Global Origin Set to %f, %f, %f\n",GLOBAL_ORIGIN.LAT, GLOBAL_ORIGIN.LON, GLOBAL_ORIGIN.ALT);
 }
 
-void agent::setRally(double x, double y) {
-    CLUSTER_RALLY.X = x;
-    CLUSTER_RALLY.Y = y;
-    CLUSTER_RALLY.Z = AGENT_ALT;
-    printf("Cluster Rally Set to %f, %f, %f\n",CLUSTER_RALLY.X, CLUSTER_RALLY.Y, CLUSTER_RALLY.Z);
+void agent::setRally1(double x, double y) {
+    CLUSTER_RALLY1.X = x;
+    CLUSTER_RALLY1.Y = y;
+    CLUSTER_RALLY1.Z = AGENT_ALT;
+    printf("Cluster Rally 1 Set to %f, %f, %f\n",CLUSTER_RALLY1.X, CLUSTER_RALLY1.Y, CLUSTER_RALLY1.Z);
 }
 
-double agent::getRallyX() {
-    return CLUSTER_RALLY.X;
+double agent::getRally1X() {
+    return CLUSTER_RALLY1.X;
 }
 
-double agent::getRallyY() {
-    return CLUSTER_RALLY.Y;
+double agent::getRally1Y() {
+    return CLUSTER_RALLY1.Y;
+}
+
+void agent::setRally2(double x, double y) {
+    CLUSTER_RALLY2.X = x;
+    CLUSTER_RALLY2.Y = y;
+    CLUSTER_RALLY2.Z = AGENT_ALT;
+    printf("Cluster Rally 2 Set to %f, %f, %f\n",CLUSTER_RALLY2.X, CLUSTER_RALLY2.Y, CLUSTER_RALLY2.Z);
+}
+
+double agent::getRally2X() {
+    return CLUSTER_RALLY2.X;
+}
+
+double agent::getRally2Y() {
+    return CLUSTER_RALLY2.Y;
 }
 
 double agent::getAgentAlt() {
