@@ -14,6 +14,7 @@ class id_to_idx{
 		int get_integral_idx(int id,int *groups) ; // Given the id , this returns the idx on the integral array before transforming
 		int get_aug_state_idx(int id,int *groups) ; // Given the id , this returns the idx on the augmented state
 		int get_group_nbr(int id,int *groups) ; // Given the id, this returns the group number the id belongs to, indexed from 1...N 
+		int get_velocity_idx(int id,int *groups) ; //Given the id , this returns the idx on the velocity states
 };
 
 

@@ -162,19 +162,44 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr& new_msg){
 
 void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr& new_msg){
 
-        // This function reads the callback messgaes, re-arranges them to the specific order of th>
-        int ag_id = new_msg->system_id ;
+         // This function reads the callback messgaes, re-arranges them to the specific order of th>
+//        int ag_id = new_msg->system_id ;
+        int ag_id,ag_vel_idx ;
+        int incoming_ag_id = new_msg->system_id ;
+
+        // Find the hrl_id of the agent with a mapping FCU id
+        auto idx = std::find(id_map, id_map+N, incoming_ag_id);
+        // If element was found
+        if (idx != id_map+N)
+        {
+                ag_id = idx - id_map + 1; // agent ids are from 1 to N
+        }
+
+        try{
+                // Get the corresponding index in the transformed state space given an agent id
+                ag_vel_idx = id2idx.get_velocity_idx(ag_id, groups);
+//              ROS_INFO("@@@@@@@@ ag_id :%d     vel index : %d", ag_id, ag_vel_idx);
+        }
+        catch(const char* e){
+                // Exit the program
+                std::cout << " First, Check your id  mapping" << std::endl ;
+                std::cout << "exception: " << e << std::endl;
+                exit(EXIT_FAILURE);
+        }
+
 
         // Get the corresponding index in the transformed state space given an agent id
-        int ag_state_idx = id2idx.get_state_idx(ag_id, groups);
+//        int ag_vel_idx = id2idx.get_velocity_idx(ag_id, groups);
+//      ROS_INFO("@@@@@@@@ ag_id :%d     vel index : %d", ag_id, ag_vel_idx);
 
-	float ag_vx = new_msg->twist.twist.linear.x ;
+        float ag_vx = new_msg->twist.twist.linear.x ;
         float ag_vy = new_msg->twist.twist.linear.y ;
 
-	const std::lock_guard<std::mutex> lock(state_mutex);
+        const std::lock_guard<std::mutex> lock(state_mutex);
         // Copy the value from the estimator to the state variable
-        state[ag_state_idx+2] = ag_vx ;
-        state[ag_state_idx+3] = ag_vy ;
+        state[ag_vel_idx] = ag_vx ;
+        state[ag_vel_idx+1] = ag_vy ;
+
 
 }
 
@@ -375,10 +400,10 @@ void init_vars(ros::NodeHandle hl){
                target_lat[i] = t_lat[i] ;
         }
 
-        target_lon = new float[t_lon.size()];
+    target_lon = new float[t_lon.size()];
         for(unsigned i=0; i < t_lon.size(); i++) {
                target_lon[i] = t_lon[i] ;
-        }
+    }
 
 	// Map the HRL id to the FCU id
 	id_map = new int[temp_id_map.size()];
@@ -386,9 +411,19 @@ void init_vars(ros::NodeHandle hl){
                id_map[i] = temp_id_map[i] ;
         }
 
+	intgrl_state = new float[2];
+	for(unsigned i=0; i < intgrl_state.size(); i++) {
+               intgrl_state[i] = 0.0 ;
+    }
+
 	// Construct state arrays that is based on the number of agents in the cluster
-	intgrl_state = new float[n*2];
+
 	state = new float[n*6];
+	for(unsigned i=0; i < n*6 ; i++) {
+               state[i] = 0.0 ;
+    }
+
+
 }
 
 
