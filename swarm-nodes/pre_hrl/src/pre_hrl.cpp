@@ -188,10 +188,6 @@ void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr& new_msg){
         }
 
 
-        // Get the corresponding index in the transformed state space given an agent id
-//        int ag_vel_idx = id2idx.get_velocity_idx(ag_id, groups);
-//      ROS_INFO("@@@@@@@@ ag_id :%d     vel index : %d", ag_id, ag_vel_idx);
-
         float ag_vx = new_msg->twist.twist.linear.x ;
         float ag_vy = new_msg->twist.twist.linear.y ;
 
@@ -228,7 +224,10 @@ void integralStateCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg){
 
 	// Resets the integral states to zero
 	if(debug_msg->name[0] == 'J'){
-		intgrl_state = new float[N*2];
+
+	        for(unsigned i=0; i < 2; i++) {
+       	        	intgrl_state[i] = 0.0 ;
+    		}
 
 	}
 
@@ -363,7 +362,8 @@ void init_vars(ros::NodeHandle hl){
         float b_lat ;
         float b_lon ;
 	int n, ng, id;
-	std::vector<int> group_list, temp_id_map, t_lat, t_lon;
+	std::vector<int> group_list, temp_id_map;
+	std::vector<float> t_lat, t_lon;
 
 	// Retrieve values from the param file
         hl.getParam("/custom_params/base_lat", b_lat);
