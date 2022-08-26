@@ -70,7 +70,7 @@ void init_states(ros::NodeHandle hl){
         hl.getParam("/custom_params/n_agents",n);
 	N = n ;
 
-	hl.getParam("/custom_params/n_agents",ng);
+	hl.getParam("/custom_params/n_groups",ng);
 	n_groups = ng ;
 
         hl.getParam("/custom_params/base_lat", b_lat);

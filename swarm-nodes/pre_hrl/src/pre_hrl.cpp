@@ -373,7 +373,7 @@ void init_vars(ros::NodeHandle hl){
         hl.getParam("/custom_params/target_lon", t_lon);
 
         hl.getParam("/custom_params/n_agents",n);
-        hl.getParam("/custom_params/n_agents",ng);
+        hl.getParam("/custom_params/n_groups",ng);
 
 	hl.getParam("/custom_params/groups",group_list);
 	hl.getParam("/custom_params/hrl_id",id);
