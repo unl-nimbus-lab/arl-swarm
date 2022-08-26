@@ -25,13 +25,25 @@
 //#define MY_ID 2
 int hrl_id ;
 
+int* groups = NULL; // an array to hold the group configuration
+float* target_lat = NULL ; // vector to hold the targets
+float* target_lon = NULL ;
+
+int n_groups;  // number of groups
+int N ;
+
 using json = nlohmann::json;
 using namespace Eigen;
+
+geo_converter gc ;
 
 MatrixXd state ; // stores all the states
 std::mutex state_mutex ; // mutex for state variable
 
 id_to_idx id2idx ;
+
+float base_lat ;
+float base_lon ;
 
 // Hackery hack ! change this when re-fectoring
 float init_x = 0.0 ;
@@ -44,17 +56,52 @@ float local_y = 0.0 ;
 float adj_x = 0.0 ;
 float adj_y = 0.0 ;
 
-void init_states(int n,ros::NodeHandle hl){
+void init_states(ros::NodeHandle hl){
 
-	// This generates a zero vector of the size of states in the experiment
-	const std::lock_guard<std::mutex> lock(state_mutex);
-	state = MatrixXd::Zero(n,1);
+	int id , ng, n;
+	float b_lat, b_lon ;
+	std::vector<int> group_list ;
+	std::vector<float> t_lat, t_lon;
 
 	// Assign values from the param file
-	int id;
         hl.getParam("/custom_params/hrl_id",id);
-	hrl_id = id ; // ID of the agent in the swarm. This is different from the dron ID
+	hrl_id = id ; // ID of the agent in the swarm. This is different from the dron ID set through SYS_ID
 
+        hl.getParam("/custom_params/n_agents",n);
+	N = n ;
+
+	hl.getParam("/custom_params/n_agents",ng);
+	n_groups = ng ;
+
+        hl.getParam("/custom_params/base_lat", b_lat);
+        hl.getParam("/custom_params/base_lon", b_lon);
+        base_lat = b_lat ; // Set the base. 
+        base_lon = b_lon ;
+
+
+	hl.getParam("/custom_params/groups",group_list);
+        hl.getParam("/custom_params/target_lat", t_lat);
+        hl.getParam("/custom_params/target_lon", t_lon);
+
+        groups = new int[group_list.size()];
+        for(unsigned i=0; i < group_list.size(); i++) {
+               groups[i] = group_list[i] ;
+        }
+
+        // Assign multiple targets
+        target_lat = new float[t_lat.size()];
+        for(unsigned i=0; i < t_lat.size(); i++) {
+               target_lat[i] = t_lat[i] ;
+        }
+
+        target_lon = new float[t_lon.size()];
+        for(unsigned i=0; i < t_lon.size(); i++) {
+               target_lon[i] = t_lon[i] ;
+	}
+
+	 // This generates a zero vector of the size of states in the experiment
+        const std::lock_guard<std::mutex> lock(state_mutex);
+        state = MatrixXd::Zero(N*6,1);
 
 }
 
@@ -85,20 +132,6 @@ void HRLController(Sys s )
 
 	swarm_msgs::GlobalStates post_hrl_msg ;
 
-	// Assign the group info from the config file
-	int n_groups;
-	nh.getParam("/custom_params/n_groups",n_groups);
-
-//	int groups[1] = {1}; // This is original and works
-
-	int groups[n_groups];
-	std::vector<int> temp_groups;
-	nh.getParam("/custom_params/groups",temp_groups);
-
-	for(int i=0; i<n_groups; i++){
-		groups[i]=temp_groups[i];
-	}
-
 	int ag_state_idx = id2idx.get_state_idx(hrl_id, groups); // get the index of the real agent conversion from the Transformed space
 
 
@@ -107,22 +140,29 @@ void HRLController(Sys s )
 	MatrixXd A = s.A ;
 	MatrixXd B = s.B ;
 	MatrixXd T = s.Tr ;
-	MatrixXd aug_state = s.Aug ;
+//	MatrixXd aug_state = s.Aug ;
 	MatrixXd target_state = s.Tgt ;
 
 	// This commente4d code is a half-hearted effort to calculate the augmented states in the code. This prevents you to have a differet aug_state matrix pre-calculated through matlab.
-/*	// Define a variable with the size equals to the number of groups
-	MatrixXd aug_state(A.rows(),1);
+	// Define a variable with the size equals to the A matrix.
+	MatrixXd aug_state(N*6,1);
 
-	int aug_state_idx = id2idx.get_aug_state_idx(MY_ID, groups);
-	// TODO : get the aug state from the param list. Pre-calculation saves time
+	int aug_state_idx = id2idx.get_aug_state_idx(hrl_id, groups);
 
-        for (int i = 0, n_groups = sizeof(groups)/sizeof(groups[0]) ;  i < n_groups ; i++)
+	int number_of_members_in_previous_groups = 0 ;
+	// Now we need to calculate the distance to the target from the base
+        for (int i = 0 ;  i < n_groups ; i++)
         {
-		aug_state(i,0);
-        }
+		int number_of_members_in_current_group = groups[i] ;
+		int ndim = 2 ; // this is a 2-D problem with agents being controlled only on x and y directions. z is fixed.
 
-*/
+		aug_state(number_of_members_in_previous_groups*6 + (number_of_members_in_current_group-1)*ndim*2 ) = gc.lon_to_meters_signed(base_lat,base_lon, base_lat, target_lon[i]) ;// distance to the target with respect to the base (0,0)
+		aug_state(number_of_members_in_previous_groups*6 + (number_of_members_in_current_group-1)*ndim*2 + 1) = gc.lat_to_meters_signed(base_lat,base_lon, target_lat[i],base_lon) ;
+
+	        number_of_members_in_previous_groups += number_of_members_in_current_group ; // accumulates how many members were in the alredy iterated groups
+	}
+
+
 
 	MatrixXd T_inverse = T.inverse() ;
 
@@ -191,9 +231,9 @@ int main( int argc, char** argv )
 	Sys ss = jr.readJSON(path_to_json);
 
 	// Initialize the state
-	int n = ss.A.rows();
-	ROS_INFO(" N : %d", n);
-	init_states(n,hrl_nd_hl);
+//	int n = ss.A.rows();
+//	ROS_INFO(" N : %d", n);
+	init_states(hrl_nd_hl);
 
         ros::Subscriber prehrl_callback = hrl_nd_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
 
