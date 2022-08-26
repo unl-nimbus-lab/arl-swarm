@@ -44,4 +44,6 @@ RUN cd /home/mavlink-router \
 
 RUN mkdir -p /etc/mavlink-router && touch /etc/mavlink-router/main.conf
 
+COPY ./main.conf /etc/mavlink-router/
+
 # ENTRYPOINT ["/mavlink-router/build/src/mavlink-routerd", "-e", "127.0.0.1:14650", "-e", "127.0.0.1:14651", "-t", "0", "0.0.0.0:14550"]
