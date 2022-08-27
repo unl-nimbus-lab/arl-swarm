@@ -26,8 +26,8 @@ services:
     env_file: 
       - ../drone/.env
     devices: 
-      - ${DESTINATION}:${DESTINATION} #To the autopilot
-      - ${SOURCE}:${SOURCE} #From the RFD
+      - ${MAVLINK_DESTINATION}:${MAVLINK_DESTINATION} #To the autopilot
+      - ${MAVLINK_SOURCE}:${MAVLINK_SOURCE} #From the RFD
     command: > 
-      /bin/bash -c "mavlink-routerd ${SOURCE}:${SOURCE_BAUD}"
+      /bin/bash -c "mavlink-routerd ${MAVLINK_SOURCE}:${MAVLINK_SOURCE_BAUD}"
     restart: unless-stopped
