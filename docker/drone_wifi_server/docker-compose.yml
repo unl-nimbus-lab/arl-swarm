@@ -25,7 +25,6 @@ services:
     container_name: mavlink_router
     env_file: 
       - ../drone/.env
-      - ./server.env
     devices: 
       - ${DESTINATION}:${DESTINATION} #To the autopilot
       - ${SOURCE}:${SOURCE} #From the RFD
