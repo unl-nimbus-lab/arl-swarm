@@ -1,12 +1,12 @@
 version: '3'
 
 services:
-  mavros:
+  pre_planned:
     #image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/drone:latest
     image: clustering:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: mavros
+    container_name: pre_planned
     network_mode: "host"
     volumes:
       - /home/ubuntu/rosbags:/home/rosbags
@@ -18,22 +18,17 @@ services:
                     roslaunch src/clustering_control/launch/clustering_control_container.launch system_ID:=${SYS_ID} clusterID:=${CLUSTER_ID} clusterPosition:=${CLUSTER_POSITION} clusterSize:=${CLUSTER_SIZE} clusterRadius:=${CLUSTER_RADIUS} agentAlt:=${AGENT_ALT} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} homeAlt:=${HOME_ALT} rally1Lat:=${RALLY1LAT} rally1Lon:=${RALLY1LON} rally2Lat:=${RALLY2LAT} rally2Lon:=${RALLY2LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID}"
     restart: unless-stopped
 
-  router:
+  mavlink_router:
     image: mavlink_router:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: router
+    container_name: mavlink_router
+    env_file: 
+      - ../drone/.env
+      - ./server.env
     devices: 
-      - /dev/ttyUSB0:/dev/ttyUSB0 #To the autopilot
-      - /dev/ttyUSB1:/dev/ttyUSB1 #From the RFD
-    ports:
-      #"Map <this udp port on the host> to <this upd port> in the container>"
-      - "192.168.0.102:14550:102/udp" #(client #1)
-      - "192.168.0.102:14550:103/udp" #(client #1)
-      - "192.168.0.102:14550:104/udp" #(client #1)
+      - ${DESTINATION}:${DESTINATION} #To the autopilot
+      - ${SOURCE}:${SOURCE} #From the RFD
     command: > 
-      /bin/bash -c "mavlink-router
+      /bin/bash -c "mavlink-routerd ${SOURCE}:${SOURCE_BAUD}"
     restart: unless-stopped
-
-
-    #env_file: .env
