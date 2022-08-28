@@ -51,6 +51,7 @@ I am directly accessing global variables where I should not be doing. That's bec
 
 #define ROS_NODE_NAME "pre_hrl"
 #define CONTROLLER_RATE 50 //8    // Rate in Hz
+#define INTRGL_RESET_TRGGR 1 //The RESET button in the GUI send 1
 
 #define INTGRL_MTPL 0.01 // A scalar multiplier to ewduce the magnitude of the integral state
 
@@ -222,17 +223,23 @@ void integralStateCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg){
 		}
 	}
 
-	// Resets the integral states to zero
-	if(debug_msg->name[0] == 'J'){
-
-	        for(unsigned i=0; i < 2; i++) {
-       	        	intgrl_state[i] = 0.0 ;
-    		}
-
-	}
 
 }
 
+void resetIntegralCallback(const  mavros_msgs::DebugValue::ConstPtr& debug_msg)
+{
+	// This function resets the value of the integral state to zero 
+        int trigger = (int) debug_msg->value_int;
+        if(std::abs(trigger - INTRGL_RESET_TRGGR) < 0.0001 ){
+                const std::lock_guard<std::mutex> lock(state_mutex);
+                for(unsigned i=0; i < 2; i++) {
+                        intgrl_state[i] = 0.0 ;
+                }
+                ROS_INFO(" Integral state reset is complete ");
+        }
+
+
+}
 
 void nextStateHRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg)
 {
@@ -449,6 +456,7 @@ int main( int argc, char** argv )
 	ros::Subscriber velocity_callback = hl.subscribe("/mavros/global_position/swarm_vel",100,velocityCallback);
 	ros::Subscriber intgrl_state_callback = hl.subscribe("/mavros/debug_value/debug_vector", 100, integralStateCallback);
 	ros::Subscriber hrl_next_state_callback = hl.subscribe( "/swarm/next_states/global", 100, nextStateHRLCallback );
+        ros::Subscriber reset_integral_state_callback = hl.subscribe( "/mavros/debug_value/named_value_int", 100, resetIntegralCallback );
 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function

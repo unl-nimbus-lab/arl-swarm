@@ -60,6 +60,7 @@ using namespace Eigen;
 
 geo_converter gc ; // object to call gps coordinate converter functions
 
+bool setpoint_publish = false;
 bool flag_when_mgs_published = false ;
 std::mutex flag_mutex ;
 std::mutex intrgl_mutex ;
@@ -207,8 +208,10 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 
 //		ROS_INFO(" To pos+vel x - local_x : %f , y - local_y : %f , vx : %f , vy : %f   ", x - local_x, y - local_y, vx, vy );
 
-	// Publish the message
-	vel_pos_pub.publish(vel_pos_msg);
+        // Publish the message
+        if(setpoint_publish){
+                vel_pos_pub.publish(vel_pos_msg);
+        }
 
 }
 
@@ -234,6 +237,24 @@ void distToTgTCallback(const mavros_msgs::DebugValue::ConstPtr& msg){
 
 }
 
+void setpointTriggerCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg)
+{
+        // This function records thecallback value from the message sent by the GUI
+        // Start : 0
+        // Stop : 2
+        int trigger = (int) debug_msg->value_int;
+
+        if(std::abs(trigger - 0.0) < 0.0001 ){
+                setpoint_publish = true ;
+                ROS_INFO(" Waypoint publisher is set to TRUE ");
+        }
+
+        if(std::abs(trigger - 2.0) < 0.0001 ){
+                setpoint_publish = false ;
+                ROS_INFO(" Waypoint publisher is set to FALSE ");
+        }
+
+}
 
 int main( int argc, char** argv )
 {
@@ -246,7 +267,7 @@ int main( int argc, char** argv )
 //	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
         ros::Subscriber prehrl_callback = post_hrl_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
         ros::Subscriber dist_to_tgt_callback = post_hrl_hl.subscribe("/swarm/dist_to_target/", 100, distToTgTCallback);
-
+        ros::Subscriber setpoint_trigger_callback = post_hrl_hl.subscribe( "/mavros/debug_value/named_value_int", 100, setpointTriggerCallback );
 
 	ros::spin();
 	return 0;
