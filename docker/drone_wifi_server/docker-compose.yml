@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   mavlink_router:
-    image: mavlink_router:latest
+    image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/mavlink_router:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: mavlink_router
