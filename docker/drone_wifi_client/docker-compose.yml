@@ -25,6 +25,8 @@ services:
     container_name: mavlink_router
     env_file: 
       - ../drone/.env
+    ports:
+      -${CLIENT1}:${CLIENT1_PORT}:${CLIENT1_PORT}
     devices: 
       - ${MAVLINK_DESTINATION}:${MAVLINK_DESTINATION} #To the autopilot
     command: > 
