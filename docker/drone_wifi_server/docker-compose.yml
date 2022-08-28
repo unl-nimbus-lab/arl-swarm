@@ -29,5 +29,5 @@ services:
       - ${MAVLINK_DESTINATION}:${MAVLINK_DESTINATION} #To the autopilot
       - ${MAVLINK_SOURCE}:${MAVLINK_SOURCE} #From the RFD
     command: > 
-      /bin/bash -c "mavlink-routerd ${MAVLINK_SOURCE}:${MAVLINK_SOURCE_BAUD}"
+      /bin/bash -c "mavlink-routerd -e ${CLIENT1}:${CLIENT1_PORT} ${MAVLINK_SOURCE}:${MAVLINK_SOURCE_BAUD}"
     restart: unless-stopped
