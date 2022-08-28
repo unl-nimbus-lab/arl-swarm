@@ -26,7 +26,7 @@ services:
     env_file: 
       - ../drone/.env
     ports:
-      - "${CLIENT1}:${CLIENT1_PORT}:${CLIENT1_PORT}\udp"
+      - ${CLIENT1}:${CLIENT1_PORT}:${CLIENT1_PORT}/udp
     devices: 
       - ${MAVLINK_DESTINATION}:${MAVLINK_DESTINATION} #To the autopilot
     command: > 

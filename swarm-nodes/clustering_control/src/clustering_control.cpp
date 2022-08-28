@@ -97,7 +97,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 // }
                 break;
             case 'C': //Cluster-level command
+                ROS_INFO("Got a cluster-level command\n");
                 if (*targetEntity == hrlAgent.getClusterid()) {
+                    ROS_INFO("Got a cluster-level command for this agent");
                     switch(*command) {
                         case PING: //Ping (just send an acknowedgemet back)
                             acknowledge(hrlAgent.getSysid(), command);

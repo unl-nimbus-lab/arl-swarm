@@ -171,7 +171,7 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + CLUSTER_GLOBAL_TARGET.ALT;
             break;
         default:
-            printf("INVALID FLIGHT MODE REQUESTED");
+            printf("INVALID FLIGHT MODE REQUESTED\n");
             break;
     };
 }
@@ -210,7 +210,7 @@ void agent::setClusterOffsets() {
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
         default:
-            printf("INVALID CLUSTER TYPE ATTEMPTED");
+            printf("INVALID CLUSTER TYPE ATTEMPTED\n");
         break;
     }
 }
@@ -334,6 +334,9 @@ void parseCommand(std::string message, int *cluster, int *command) {
     }
     *cluster = atoi(tempCluster);
     *command = atoi(tempCommand);
+    printf("parseCommand Results: \n");
+    printf("Cluster: %d\n", *cluster);
+    printf("Command: %d\n", *command);
 };
 
 void agent::setClusterLocalTarget(double x, double y, double z) {

@@ -23,6 +23,7 @@ services:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: mavlink_router
+    network_mode: "host"
     env_file: 
       - ../drone/.env
     devices: 
