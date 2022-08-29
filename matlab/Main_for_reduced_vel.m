@@ -8,59 +8,65 @@ clear all;
 
 global U ;
 
+%% Initialze colors for the plots
 colors = ['r', 'k', 'g', 'b', 'c']; % For plotting purpose only
 shapes = ['o', 'x', 'd', '*','s']; % For plotting purpose only
-Nc = 1; % number of clusters. Important: this variable is heavily used in the code.
 
+%% The next section sets up lat,lon coordinates for an example scenarions. You do NOT need to have them set up correctly to generate the correct gain matrix
 % Havlock base
-% base_lat = 40.8522108472926 ;
-% base_lon = -96.60822380671102 ;
+%base_lat = 40.8522108472926 ;
+%base_lon = -96.60822380671102 ;
 
-% target_lat = 40.852158006872756 ;
-% taregt_lon = -96.60885620373058 ;
-
-% ag1_start_lat = 40.851771436212324;
-% ag1_start_lon = -96.60878634592505 ;
-
-% QP new base  
+% % % % QP new base  
 base_lat = 40.8328148 ;
 base_lon = -96.6957025 ;
 
-target_lat = 40.8327215 ;
-target_lon = -96.6958784 ;
+%QP example target locations
+target_lat_ag1 = 40.8327215 ;
+target_lon_ag1 = -96.6958784 ;
 
-ag1_start_lat = 40.8328707;
-ag1_start_lon = -96.6959139 ;
+target_lat_ag2 = 40.8328707;
+target_lon_ag2 = -96.6959139 ;
 
-target_xm = lon_to_meters(base_lat,base_lon,base_lat,target_lon);
-target_ym = lat_to_meters(base_lat,base_lon,target_lat,base_lon);
+% Distance between the base and the targets
+target_xm_2 = lon_to_meters(base_lat,base_lon,base_lat,target_lon_ag2);
+target_ym_2 = lat_to_meters(base_lat,base_lon,target_lat_ag2,base_lon);
 
-ag1_start_xm = lon_to_meters(base_lat,base_lon,base_lat,ag1_start_lon);
-ag1_start_ym = lat_to_meters(base_lat,base_lon,ag1_start_lat,base_lon);
+target_xm = lon_to_meters(base_lat,base_lon,base_lat,target_lon_ag1);
+target_ym = lat_to_meters(base_lat,base_lon,target_lat_ag1,base_lon);
 
+%% Initialize the swarm
 learning = 1; % This is to enable the learning component 1: enable 0: disable
-p(:,1) = [2]';
+Nc = 2; % number of clusters. Important: this variable is heavily used in the code.
+
+p(:,1) = [3 1]';
+
+N = sum(p); % total number of agents
+Nt = Nc; % number of targets
+ndim = 2; % 2D/3D agents 
+r = 2; % The radius of the formation circle for each cluster
+
+tg_loc = [target_xm target_ym 5 ; target_xm_2 target_ym_2 5]; % Set the distances to the targets
+tg_loc = [10 10 5 ; 10 -10 5]; % This is for test purposes
 
 
+%% The commented section creates a random graph. We do not need that. I changed it. We assume full connectivity.
 % Network design
 if Nc ~= 1
-    chk = 0;
-    while chk==0
-        Adj = random_graph(Nc,0.1); % This randomly creates a graph with a 0.1 probability of two agents being connected.
-        chk = isconnected(Adj); % Check if the random graph is connected. Run the loop util the the previous step generates a connected graph
-    end
+%     chk = 0;
+%     while chk==0
+%         Adj = random_graph(Nc,0.1); % This randomly creates a graph with a 0.1 probability of two agents being connected.
+%         chk = isconnected(Adj); % Check if the random graph is connected. Run the loop util the the previous step generates a connected graph
+%     end
+    Adj = ones(Nc); % creates a fully connected network instead. Agents are connected to themselves
     Deg = diag(Adj*ones(Nc,1)); % Creates the degree matrix ( along the diagnal it provides the number connections one node has )
     Lap = Deg - Adj;% laplacian matrix between the clusters
 else
     Lap = 1;
 end
 
-N = sum(p); % total number of agents
-Nt = Nc; % number of targets
-ndim = 2; % 2D/3D agents
-tg_loc = [target_xm target_ym 5];
 
-% create the transformation matrics for each cluster
+%% create the transformation matrics for each cluster
 T = [];
 for j = 1:Nc % For each cluster
     Ncj = p(j); % number of agents in each cluster/group. Both the terms are used to mean the same thing
@@ -72,8 +78,7 @@ for j = 1:Nc % For each cluster
     
 end
    
-% create the desired states within each cluster
-r = 2; % The radius of the  formation circle for each cluster? 
+% create the desired states within each cluster 
 ZD = []; % To store some future value 
 S = []; % used later
 for j = 1:Nc %For each cluster / group
@@ -96,29 +101,49 @@ for j = 1:Nc %For each cluster / group
     Sj = [zeros(ndim,2*ndim*(Ncj-1)) eye(ndim) zeros(ndim,ndim) zeros(ndim,ndim*Ncj)]; % select the average state if multiplied with the transformed states
     S = blkdiag(S, Sj); % record everthing in a block diagnol matrix, why not... :-/ 
 end
-% create the optimal control objectives for each cluster
+
+%% crea\te the optimal control objectives for each cluster
 R = [];
-Q = [];
+Q = []; % This Q is in the transformed space. 
+
+% Transformed space for a group with 2 agents is below. Assume the agnets
+% are two dimensional and x is position and \dot(x) is velocity
+%      x2 - x1                         -|
+%      y2 - y1                         -| Formation at the beginning
+% \dot(x2) - \dot(x1)                  -|
+% \dot(y2) - \dot(y1)                  -| Velocity control at the beginning
+%    (x2 + x1)/2                       -|
+%    (y2 + y1)/2                       -| Track the target
+% ( \dot(x2) + \dot(x1) )/2            -| 
+% ( \dot(y2) + \dot(y1) )/2            -| Make the velocity at the taregt 0
+% x2 - x1 - x_inter_agent_distance     -|
+% y2 - y1 - y_inter_agent_distance     -| Integrals for formation 
+% (x2 + x1)/2 - x_target               -| 
+% (y2 + y1)/2 - y_taregt               -| Integrals for tracking
+
+% below three were the original values
 % q_formation = 0.1; % prioratize getting into the formation
 % q_target = .1; % prioratize getting to the target
 % q_integral = 0.1; % prioratize the integral term on position
 
-q_formation = 0.1; % prioratize getting into the formation
-q_target = 10; % prioratize getting to the target
+ q_formation = 10; % prioratize getting into the formation. Corresponds to the first 4 transformed states
+ q_target_track_position = 0.01 ; % Corresponds to the 5th and 6th transformed states
+ q_target_track_velocity = 0 ; % Corresponds to the 7th and 8th transformed states
 
-q_target = [ 20*ones(length(blkdiag(eye(ndim), zeros(ndim,ndim)))/2,1) ; 0.01*ones(length(blkdiag(eye(ndim), zeros(ndim,ndim)))/2,1) ] ;
-
-q_integral = 1; % prioratize the integral term on position
-
-q_integral = [ 0.1*ones(ndim*Ncj/2,1) ; 0.0001*ones(ndim*Ncj/2,1)];
+ q_integral_for_formation = 10 ; % Corresponds to the 9th and 10th transformed states
+ q_integral_for_tracking = 0.01 ; % Corresponds to the 11thth and 12th transformed states
 
 for j = 1:Nc
     Ncj = p(j); % number of agents in each group / cluster
+    
+    % Gains are arranged to a proper matrix formation for multiplication
+    q_target = [ q_target_track_position*ones(length(blkdiag(eye(ndim), zeros(ndim,ndim)))/2,1) ; q_target_track_velocity*ones(length(blkdiag(eye(ndim), zeros(ndim,ndim)))/2,1) ] ;
+    q_integral = [ q_integral_for_formation*ones(ndim*Ncj/2,1) ; q_integral_for_tracking*ones(ndim*Ncj/2,1)];
+
     nstate = Ncj * 3 * ndim; % 2*ndim*Ncj: position + velocity for Ncj agents; ndim*Ncj: integral states for the position
     nu = Ncj * ndim; % each agent has ndim controls
     Rj{j} = eye(nu); % This is an identity matrix prioratizing the control input. pay attention to the dimensions
     Qj{j} = blkdiag(q_formation*(kron(eye(Ncj-1),blkdiag(eye(ndim), zeros(ndim,ndim)))), blkdiag(eye(ndim), ones(ndim,ndim)).*q_target, eye(ndim*Ncj).*q_integral); % Generate a part of the Q matrix
-%     Qj{j} = blkdiag(q_formation*(kron(eye(Ncj-1),blkdiag(eye(ndim), zeros(ndim,ndim)))), q_target*blkdiag(eye(ndim), zeros(ndim,ndim)), q_integral*eye(ndim*Ncj)); % Generate a part of the Q matrix
     Q = blkdiag(Q, Qj{j}); % Store in block diagnol matrix
     R = blkdiag(R, Rj{j});
 end
@@ -126,7 +151,8 @@ end
 tildeQ = S'*kron(Lap, eye(ndim))*S * 1;
 Qbar = Q;
 Q = Qbar + tildeQ; % Need to understand bit more what's happening here
-% generate agent dynamics A_i, B_i and the rotated dynamics
+
+%% generate agent dynamics A_i, B_i and the rotated dynamics
 A = [];
 B = [];
 xo =[]; %zeros(ndim*N*2,1);
@@ -147,7 +173,7 @@ for i = 1:Nc % go through all the clusters
     center = randn(ndim,1);
     for j = 1:Ncj % go through each agent in each cluster (Same agent dynamics within each cluster)
         mi = 1.4; %mass
-        ci = 1.25; % damping coefficient, may be to model the drag and other resisiting forces. Why not model the same, but changes with i? may be to say each system i non-homogenic
+        ci = 1.25; % damping coefficient to model the drag and other resisiting forces.
 %         ci = 0; % damping coefficient, may be to model the drag and other resisiting forces. Why not model the same, but changes with i? may be to say each system i non-homogenic
         Ai = [zeros(ndim,ndim) eye(ndim);zeros(ndim,ndim) -ci/mi*eye(ndim)]; % including the integral state
         Bi = [zeros(ndim,ndim);1/mi*eye(ndim)];
@@ -166,7 +192,6 @@ for i = 1:Nc % go through all the clusters
     TBi{i} = TT{i} * Bc{i};
     TGi{i} = G{i} * inv(TT{i});
     Mi = pinv(TBi{i})*kron(eye(Ncj), [zeros(ndim,ndim); eye(ndim)]);% feedback gain matrix for integral control to ensure the correct feedback form
-%     TAi{i} = [TAi{i} zeros(2*ndim*Ncj, ndim*Ncj);kron(eye(Ncj), ([1 0 0 0;0 1 0 0])) zeros(ndim*Ncj, Ncj*ndim)]; % add integral state to the transformed dynamics
     TAi{i} = [TAi{i} zeros(2*ndim*Ncj, ndim*Ncj);kron(eye(Ncj), [eye(ndim) zeros(ndim)]) zeros(ndim*Ncj, Ncj*ndim)]; % add integral state to the transformed dynamics
 
     TBi{i} = [TBi{i}; zeros(Ncj*ndim,Ncj*ndim)];
@@ -187,23 +212,24 @@ eig(TA+TB*TG)% check to see if the feedback gain TG is stabilizing
 pause(0.1);
 
 
-%% formulate the optimal control
+%% formulate the optimal control. We don't need this
 %[K,S,E] = lqr(TA,TB,Q,R);
 Po = care(TA, TB, Q, R);
 K = inv(R)*TB'*Po;
-%% form the approximate control
+%% form the approximate control. We don't need this
 Pa = care(TA,TB,Qbar,R);
 a = Pa*TB;
 b = TB'*Pa;
 tildeR = pinv(a)*tildeQ*pinv(b);
 Ka = (inv(R)+tildeR)*TB'*Pa; % approximate control
 % % Ka = inv(R)*TB'*P;
-%% learning control (non-working version)
+
+%% learning control (non-working version) (This non working comment is from the original matlab code)
 xfinal = [];
 % figure;
 if learning
     dT = 0.01;
-    tf = [6 15 15 6];
+    tf = [30 15 15 6];
     PL = [];
     KL = [];
     for i = 1:Nc % learn through each cluster
@@ -245,7 +271,7 @@ if learning
     KL = KL + (tildeR)*R*KL;
 end
 
-%% Set up the vector to change the centroids to erros here
+%% Set up the vector to change the centroids to errors here
 aug_state = [];
 for i = 1:Nc
  
@@ -258,24 +284,16 @@ for i = 1:Nc
     
 end
 
-
-
-% 40.832618, -96.695755
-% startt = 40.832618, -96.695807 ; 40.832618, -96.695755 ;
-ag1_start = [ag1_start_xm, ag1_start_ym , 0 , 0  ]' ;
-ag2_start = [3, -4 , 0 , 0  ]' ;
-
-inte = [0, 0, 0, 0]';
-xStart = [ag1_start ; ag2_start ; inte];
-
+%% Set up initial conditions here
+xStart = zeros(N*6,1);
 disp(xStart);
 
 % The next line is import. This transforms the real worl coordinates to
 % trannsformed coordinates. The algorithm works on the transformed
 % coordinates.
 xStart = T*xStart ;
-
 heights = [10] ;
+
 %% solve the ode
 delat_t = 0.25 ;
 tspan = [0:delat_t:20];
@@ -283,38 +301,39 @@ int_size = ndim*N; %state dim for the integral state
 
 % simulate with the optimal control in the transformed coordinates
 if learning
-%     [t_ell,x_ell] = ode45(@agent_dynamics_reorg, tspan, xStart,'',ZD, TA, TB, -KL,int_size);
 % %     [t_ell,x_ell] = ode45(@agent_dynamics_reorg, tspan, xStart,'',ZD, TA, TB, -KL,int_size,aug_state);
 % %     XL = (inv(T) * x_ell')';
     x_current = xStart ;
     X_collector = [] ;
     for tk = 1:length(tspan)
         
-        X_collector = [ X_collector ; x_current' ] ;
-%         x_k_plus_one = ( TA*delat_t - TB*KL*delat_t + eye(length(TA)) )*(x_current-aug_state') - ZD*delat_t + aug_state';
+        X_collector = [ X_collector ; x_current' ] ; % records states
 
-        u = -1*KL*(x_current-aug_state') ;
-            
+        u = -1*KL*(x_current-aug_state') ; % calculate the control input
+          
+        % The following section adds bounds to the maximum thrust the the
+        % control input can have. Same limitation is applied to the
+        % training. 
+        
         sum_of_forces = sqrt(abs(u(1))^2 + abs(u(2))^2) ;
         max_force = 6.5 ;
         
         if(sum_of_forces) > max_force 
+%             disp("forces exceed at simulation");
+            theta = atan(abs(u(2))/abs(u(1))) ;   % Angel of the resultant force  
 
-            % This calculates the maximum 
-            disp("forces exceed at simulation");
-            theta = atan(abs(u(2))/abs(u(1))) ;    
-
-            u(1) = max_force * cos(theta) * sign(u(1));
+            u(1) = max_force * cos(theta) * sign(u(1)); % Set the maximum bounds based on the angel
             u(2) = max_force * sin(theta) * sign(u(2));    
 
         end
         
+        % Calculate the discrete state propergation
         x_k_plus_one = ( TA*delat_t + eye(length(TA)) )*(x_current-aug_state') + TB*delat_t*u  - ZD*delat_t + aug_state';
         
         x_current = x_k_plus_one ;       
         
     end 
-    
+    % Record the states
     XL = (inv(T)*X_collector')' ;
     
 end
@@ -394,8 +413,6 @@ xlabel('x (meters)','FontSize',20);
 ylabel('y (meters)','FontSize',20);
 zlabel('z (meters)','FontSize',20);
 ax = gca;
-% ax.FontSize=20;
-% pbaspect([1.62 1 1]);
 
 %% Save XL to be simulated in Frejya sim
 % save('XL.mat','XL')
@@ -415,7 +432,7 @@ strct_for_mats.TGT = ZD ;
 strct_to_jason = jsonencode(strct_for_mats);
 
 %save to file 
-fid = fopen('sys_mats_2ag_QP.json','wt');
+fid = fopen('../swarm-nodes/config/sys_mats_4ag_QP_31.json','wt');
 fprintf(fid,strct_to_jason);
 fclose(fid);
 
