@@ -13,7 +13,7 @@ network:
         wlan0:
                 access-points:
                         "NU-IoT":
-                                password: "fnrvgmsv"
+                                password: "xlghmzdp"
                 dhcp4: true
                 optional: true
 
