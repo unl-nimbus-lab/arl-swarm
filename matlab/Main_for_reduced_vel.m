@@ -39,7 +39,7 @@ target_ym = lat_to_meters(base_lat,base_lon,target_lat_ag1,base_lon);
 learning = 1; % This is to enable the learning component 1: enable 0: disable
 Nc = 2; % number of clusters. Important: this variable is heavily used in the code.
 
-p(:,1) = [3 1]';
+p(:,1) = [2 2]';
 
 N = sum(p); % total number of agents
 Nt = Nc; % number of targets
@@ -432,7 +432,7 @@ strct_for_mats.TGT = ZD ;
 strct_to_jason = jsonencode(strct_for_mats);
 
 %save to file 
-fid = fopen('../swarm-nodes/config/sys_mats_4ag_QP_31.json','wt');
+fid = fopen('../swarm-nodes/config/sys_mats_4ag_QP_22.json','wt');
 fprintf(fid,strct_to_jason);
 fclose(fid);
 
