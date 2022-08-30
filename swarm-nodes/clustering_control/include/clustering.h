@@ -5,6 +5,7 @@
 #include "std_msgs/String.h"
 #include "mavros_msgs/DebugValue.h"
 #include "mavros_msgs/SwarmGPS.h"
+#include "mavros_msgs/CommandLong.h"
 #include "geographic_msgs/GeoPoseStamped.h"
 #include <std_msgs/String.h>
 #include <sstream>
@@ -44,6 +45,7 @@
 #define SET_HOME_POSITION 7
 #define SET_LOCAL_RALLY 8
 #define SET_CLUSTER_GLOBAL_POSITION 9
+#define SEPARATE_ALTITUDES 10
 
 //Agent Commands
 
@@ -56,9 +58,11 @@
 //Some objects that are used:
 ros::Publisher ak_pub;
 ros::Publisher wp_pub;
+ros::ServiceClient client;
 mavros_msgs::DebugValue modeBroadcast;
 mavros_msgs::DebugValue agentAcknowledgement;
 mavros_msgs::DebugValue bootAcknowledgeMsg;
+mavros_msgs::CommandLong alt_sep;
 geo_converter convObject;
 
 //Function prototypes:

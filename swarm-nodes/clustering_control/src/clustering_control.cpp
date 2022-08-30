@@ -22,12 +22,19 @@ int main(int argc, char **argv) {
     hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
 
-    //ROS Code:
+    //ROS-Specific items:
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
+    client = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
+
+    //alt_sep.broadcast = false;
+    alt_sep.request.broadcast = false;
+    alt_sep.request.command = 186;
+    alt_sep.request.param1 = hrlAgent.pos_msg.pose.position.altitude;//Altitude
+    alt_sep.request.param2 = 0;//mavframe = global
 
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
@@ -142,6 +149,11 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
+                            break;
+                        case SEPARATE_ALTITUDES:
+                            if (client.call(alt_sep)) {
+                                printf("Altitude separating\n");
+                            }
                             break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");

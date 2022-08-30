@@ -19,3 +19,4 @@ network:
                     access-points:
                             "SWARM_CLUSTER_1":
                                     password: "25113815"
+                    optinal: true
