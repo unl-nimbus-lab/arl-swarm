@@ -26,20 +26,9 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
-    client = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
+    ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
-
-    alt_sep.request.broadcast = true;
-    alt_sep.request.command = 186; //MAV CMD DO ALT CHANGE
-    alt_sep.request.confirmation = 0;
-    alt_sep.request.param1 = hrlAgent.pos_msg.pose.position.altitude;//Altitude
-    alt_sep.request.param2 = 0;//mavframe = global
-    alt_sep.request.param3 = 0;//mavframe = global
-    alt_sep.request.param4 = 0;//mavframe = global
-    alt_sep.request.param5 = 0;//mavframe = global
-    alt_sep.request.param6 = 0;//mavframe = global
-    alt_sep.request.param7 = 0;//mavframe = global
 
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
@@ -156,8 +145,13 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SEPARATE_ALTITUDES:
-                            if (client.call(alt_sep) && alt_sep.response.success) {
-                                printf("Altitude separating\n");
+                            if (hrlAgent.CURRENT_POS.LAT != 0) {
+                                printf("Separating Altidutes\n");
+                                hrlAgent.setFlightMode(ALTITUDE_SEP_MODE);
+                                hrlAgent.setPositionTarget();
+                            }
+                            else {
+                                printf("Not separating, No GPS reading\n");
                             }
                             break;
                         default:
@@ -172,6 +166,14 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
         };
 }
 
+void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
+    mavros_msgs::SwarmGPS gps_msg = *msg;
+    if(gps_msg.system_id == hrlAgent.getSysid()) {
+            hrlAgent.CURRENT_POS.LAT = gps_msg.latitude;
+            hrlAgent.CURRENT_POS.LON = gps_msg.longitude;
+            hrlAgent.CURRENT_POS.ALT = gps_msg.altitude;
+    }
+}
 //TODO:
 //ACKNOWLEDGEMENTS -- DONE -- TESTED
 //FTL -- DONE -- EDITS -- REMOVE -- DONE

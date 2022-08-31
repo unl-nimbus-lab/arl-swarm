@@ -29,6 +29,7 @@
 #define CLUSTER_GUIDED_LOCAL_MODE 1
 #define CLUSTER_RALLY_MODE 2
 #define CLUSTER_GUIDED_GLOBAL_MODE 3
+#define ALTITUDE_SEP_MODE 4
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -69,6 +70,7 @@ geo_converter convObject;
 void parseCommand(std::string message, int *cluster, int *command);
 void handleCommand(int *cluster, int *command);
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
+void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 
 //agent class:
@@ -107,6 +109,11 @@ class agent {
         bool getPublish();
         void setClusterGlobalTarget(double lat, double lon, double alt);
         geographic_msgs::GeoPoseStamped pos_msg;
+        struct {
+            double LAT;
+            double LON;
+            double ALT;
+        } CURRENT_POS;
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
@@ -173,6 +180,12 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.latitude = convObject.meters_to_lat(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.X);
             pos_msg.pose.position.longitude = convObject.meters_to_lon(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + CLUSTER_GLOBAL_TARGET.ALT;
+            break;
+        case ALTITUDE_SEP_MODE:
+            //Update "where the agent should be in the global frame"
+            pos_msg.pose.position.latitude = CURRENT_POS.LAT;
+            pos_msg.pose.position.longitude = CURRENT_POS.LON;
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
         default:
             printf("INVALID FLIGHT MODE REQUESTED\n");
