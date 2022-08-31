@@ -30,9 +30,16 @@ int main(int argc, char **argv) {
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
-    alt_sep.request.command = 186;
+    alt_sep.request.broadcast = true;
+    alt_sep.request.command = 186; //MAV CMD DO ALT CHANGE
+    alt_sep.request.confirmation = 0;
     alt_sep.request.param1 = hrlAgent.pos_msg.pose.position.altitude;//Altitude
     alt_sep.request.param2 = 0;//mavframe = global
+    alt_sep.request.param3 = 0;//mavframe = global
+    alt_sep.request.param4 = 0;//mavframe = global
+    alt_sep.request.param5 = 0;//mavframe = global
+    alt_sep.request.param6 = 0;//mavframe = global
+    alt_sep.request.param7 = 0;//mavframe = global
 
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
