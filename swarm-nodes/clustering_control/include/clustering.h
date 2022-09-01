@@ -108,12 +108,8 @@ class agent {
         void setPublish(bool logic);
         bool getPublish();
         void setClusterGlobalTarget(double lat, double lon, double alt);
+        void setCurrentPos(double lat, double lon, double alt);
         geographic_msgs::GeoPoseStamped pos_msg;
-        struct {
-            double LAT;
-            double LON;
-            double ALT;
-        } CURRENT_POS;
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
@@ -137,7 +133,7 @@ class agent {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET;
+        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET, CURRENT_POS;
         //Agent Rally: Not used
         //Cluster Rally: Locally saved point, unique to each cluster
         //Global Origin: Common world frame for the swarm
@@ -209,8 +205,14 @@ void agent::setClusterGlobalTarget(double lat, double lon, double alt) {
 }
 
 void agent::setFlightMode(int mode) {
-    HRL_FLIGHTMODE = mode;
-    printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
+    if (mode == ALTITUDE_SEP_MODE && CURRENT_POS.LAT == 0) {
+        printf("Flighmode change to ATLTITUDE_SEP_MODE rejected due to no GPS\n");
+    }
+    else {
+        HRL_FLIGHTMODE = mode;
+        printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
+    }
+    
 }
 
 void agent::setClusterOffsets() {
@@ -409,6 +411,12 @@ void agent::setPublish(bool logic) {
 
 bool agent::getPublish() {
     return PUBLISH;
+}
+
+void agent::setCurrentPos(double lat, double lon, double alt) {
+    CURRENT_POS.LAT = lat;
+    CURRENT_POS.LON = lon;
+    CURRENT_POS.ALT = alt;
 }
 
 #endif

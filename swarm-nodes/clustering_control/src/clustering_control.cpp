@@ -98,9 +98,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 // }
                 break;
             case 'C': //Cluster-level command
-                ROS_INFO("Got a cluster-level command\n");
                 if (*targetEntity == hrlAgent.getClusterid()) {
-                    ROS_INFO("Got a cluster-level command for this agent");
                     switch(*command) {
                         case PING: //Ping (just send an acknowedgemet back)
                             acknowledge(hrlAgent.getSysid(), command);
@@ -144,16 +142,6 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case SEPARATE_ALTITUDES:
-                            if (hrlAgent.CURRENT_POS.LAT != 0) {
-                                printf("Separating Altidutes\n");
-                                hrlAgent.setFlightMode(ALTITUDE_SEP_MODE);
-                                hrlAgent.setPositionTarget();
-                            }
-                            else {
-                                printf("Not separating, No GPS reading\n");
-                            }
-                            break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
@@ -169,9 +157,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     mavros_msgs::SwarmGPS gps_msg = *msg;
     if(gps_msg.system_id == hrlAgent.getSysid()) {
-            hrlAgent.CURRENT_POS.LAT = gps_msg.latitude;
-            hrlAgent.CURRENT_POS.LON = gps_msg.longitude;
-            hrlAgent.CURRENT_POS.ALT = gps_msg.altitude;
+        hrlAgent.setCurrentPos(gps_msg.latitude,gps_msg.longitude,gps_msg.altitude);
     }
 }
 //TODO:
