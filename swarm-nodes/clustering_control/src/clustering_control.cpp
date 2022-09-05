@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
         if (hrlAgent.getPublish() == true) {
             if (hrlAgent.FTL_ENABLE == true) {
                 hrlAgent.setPositionTarget();
+                printf("FTL ENABLE is true\n");
             }
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
             wp_pub.publish( hrlAgent.pos_msg );
