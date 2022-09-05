@@ -32,11 +32,13 @@ int main(int argc, char **argv) {
 
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
+            if (hrlAgent.FTL_ENABLE == true) {
+                hrlAgent.setPositionTarget();
+            }
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
-            if (hrlAgent.getPublish())
-                wp_pub.publish( hrlAgent.pos_msg );
+            wp_pub.publish( hrlAgent.pos_msg );
         }
-        ros::Duration(0.5).sleep();
+        ros::Duration(1.0).sleep();
         ros::spinOnce();
     }
 
@@ -59,43 +61,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     function is agent::setPositionTarget */
         switch(entity) {
             case 'A':
-                // if (*targetEntity == hrlAgent.getSysid()) {
-                //     switch(*command) {
-                //         case PING: //Ping (just send an acknowledgement back)
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_SYSID: //Set the SYSID (THIS IS VERY DANGROUS, MAYBE DONT USE!!!)
-                //             //hrlAgent.setSysid(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_CLUSTER_ID: //Set the cluster ID
-                //             hrlAgent.setClusterid(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_FLIGHT_MODE: //set the HRL flight mode
-                //             hrlAgent.setFlightMode(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_CLUSTER_ORDER: //set the cluster order
-                //             hrlAgent.setClusterOrder(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_CLUSTER_SIZE: //Set the cluster size
-                //             hrlAgent.setClusterSize(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case CHANGE_AGENT_ALTITUDE: //Set the agent altitude
-                //             hrlAgent.setAgentAlt(HRLReference.data[0]);
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case 7: //TODO
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         case 8: //TODO
-                //             acknowledge(hrlAgent.getSysid(), command);
-                //             break;
-                //         };
-                // }
+                //Nothing to see here
                 break;
             case 'C': //Cluster-level command
                 if (*targetEntity == hrlAgent.getClusterid()) {
@@ -142,6 +108,9 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setPositionTarget();
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
+                        case SET_FTL_SYSID:
+                            hrlAgent.setFTLSysid(HRLReference.data[0]);
+                            break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
@@ -156,8 +125,11 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 
 void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     mavros_msgs::SwarmGPS gps_msg = *msg;
-    if(gps_msg.system_id == hrlAgent.getSysid()) {
+    if (gps_msg.system_id == hrlAgent.getSysid()) {
         hrlAgent.setCurrentPos(gps_msg.latitude,gps_msg.longitude,gps_msg.altitude);
+    }
+    if (gps_msg.system_id == hrlAgent.getFTLSysid()) {
+        hrlAgent.setFTLloc(gps_msg.latitude,gps_msg.longitude,gps_msg.altitude);
     }
 }
 //TODO:

@@ -30,6 +30,7 @@
 #define CLUSTER_RALLY_MODE 2
 #define CLUSTER_GUIDED_GLOBAL_MODE 3
 #define ALTITUDE_SEP_MODE 4
+#define FOLLOW_THE_LEADER_MODE 5
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -46,7 +47,7 @@
 #define SET_HOME_POSITION 7
 #define SET_LOCAL_RALLY 8
 #define SET_CLUSTER_GLOBAL_POSITION 9
-#define SEPARATE_ALTITUDES 10
+#define SET_FTL_SYSID 10
 
 //Agent Commands
 
@@ -109,7 +110,11 @@ class agent {
         bool getPublish();
         void setClusterGlobalTarget(double lat, double lon, double alt);
         void setCurrentPos(double lat, double lon, double alt);
+        void setFTLSysid(int id);
+        int getFTLSysid();
+        void setFTLloc(double lat, double lon, double alt);
         geographic_msgs::GeoPoseStamped pos_msg;
+        bool FTL_ENABLE = false;    //O-k to begin ftl
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
@@ -119,25 +124,28 @@ class agent {
         double CLUSTER_SIZE;        //How many agents are in the cluster
         int CLUSTER_TYPE = 1;       //Organization of agents within the cluster 1) Circle 2) Line
         double CLUSTER_RADIUS;      //Dimension of the cluster
-        double AGENT_ALT;           //Height (in meters) above "GLOBAL ORIGIN"
+        double AGENT_ALT;           //Height (in meters) above "cluster target"
         bool PUBLISH = false;       //O-k to begin publishing messages to the FCU
+        int FTL_SYSID = 0;         //FOLLOW THE LEADER TARGET SYSID
         struct {
             double X;
             double Y;
             double Z;
         } CLUSTER_OFFSETS, AGENT_LOCAL_TARGET, CLUSTER_LOCAL_TARGET, CLUSTER_RALLY1, CLUSTER_RALLY2;
         //Cluster Offsets: How far (in meters this agent should be offset from the cluster center)
-        //Agent Local Target: Local Agent target after offsets applied
+        //Agent Local Target: agent position in the local 'meters' frame
         //Cluster Local Target: Location (in meters) the center of the cluster should be relative to "GLOBAL ORIGIN"
         struct {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET, CURRENT_POS;
+        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET, CURRENT_POS, FTL_LOC;
         //Agent Rally: Not used
         //Cluster Rally: Locally saved point, unique to each cluster
         //Global Origin: Common world frame for the swarm
         //CLUSTER_GLOBAL_TARGET: Target lat/lon/alt for the cluster
+        //CURRENT_POS: CURRENT LAT/LON OF THIS AGENT
+        //FTL_LOC: CURRENT LAT/LON OF THE FTL TARGET
 };
 
 void agent::setPositionTarget() {
@@ -148,7 +156,7 @@ void agent::setPositionTarget() {
 
     switch (HRL_FLIGHTMODE) {
         case CLUSTER_GUIDED_LOCAL_MODE: //Move the cluster in the local frame
-            //Update "where the agent should be in the local frame"
+            //Update "where the agent should be in the local 'meters' frame"
             tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
             tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
             tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
@@ -175,12 +183,18 @@ void agent::setPositionTarget() {
             //Update "where the agent should be in the global frame"
             pos_msg.pose.position.latitude = convObject.meters_to_lat(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.X);
             pos_msg.pose.position.longitude = convObject.meters_to_lon(CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_OFFSETS.Y);
-            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + CLUSTER_GLOBAL_TARGET.ALT;
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
         case ALTITUDE_SEP_MODE:
-            //Update "where the agent should be in the global frame"
+            //Move the agent to its altitude target at its current location
             pos_msg.pose.position.latitude = CURRENT_POS.LAT;
             pos_msg.pose.position.longitude = CURRENT_POS.LON;
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
+        case FOLLOW_THE_LEADER_MODE:
+            //Follow the specified agent in cluster formation
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(FTL_LOC.LAT, FTL_LOC.LON, CLUSTER_OFFSETS.X);
+            pos_msg.pose.position.longitude = convObject.meters_to_lon(FTL_LOC.LAT, FTL_LOC.LON, CLUSTER_OFFSETS.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
         default:
@@ -190,7 +204,7 @@ void agent::setPositionTarget() {
 }
 
 void agent::setAgentLocalTarget(double x, double y, double z) {
-
+    //where the agent should be in the local 'meters' frame
     AGENT_LOCAL_TARGET.X = x;
     AGENT_LOCAL_TARGET.Y = y;
     AGENT_LOCAL_TARGET.Z = z;
@@ -208,8 +222,14 @@ void agent::setFlightMode(int mode) {
     if (mode == ALTITUDE_SEP_MODE && CURRENT_POS.LAT == 0) {
         printf("Flighmode change to ATLTITUDE_SEP_MODE rejected due to no GPS\n");
     }
+    else if (mode == FOLLOW_THE_LEADER_MODE) {
+        FTL_ENABLE = true;
+        HRL_FLIGHTMODE = mode;
+        printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
+    }
     else {
         HRL_FLIGHTMODE = mode;
+        FTL_ENABLE == false;
         printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
     }
     
@@ -359,6 +379,7 @@ void parseCommand(std::string message, int *cluster, int *command) {
 };
 
 void agent::setClusterLocalTarget(double x, double y, double z) {
+    //Update where the cluster should be in the local 'meters' frame
     CLUSTER_LOCAL_TARGET.X = x;
     CLUSTER_LOCAL_TARGET.Y = y;
     CLUSTER_LOCAL_TARGET.Z = z;
@@ -417,6 +438,21 @@ void agent::setCurrentPos(double lat, double lon, double alt) {
     CURRENT_POS.LAT = lat;
     CURRENT_POS.LON = lon;
     CURRENT_POS.ALT = alt;
+}
+
+void agent::setFTLSysid(int id) {
+    FTL_SYSID = id;
+    printf("FTL SYSID set to %d\n", FTL_SYSID);
+}
+
+int agent::getFTLSysid() {
+    return FTL_SYSID;
+}
+
+void agent::setFTLloc(double lat, double lon, double alt) {
+    FTL_LOC.LAT = lat;
+    FTL_LOC.LON = lon;
+    FTL_LOC.ALT = alt;
 }
 
 #endif
