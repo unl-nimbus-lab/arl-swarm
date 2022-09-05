@@ -218,21 +218,45 @@ void agent::setClusterGlobalTarget(double lat, double lon, double alt) {
     printf("Agent Global Target Set: %f, %f, %f\n", CLUSTER_GLOBAL_TARGET.LAT, CLUSTER_GLOBAL_TARGET.LON, CLUSTER_GLOBAL_TARGET.ALT);
 }
 
+// #define CLUSTER_GUIDED_LOCAL_MODE 1
+// #define CLUSTER_RALLY_MODE 2
+// #define CLUSTER_GUIDED_GLOBAL_MODE 3
+// #define ALTITUDE_SEP_MODE 4
+// #define FOLLOW_THE_LEADER_MODE 5
+
 void agent::setFlightMode(int mode) {
-    if (mode == ALTITUDE_SEP_MODE && CURRENT_POS.LAT == 0) {
-        printf("Flighmode change to ATLTITUDE_SEP_MODE rejected due to no GPS\n");
+    switch (mode) {
+        case CLUSTER_GUIDED_LOCAL_MODE:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to CLUSTER_GUIDED_LOCAL_MODE\n");
+            break;
+        case CLUSTER_RALLY_MODE:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to CLUSTER_RALLY_MODE\n");
+            break;
+        case CLUSTER_GUIDED_GLOBAL_MODE:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to CLUSTER_GUIDED_GLOBAL_MODE\n");
+            break;
+        case ALTITUDE_SEP_MODE:
+            if (CURRENT_POS.LAT == 0)
+                printf("Flighmode change to ATLTITUDE_SEP_MODE rejected due to no GPS\n");
+            else {
+                HRL_FLIGHTMODE = mode;
+            }
+            break;
+        case FOLLOW_THE_LEADER_MODE:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = true;
+            printf("Flight mode set to Follow the leader\n");
+            break;
+        default: 
+            printf("INVALID FLIGHTMODE SELECTION\n");
+            break;
     }
-    else if (mode == FOLLOW_THE_LEADER_MODE) {
-        FTL_ENABLE = true;
-        HRL_FLIGHTMODE = mode;
-        printf("Flight mode set to Follow the leader\n",HRL_FLIGHTMODE);
-    }
-    else {
-        HRL_FLIGHTMODE = mode;
-        FTL_ENABLE == false;
-        printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
-    }
-    
 }
 
 void agent::setClusterOffsets() {
