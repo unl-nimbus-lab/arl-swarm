@@ -225,7 +225,7 @@ void agent::setFlightMode(int mode) {
     else if (mode == FOLLOW_THE_LEADER_MODE) {
         FTL_ENABLE = true;
         HRL_FLIGHTMODE = mode;
-        printf("Flight mode set to %d\n",HRL_FLIGHTMODE);
+        printf("Flight mode set to Follow the leader\n",HRL_FLIGHTMODE);
     }
     else {
         HRL_FLIGHTMODE = mode;
