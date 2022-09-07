@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
             wp_pub.publish( hrlAgent.pos_msg );
         }
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
 
