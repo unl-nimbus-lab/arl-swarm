@@ -6,17 +6,17 @@
 # -<space>item2
 
 #Own agent id
-hrl_id: 2
+hrl_id: 4
 
 # General info on the swarm
-n_agents: 3
+n_agents: 4
 n_groups: 2
 
 #How agnets are groupped. This is a verticle list
 #e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
 groups:
 - 2
-- 1
+- 2
 
 # Latitude and longitude info of the taregts
 # When multiple taregtes are declared
@@ -53,7 +53,7 @@ target_loc_y : -10.3861
 
 # Path to the JSON file conntaining A,B,K matrices
 #path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
-path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_3ag_QP.json"
+path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_4ag_QP_22.json"
 
 # X and Y directional distances to the taregt from the base coord. 
 # For now, pre-calculate them from Matlab and set them here. 
@@ -65,5 +65,6 @@ dist_to_targets_y: [-11.09]
 # The position of the list is the agent_id, list item is the id set by the FCU
 id_map:
 - 13
-- 2
+- 12
 - 11
+- 2
