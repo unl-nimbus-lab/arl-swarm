@@ -37,14 +37,14 @@ target_ym = lat_to_meters(base_lat,base_lon,target_lat_ag1,base_lon);
 
 %% Initialize the swarm
 learning = 1; % This is to enable the learning component 1: enable 0: disable
-Nc = 2; % number of clusters. Important: this variable is heavily used in the code.
+Nc = 1; % number of clusters. Important: this variable is heavily used in the code.
 
-p(:,1) = [2 2]';
+p(:,1) = [4]';
 
 N = sum(p); % total number of agents
 Nt = Nc; % number of targets
 ndim = 2; % 2D/3D agents 
-r = 2; % The radius of the formation circle for each cluster
+r = 10; % The radius of the formation circle for each cluster
 
 tg_loc = [target_xm target_ym 5 ; target_xm_2 target_ym_2 5]; % Set the distances to the targets
 tg_loc = [10 10 5 ; 10 -10 5]; % This is for test purposes
@@ -126,13 +126,30 @@ Q = []; % This Q is in the transformed space.
 % q_target = .1; % prioratize getting to the target
 % q_integral = 0.1; % prioratize the integral term on position
 
- q_formation = 10; % prioratize getting into the formation. Corresponds to the first 4 transformed states
- q_target_track_position = 0.01 ; % Corresponds to the 5th and 6th transformed states
- q_target_track_velocity = 0 ; % Corresponds to the 7th and 8th transformed states
+%%
+% Use the following set of weights when the target is around 100m from the
+% agents' starting positions
 
- q_integral_for_formation = 10 ; % Corresponds to the 9th and 10th transformed states
+ q_formation = 100; % prioratize getting into the formation. Corresponds to the first 4 transformed states
+ q_target_track_position = 1000 ; % Corresponds to the 5th and 6th transformed states
+ q_target_track_velocity = 1 ; % Corresponds to the 7th and 8th transformed states
+
+ q_integral_for_formation = 0.01 ; % Corresponds to the 9th and 10th transformed states
  q_integral_for_tracking = 0.01 ; % Corresponds to the 11thth and 12th transformed states
+%%
 
+% Use the following set of weights when the target is around 10m from the
+% agents' starting positions
+
+ q_formation = 10; % prioratize getting into the formation. Corresponds to the first 4 transformed states
+ q_target_track_position = 10 ; % Corresponds to the 5th and 6th transformed states
+ q_target_track_velocity = 1 ; % Corresponds to the 7th and 8th transformed states
+
+ q_integral_for_formation = 0.1 ; % Corresponds to the 9th and 10th transformed states
+ q_integral_for_tracking = 0.1 ; % Corresponds to the 11thth and 12th transformed states
+ 
+ %%
+ 
 for j = 1:Nc
     Ncj = p(j); % number of agents in each group / cluster
     
@@ -192,7 +209,7 @@ for i = 1:Nc % go through all the clusters
     TBi{i} = TT{i} * Bc{i};
     TGi{i} = G{i} * inv(TT{i});
     Mi = pinv(TBi{i})*kron(eye(Ncj), [zeros(ndim,ndim); eye(ndim)]);% feedback gain matrix for integral control to ensure the correct feedback form
-    TAi{i} = [TAi{i} zeros(2*ndim*Ncj, ndim*Ncj);kron(eye(Ncj), [eye(ndim) zeros(ndim)]) zeros(ndim*Ncj, Ncj*ndim)]; % add integral state to the transformed dynamics
+    TAi{i} = [TAi{i} zeros(2*ndim*Ncj, ndim*Ncj);kron(eye(Ncj), [1*eye(ndim) zeros(ndim)]) zeros(ndim*Ncj, Ncj*ndim)]; % add integral state to the transformed dynamics
 
     TBi{i} = [TBi{i}; zeros(Ncj*ndim,Ncj*ndim)];
     Txoi{i} = [TT{i}*xoc{i};zeros(Ncj*ndim,1)];
@@ -284,7 +301,7 @@ for i = 1:Nc
     
 end
 
-%% Set up initial conditions here
+%% Set up initial conditions here. You can use the example values which were calculated at the begininng of this code.
 xStart = zeros(N*6,1);
 disp(xStart);
 
@@ -295,8 +312,8 @@ xStart = T*xStart ;
 heights = [10] ;
 
 %% solve the ode
-delat_t = 0.25 ;
-tspan = [0:delat_t:20];
+delat_t = 0.1 ;
+tspan = [0:delat_t:400];
 int_size = ndim*N; %state dim for the integral state
 
 % simulate with the optimal control in the transformed coordinates
@@ -327,7 +344,7 @@ if learning
 
         end
         
-        % Calculate the discrete state propergation
+        % Calculate the discrete state propergation    
         x_k_plus_one = ( TA*delat_t + eye(length(TA)) )*(x_current-aug_state') + TB*delat_t*u  - ZD*delat_t + aug_state';
         
         x_current = x_k_plus_one ;       
@@ -436,51 +453,6 @@ fid = fopen('../swarm-nodes/config/sys_mats_4ag_QP_22.json','wt');
 fprintf(fid,strct_to_jason);
 fclose(fid);
 
-
-figure;
-plot(1:length(U),U);
-
-%% plot control inputs
-linestyles = {'-','-.','--'};
-% U = (-K*X')';
-UL = (-KL*XL')';
-figure;
-hold on;
-% agents' positions
-for j = 1:Nc
-    subplot(2,2,j);
-    Ncj = p(j);
-    if j == 1
-        pos_s = 0;
-    else
-        pos_s = ndim*Ncj;
-    end
-    
-    for i = j
-        % plot trajectory
-%         plot(t, U(1:end,pos_s + ndim*(i-1)+1), [colors(1) linestyles{1}],'linewidth',2);
-%         hold on;
-%         plot(t, U(1:end,pos_s + ndim*(i-1)+2), [colors(2) linestyles{1}],'linewidth',1);
-%         
-        %plot(Xa(1:end,pos_s + 2*ndim*(i-1)+1), Xa(1:end,pos_s + 2*ndim*(i-1)+2), [colors(j) linestyles(2,:)],'linewidth',2);
-        if learning
-            plot(t_ell, UL(1:end,pos_s + ndim*(i-1)+1), [colors(1) linestyles{2}],'linewidth',2);
-            plot(t_ell, UL(1:end,pos_s + ndim*(i-1)+2), [colors(2) linestyles{2}],'linewidth',1);
-        end
-    end
-    axis auto;
-    grid on;
-    xlabel('t (seconds)','FontSize',20);
-    ylabel(['u_' num2str(i) '^' num2str(j)],'FontSize',20);
-    ax = gca;
-    ax.FontSize=20;
-%   legend(['optimal control: u_' num2str(i) '^' num2str(j)], ['optimal control: u_' num2str(i) '^' num2str(j)], ...
-%        ['learned approximate control: u_' num2str(i) '^' num2str(j)], ['learned approximate control: u_' num2str(i) '^' num2str(j)],'location','best');
-%     legend(['optimal control: 1st component'], ['optimal control: 2nd component'], ...
-%      ['learned approximate control: 1st component'], ['learned approximate control: 2nd component'],'location','best');
-
-%     pbaspect([1.62 1 1]);
-end
 % BaseLat, BaseLon = 40.851622360702855, -96.60921604026855 ;
 
 
@@ -572,4 +544,3 @@ function d = lat_to_meters(lat1,lon1,lat2,lon2)
     end
     
 end
-
