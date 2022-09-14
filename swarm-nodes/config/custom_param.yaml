@@ -32,10 +32,6 @@ target_lon:
 #target_lat: 40.8519614
 #target_lon: -96.6086566
 
-#Taregt at QP
-#target_lat: 40.8327215
-#target_lon: -96.6958784
-
 
 # Latitude and longitude info of the two base (where all agents reference to zero)
 #QP
@@ -46,20 +42,8 @@ base_lon: -96.6957025
 #base_lat: 40.8522108472926
 #base_lo: -96.60822380671102
 
-target_loc_x : -14.8155
-target_loc_y : -10.3861
-
-#path_to_state_mtx_two: "/home/ubuntu/catkin_ws_mavros_exp/src/hrl_lqi/src/org_state-matrix.json"
-
 # Path to the JSON file conntaining A,B,K matrices
-#path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
 path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_4ag_QP_22.json"
-
-# X and Y directional distances to the taregt from the base coord. 
-# For now, pre-calculate them from Matlab and set them here. 
-# TODO: Write more code to do that calulation in c++ and share it within the whole workspace.  
-dist_to_targets_x: [-12.5 ]
-dist_to_targets_y: [-11.09]
 
 # This maps the physical agent ids set at the Arducopter/FCU to the agents' local id used in by the HRL-LQI
 # The position of the list is the agent_id, list item is the id set by the FCU

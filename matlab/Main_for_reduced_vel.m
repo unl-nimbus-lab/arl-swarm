@@ -47,7 +47,7 @@ ndim = 2; % 2D/3D agents
 r = 10; % The radius of the formation circle for each cluster
 
 tg_loc = [target_xm target_ym 5 ; target_xm_2 target_ym_2 5]; % Set the distances to the targets
-tg_loc = [10 10 5 ; 10 -10 5]; % This is for test purposes
+tg_loc = [100 100 5 ; 10 -10 5]; % This is for test purposes
 
 
 %% The commented section creates a random graph. We do not need that. I changed it. We assume full connectivity.
@@ -140,14 +140,14 @@ Q = []; % This Q is in the transformed space.
 
 % Use the following set of weights when the target is around 10m from the
 % agents' starting positions
-
- q_formation = 10; % prioratize getting into the formation. Corresponds to the first 4 transformed states
- q_target_track_position = 10 ; % Corresponds to the 5th and 6th transformed states
- q_target_track_velocity = 1 ; % Corresponds to the 7th and 8th transformed states
-
- q_integral_for_formation = 0.1 ; % Corresponds to the 9th and 10th transformed states
- q_integral_for_tracking = 0.1 ; % Corresponds to the 11thth and 12th transformed states
- 
+% 
+%  q_formation = 10; % prioratize getting into the formation. Corresponds to the first 4 transformed states
+%  q_target_track_position = 10 ; % Corresponds to the 5th and 6th transformed states
+%  q_target_track_velocity = 1 ; % Corresponds to the 7th and 8th transformed states
+% 
+%  q_integral_for_formation = 0.1 ; % Corresponds to the 9th and 10th transformed states
+%  q_integral_for_tracking = 0.1 ; % Corresponds to the 11thth and 12th transformed states
+%  
  %%
  
 for j = 1:Nc
@@ -312,7 +312,7 @@ xStart = T*xStart ;
 heights = [10] ;
 
 %% solve the ode
-delat_t = 0.1 ;
+delat_t = 0.05 ;
 tspan = [0:delat_t:400];
 int_size = ndim*N; %state dim for the integral state
 

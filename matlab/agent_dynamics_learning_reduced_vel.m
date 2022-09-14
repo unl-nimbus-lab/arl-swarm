@@ -11,7 +11,7 @@ sum_of_forces = sqrt(abs(u(1))^2 + abs(u(2))^2) ;
 if(sum_of_forces) > max_force 
 
     % This calculates the maximum 
-    disp("forces exceed at training");
+%     disp("forces exceed at training");
     theta = atan(abs(u(2))/abs(u(1))) ;    
     
     u(1) = max_force * cos(theta) * sign(u(1));
