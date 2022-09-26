@@ -433,6 +433,46 @@ void init_vars(ros::NodeHandle hl){
 
 }
 
+void stateEstimater(){
+	// gps states
+	state[ag_state_idx];
+	state[ag_state_idx+1];
+
+	// velcoity state
+	state[ag_vel_idx];
+    state[ag_vel_idx+1];
+
+
+	// integrator states
+	state[idx];
+	state[idx+1];
+
+	float positionEstimation(float pos_x, float pos_y, float vel_x, float vel_y, float int_x, float int_y, float t)
+	{
+
+		int i, j, k;
+
+		// inputs/outputs of pos, vel, and integral state
+		float x[6];
+		// x at t-1
+		float x_last[6] = {pos_x, pos_y, vel_x, vel_y, int_x, int_y};
+		// update position given constant velocity
+		float A[6][6] = {{1, 0, t, 0, 0, 0, 0}, {0, 1, 0, t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, 0, 0, 1, 0}, {0, 0, 0, 0, 0, 1}};
+
+		int A_rows = sizeof(A) / sizeof(A[0]);	 // 6 rows
+		int A_cols = sizeof(A[0]) / sizeof(int); // 6 columns
+
+		// Multiplying matrix A and x_last and storing in array x.
+		for (i = 0; i < A_rows; ++i)
+			for (k = 0; k < A_cols; ++k)
+			{
+				x[i] += A[i][k] * x_last[k];
+			}
+		
+		return(x);
+	}
+}
+
 
 int main( int argc, char** argv )
 {
