@@ -73,6 +73,7 @@ void handleCommand(int *cluster, int *command);
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
 void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
+void parseCommandUnitTest();
 
 //agent class:
 class agent {
@@ -367,40 +368,21 @@ void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
     //CXXX#XXX Where the "XXX" after the "C" identifies the cluster and
     //the "XXX" after the "#" identifies the command
-    int length = message.size();
-    char tempCluster[10];
-    char tempCommand[10];
-    int tempIndexCluster = 0;
-    int tempIndexCommand = 0;
-    for (int i = 0; i < length; i++) {
-        //Find the Cluster
-        if (message[i] == 'C' || message[i] == 'S' || message[i] == 'A') {
-            for (int j = (i + 1); j < 10; j++) {
-                if (message[j] == '#') {
-                    i = j - 1;
-                    break;
-                }
-                else {
-                    tempCluster[tempIndexCluster] = message[j];
-                    tempIndexCluster++;
-                }
-            }
-        }
-        //Find the Command
-        else if (message[i] == '#') {
-            int remainingLength = (length - 1) - i;
-            for (int j = i + 1; j < (i+ 1 + remainingLength); j++) {
-                tempCommand[tempIndexCommand] = message[j];
-                tempIndexCommand++;
-            }
-        }
-    }
-    *cluster = atoi(tempCluster);
-    *command = atoi(tempCommand);
-    printf("parseCommand Results: \n");
-    printf("Cluster: %d\n", *cluster);
-    printf("Command: %d\n", *command);
-};
+
+     std::string delimiter = "#";
+     // remove 'C', 'S', or 'A'
+     std::string short_message = message.substr(1);
+     // now find the '#'
+     int split_idx = short_message.find(delimiter);
+     // check for error and std::string::npos
+     std::string cluster_str = short_message.substr(0, split_idx);
+     // remove cluster and delimiter
+     short_message.erase(0, split_idx+delimiter.length());
+     std::string command_str = short_message;
+     // convert the command to an int
+     *cluster = atoi(cluster_str.c_str());
+     *command = atoi(command_str.c_str());
+}
 
 void agent::setClusterLocalTarget(double x, double y, double z) {
     //Update where the cluster should be in the local 'meters' frame
@@ -478,5 +460,47 @@ void agent::setFTLloc(double lat, double lon, double alt) {
     FTL_LOC.LON = lon;
     FTL_LOC.ALT = alt;
 }
+
+void parseCommandUnitTest()
+{
+     int cluster;
+     int command;
+     std::string msg = "C123#987";
+     std::cout << "msg sent: " << msg << std::endl;
+     parseCommand(msg, &cluster, &command);
+     std::cout << "parseCommand results:" << std::endl;
+     std::cout << "\tCluster: " << cluster << std::endl;
+     std::cout << "\tCommand: " << command << std::endl;
+
+     msg = "C1#9";
+     std::cout << "\nmsg sent: " << msg << std::endl;
+     parseCommand(msg, &cluster, &command);
+     std::cout << "parseCommand results:" << std::endl;
+     std::cout << "\tCluster: " << cluster << std::endl;
+     std::cout << "\tCommand: " << command << std::endl;
+
+     msg = "C15#9";
+     std::cout << "\nmsg sent: " << msg << std::endl;
+     parseCommand(msg, &cluster, &command);
+     std::cout << "parseCommand results:" << std::endl;
+     std::cout << "\tCluster: " << cluster << std::endl;
+     std::cout << "\tCommand: " << command << std::endl;
+
+     msg = "C1#90";
+     std::cout << "\nmsg sent: " << msg << std::endl;
+     parseCommand(msg, &cluster, &command);
+     std::cout << "parseCommand results:" << std::endl;
+     std::cout << "\tCluster: " << cluster << std::endl;
+     std::cout << "\tCommand: " << command << std::endl;
+
+     msg = "C01#02";
+     std::cout << "\nmsg sent: " << msg << std::endl;
+     parseCommand(msg, &cluster, &command);
+     std::cout << "parseCommand results:" << std::endl;
+     std::cout << "\tCluster: " << cluster << std::endl;
+     std::cout << "\tCommand: " << command << std::endl;
+
+}
+
 
 #endif
