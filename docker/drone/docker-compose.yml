@@ -1,12 +1,12 @@
 version: '3'
 
 services:
-  mavros:
+  clustering:
     #image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/drone:latest
     image: clustering:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: mavros
+    container_name: clustering
     network_mode: "host"
     volumes:
       - /home/ubuntu/rosbags:/home/rosbags
