@@ -92,7 +92,6 @@ float own_target_y;
 // global variables for state estimator
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx;
-int t_last = 0;
 bool gps_update = false;
 
 std::string topic_to_hrl = "/swarm/global_states/";
@@ -449,9 +448,9 @@ void init_vars(ros::NodeHandle hl)
 	}
 }
 
-float positionEstimation(float ag_x, float ag_y, float ag_vx, float ag_vy, float own_target_X, float own_target_X, float t_last)
+float positionEstimation(float ag_x, float ag_y, float ag_vx, float ag_vy, float own_target_X, float own_target_Y, float t_last)
 {
-	float t = ros::Time::now();
+	t = ros::Time::now();
 
 	int i, j, k;
 
@@ -460,7 +459,7 @@ float positionEstimation(float ag_x, float ag_y, float ag_vx, float ag_vy, float
 	// x at t-1
 	float x_last[6] = {ag_x, ag_y, ag_vx, ag_vy, own_target_X, own_target_X};
 	// update position given constant velocity
-	float A[6][6] = {{1, 0, t, 0, 0, 0, 0}, {0, 1, 0, t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, t, 0, 1, 0}, {0, 0, 0, t, 0, 1}};
+	float A[6][6] = {{1, 0, t, 0, 0, 0}, {0, 1, 0, t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, t, 0, 1, 0}, {0, 0, 0, t, 0, 1}};
 
 	int A_rows = sizeof(A) / sizeof(A[0]);	 // 6 rows
 	int A_cols = sizeof(A[0]) / sizeof(int); // 6 columns
@@ -486,19 +485,19 @@ void stateEstimater()
 	while (ros::ok())
 	{
 		float x[6];
-		x = float positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_last);
+		x = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_last);
 
 		// Re-arrange stuff
 		const std::lock_guard<std::mutex> lock(state_mutex);
 		// Copy the value from the fcu to the state variable
-		state[int ag_state_idx] = x[0];
-		state[int ag_state_idx + 1] = x[1];
+		state[ag_state_idx] = x[0];
+		state[ag_state_idx + 1] = x[1];
 
 		// Copy the integral states to the state vector
 		if (std::abs(ag_id - hrl_id) < 0.000000001)
 		{
-			state[int ag_itgrl_idx] = intgrl_state[0];
-			state[int ag_itgrl_idx + 1] = intgrl_state[1];
+			state[ag_itgrl_idx] = intgrl_state[0];
+			state[ag_itgrl_idx + 1] = intgrl_state[1];
 		}
 
 		// Update the integral state if the id is its id
@@ -516,7 +515,7 @@ void stateEstimater()
 			ag_vx = x[2];
 			ag_vy = x[3];
 			own_target_X = x[4];
-			own_target_X = x[5];
+			own_target_Y = x[5];
 			t_last = x[6];
 		}
 
