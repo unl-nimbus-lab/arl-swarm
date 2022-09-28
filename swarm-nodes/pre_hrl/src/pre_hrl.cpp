@@ -168,7 +168,7 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	// }
 
 	gps_update = true;
-	t_last = ros::Time::now();
+	ros::TIME t_last = ros::Time::now();
 }
 
 void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr &new_msg)
@@ -448,16 +448,16 @@ void init_vars(ros::NodeHandle hl)
 	}
 }
 
-float positionEstimation(float ag_x, float ag_y, float ag_vx, float ag_vy, float own_target_X, float own_target_Y, float t_last)
+float *positionEstimation(float x, float y, float vx, float vy, float target_X, float target_Y, float t_prev)
 {
-	t = ros::Time::now();
+	ros::TIME t = ros::Time::now();
 
 	int i, j, k;
 
 	// inputs/outputs of pos, vel, and integral state
 	float x[6];
 	// x at t-1
-	float x_last[6] = {ag_x, ag_y, ag_vx, ag_vy, own_target_X, own_target_X};
+	float x_last[6] = {x, y, vx, vy, target_X, target_X};
 	// update position given constant velocity
 	float A[6][6] = {{1, 0, t, 0, 0, 0}, {0, 1, 0, t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, t, 0, 1, 0}, {0, 0, 0, t, 0, 1}};
 
@@ -481,6 +481,7 @@ float positionEstimation(float ag_x, float ag_y, float ag_vx, float ag_vy, float
 void stateEstimater()
 {
 	ros::Rate loop_rate(4);
+	int* x;
 
 	while (ros::ok())
 	{
@@ -505,7 +506,7 @@ void stateEstimater()
 		{
 
 			intgrl_state[0] += (x[0] - x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
-			intgrl_state[1] += ([1] - x[5]) * INTGRL_MTPL;	// multiply by a scaller to reduce the magnitiude
+			intgrl_state[1] += (x[1] - x[5]) * INTGRL_MTPL;	// multiply by a scaller to reduce the magnitiude
 		}
 
 		if (gps_update == false)
@@ -514,8 +515,8 @@ void stateEstimater()
 			ag_y = x[1];
 			ag_vx = x[2];
 			ag_vy = x[3];
-			own_target_X = x[4];
-			own_target_Y = x[5];
+			own_target_x = x[4];
+			own_target_y = x[5];
 			t_last = x[6];
 		}
 
