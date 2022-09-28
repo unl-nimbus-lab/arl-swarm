@@ -48,6 +48,7 @@ I am directly accessing global variables where I should not be doing. That's bec
 #include <mavros_msgs/SwarmOdom.h>
 #include <chrono>
 #include <time.h>
+#include <tuple.h>
 
 #define ROS_NODE_NAME "pre_hrl"
 #define CONTROLLER_RATE 50	 // 8    // Rate in Hz
@@ -93,6 +94,7 @@ float own_target_y;
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx;
 bool gps_update = false;
+ros::Time t_last
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -168,7 +170,7 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	// }
 
 	gps_update = true;
-	ros::TIME t_last = ros::Time::now();
+	t_last = ros::Time::now();
 }
 
 void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr &new_msg)
@@ -448,18 +450,20 @@ void init_vars(ros::NodeHandle hl)
 	}
 }
 
-float *positionEstimation(float x, float y, float vx, float vy, float target_X, float target_Y, float t_prev)
+std::array<float,6> positionEstimation(x, y, vx, vy, target_X, target_Y, t_prev)
 {
-	ros::TIME t = ros::Time::now();
+	ros::Time t = ros::Time::now();
+
+	ros::Time d_t = t - t_prev;
 
 	int i, j, k;
 
 	// inputs/outputs of pos, vel, and integral state
-	float x[6];
+	std::array<float,6> x;
 	// x at t-1
-	float x_last[6] = {x, y, vx, vy, target_X, target_X};
+	std::array<float,6> x_last = {x, y, vx, vy, target_X, target_X};
 	// update position given constant velocity
-	float A[6][6] = {{1, 0, t, 0, 0, 0}, {0, 1, 0, t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, t, 0, 1, 0}, {0, 0, 0, t, 0, 1}};
+	std::array<std::array<float,6>, 6> A { {{1, 0, d_t, 0, 0, 0}, {0, 1, 0, d_t, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, d_t, 0, 1, 0}, {0, 0, 0, d_t, 0, 1}} };
 
 	int A_rows = sizeof(A) / sizeof(A[0]);	 // 6 rows
 	int A_cols = sizeof(A[0]) / sizeof(int); // 6 columns
@@ -471,22 +475,19 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_X, 
 			x[i] += A[i][k] * x_last[k];
 		}
 
-	x[6] = t;
-
 	gps_update = false;
 
-	return x;
+	return {x, t_prev};
 }
 
 void stateEstimater()
 {
 	ros::Rate loop_rate(4);
-	int* x;
+	std::array<float,6> x;
 
 	while (ros::ok())
 	{
-		float x[6];
-		x = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_last);
+		auto [x, t_prev] = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_last);
 
 		// Re-arrange stuff
 		const std::lock_guard<std::mutex> lock(state_mutex);
@@ -517,7 +518,7 @@ void stateEstimater()
 			ag_vy = x[3];
 			own_target_x = x[4];
 			own_target_y = x[5];
-			t_last = x[6];
+			t_last = t_prev;
 		}
 
 		loop_rate.sleep();
