@@ -90,9 +90,9 @@ float own_target_x;
 float own_target_y;
 
 // global variables for state estimator
-float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_id, hrl_id, ag_vx, ag_vy;
+float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx;
-float t_last = 0;
+int t_last = 0;
 bool gps_update = false;
 
 std::string topic_to_hrl = "/swarm/global_states/";
