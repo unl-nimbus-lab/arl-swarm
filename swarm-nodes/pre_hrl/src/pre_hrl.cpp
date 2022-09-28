@@ -491,14 +491,14 @@ void stateEstimater()
 		// Re-arrange stuff
 		const std::lock_guard<std::mutex> lock(state_mutex);
 		// Copy the value from the fcu to the state variable
-		state[ag_state_idx] = x[0];
-		state[ag_state_idx + 1] = x[1];
+		state[int ag_state_idx] = x[0];
+		state[int ag_state_idx + 1] = x[1];
 
 		// Copy the integral states to the state vector
 		if (std::abs(ag_id - hrl_id) < 0.000000001)
 		{
-			state[ag_itgrl_idx] = intgrl_state[0];
-			state[ag_itgrl_idx + 1] = intgrl_state[1];
+			state[int ag_itgrl_idx] = intgrl_state[0];
+			state[int ag_itgrl_idx + 1] = intgrl_state[1];
 		}
 
 		// Update the integral state if the id is its id
