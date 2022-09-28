@@ -94,7 +94,7 @@ float own_target_y;
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx;
 bool gps_update = false;
-ros::Time t_last
+ros::Time t_last;
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -170,7 +170,6 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	// }
 
 	gps_update = true;
-	t_last = ros::Time::now();
 }
 
 void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr &new_msg)
@@ -450,7 +449,7 @@ void init_vars(ros::NodeHandle hl)
 	}
 }
 
-std::array<float,6> positionEstimation(x, y, vx, vy, target_X, target_Y, t_prev)
+std::array<float,6> positionEstimation(float x, float y, float vx, float vy, float target_X, float target_Y, float t_prev)
 {
 	ros::Time t = ros::Time::now();
 
@@ -484,6 +483,7 @@ void stateEstimater()
 {
 	ros::Rate loop_rate(4);
 	std::array<float,6> x;
+	t_last = ros::Time::now();
 
 	while (ros::ok())
 	{
