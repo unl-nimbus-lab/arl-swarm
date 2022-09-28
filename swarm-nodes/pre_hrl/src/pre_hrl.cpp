@@ -92,7 +92,7 @@ float own_target_y;
 
 // global variables for state estimator
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
-int ag_id, ag_itgrl_idx;
+int ag_id, ag_itgrl_idx, ag_state_idx;
 bool gps_update = false;
 ros::Time t_last;
 
@@ -105,7 +105,6 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 {
 
 	// This function reads the callback messgaes, re-arranges them to the specific order of the formation
-	int ag_state_idx;
 	int incoming_ag_id = new_msg->system_id;
 
 	// Find the hrl_id of the agent with a mapping FCU id
@@ -449,7 +448,7 @@ void init_vars(ros::NodeHandle hl)
 	}
 }
 
-std::array<float,6> positionEstimation(float x, float y, float vx, float vy, float target_X, float target_Y, float t_prev)
+std::array<float,6> positionEstimation(float x, float y, float vx, float vy, float target_X, float target_Y, ros::Time t_prev)
 {
 	ros::Time t = ros::Time::now();
 
