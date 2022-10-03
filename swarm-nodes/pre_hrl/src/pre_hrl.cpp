@@ -94,11 +94,7 @@ float own_target_y;
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx, ag_state_idx;
 bool gps_update = false;
-float t;
-int hrl_id;
-float own_target_x;
-float own_target_y;
-ros::Time t_prev;
+float t_prev=ros::Time::now().toSec();
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -454,8 +450,8 @@ void init_vars(ros::NodeHandle hl)
 
 float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, float t_prev, float *t_last)
 {
-    ros::Time t = ros::Time::now();
-    ros::Time d_t = t - t_prev;
+    float t = ros::Time::now().toSec();
+    float d_t = t - t_prev;
 
     int i, k;
 
@@ -489,7 +485,7 @@ void stateEstimater()
     {
         int i;
         float *ptr_x;
-        ros::Time t_last; // not sure if i need this
+        float t_last; // not sure if i need this
 
         ptr_x = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_prev, &t_last);
 
