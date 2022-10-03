@@ -476,7 +476,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
             arr_x[i] += A[i][k] * x_last[k];
         }
 
-    // gps_update = false;
+    gps_update = false;
     *t_last = t;
 
     return arr_x;
@@ -489,15 +489,7 @@ void stateEstimater()
     {
         int i;
         float *ptr_x;
-        float t_last;
-
-        ag_x = 1.0;
-        ag_y = 1.0;
-        ag_vx = 1.0;
-        ag_vy = 1.0;
-        ag_tgt_x = 1.0;
-        ag_tgt_y = 1.0;
-        float t_prev = 0.0;
+        ros::Time t_last; // not sure if i need this
 
         ptr_x = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_prev, &t_last);
 
@@ -537,7 +529,7 @@ void stateEstimater()
             t_prev = t_last;
         }
 
-        printf("value of t_last = %f", ptr_x[0]);
+        // printf("value of t_last = %f", ptr_x[0]);
 
         loop_rate.sleep();
     }
