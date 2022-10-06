@@ -101,7 +101,7 @@ float *updated_ag_tgt_y = NULL;
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx, ag_state_idx;
 bool gps_update = false;
-float t_prev = ros::Time::now().toSec();
+float t_prev = 0;
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
