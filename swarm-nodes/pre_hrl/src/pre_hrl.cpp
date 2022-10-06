@@ -91,10 +91,17 @@ float own_target_x;
 float own_target_y;
 
 // global variables for state estimator
+float *updated_ag_x = NULL;
+float *updated_ag_y = NULL;
+float *updated_ag_vx = NULL;
+float *updated_ag_vy = NULL;
+float *updated_ag_tgt_x = NULL;
+float *updated_ag_tgt_y = NULL;
+
 float ag_x, ag_y, ag_tgt_x, ag_tgt_y, ag_vx, ag_vy;
 int ag_id, ag_itgrl_idx, ag_state_idx;
 bool gps_update = false;
-float t_prev=ros::Time::now().toSec();
+float t_prev = ros::Time::now().toSec();
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -139,6 +146,11 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	// added this from below if statement
 	float ag_tgt_x = gc.lon_to_meters_signed(base_lat, base_lon, base_lat, target_lon[grp_nbr - 1]); // x distance to taregt with respect to the base (0,0)
 	float ag_tgt_y = gc.lat_to_meters_signed(base_lat, base_lon, target_lat[grp_nbr - 1], base_lon); // y distance to taregt with respect to the base (0,0)
+
+	updated_ag_x[ag_id - 1] = ag_x;
+	updated_ag_y[ag_id - 1] = ag_y;
+	updated_ag_tgt_x[ag_id - 1] = ag_tgt_x;
+	updated_ag_tgt_y[ag_id - 1] = ag_tgt_y;
 
 	// // Update the integral state if the id is its id
 	// if (std::abs(ag_id - hrl_id) < 0.000000001)
@@ -203,6 +215,9 @@ void velocityCallback(const mavros_msgs::SwarmOdom::ConstPtr &new_msg)
 
 	float ag_vx = new_msg->twist.twist.linear.x;
 	float ag_vy = new_msg->twist.twist.linear.y;
+
+	updated_ag_x[ag_id - 1] = ag_vx;
+	updated_ag_y[ag_id - 1] = ag_vy;
 
 	const std::lock_guard<std::mutex> lock(state_mutex);
 	// Copy the value from the estimator to the state variable
@@ -446,89 +461,106 @@ void init_vars(ros::NodeHandle hl)
 	{
 		state[i] = 0.0;
 	}
+
+	updated_ag_x = new float[n];
+	updated_ag_y = new float[n];
+	updated_ag_vx = new float[n];
+	updated_ag_vy = new float[n];
+	updated_ag_tgt_x = new float[n];
+	updated_ag_tgt_y = new float[n];
 }
 
 float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, float t_prev, float *t_last)
 {
-    float t = ros::Time::now().toSec();
-    float d_t = t - t_prev;
+	float t = ros::Time::now().toSec();
+	float d_t = t - t_prev;
 
-    int i, k;
+	int i, k;
 
-    // inputs/outputs of pos, vel, and integral state
-    static float arr_x[6];
-    // x at t-1
-    float x_last[6] = {x, y, vx, vy, target_x, target_y};
-    // update position given constant velocity
-    float A[6][6] = {{1, 0, d_t, 0, 0, 0}, {0, 1, 0, d_t, 0, 0}, {0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, d_t, 0, 1, 0}, {0, 0, 0, d_t, 0, 1}};
+	// inputs/outputs of pos, vel, and integral state
+	static float arr_x[6];
+	// x at t-1
+	float x_last[6] = {x, y, vx, vy, target_x, target_y};
+	// update position given constant velocity
+	float A[6][6] = {{1, 0, d_t, 0, 0, 0}, {0, 1, 0, d_t, 0, 0}, {0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, d_t, 0, 1, 0}, {0, 0, 0, d_t, 0, 1}};
 
-    int A_rows = sizeof(A) / sizeof(A[0]);   // 6 rows
-    int A_cols = sizeof(A[0]) / sizeof(int); // 6 columns
+	int A_rows = sizeof(A) / sizeof(A[0]);	 // 6 rows
+	int A_cols = sizeof(A[0]) / sizeof(int); // 6 columns
 
-    // Multiplying matrix A and x_last and storing in array x.
-    for (i = 0; i < A_rows; ++i)
-        for (k = 0; k < A_cols; ++k)
-        {
-            arr_x[i] += A[i][k] * x_last[k];
-        }
+	// Multiplying matrix A and x_last and storing in array x.
+	for (i = 0; i < A_rows; ++i)
+		for (k = 0; k < A_cols; ++k)
+		{
+			arr_x[i] += A[i][k] * x_last[k];
+		}
 
-    gps_update = false;
-    *t_last = t;
+	gps_update = false;
+	*t_last = t;
 
-    return arr_x;
+	return arr_x;
 }
 
 void stateEstimater()
 {
 	ros::Rate loop_rate(4);
-    while (gps_update == false)
-    {
-        int i;
-        float *ptr_x;
-        float t_last; // not sure if i need this
+	while (ros::ok())
+	{
+		int i;
+		float *ptr_x;
+		float t_last; // not sure if i need this
 
-        ptr_x = positionEstimation(ag_x, ag_y, ag_vx, ag_vy, ag_tgt_x, ag_tgt_y, t_prev, &t_last);
+		for (int j = 0; j < N; j++)
+		{
+			float temp_ag_x = updated_ag_x[j];
+			float temp_ag_x = updated_ag_y[j];
+			float temp_ag_x = updated_ag_vx[j];
+			float temp_ag_x = updated_ag_vy[j];
+			float temp_ag_x = updated_ag_tgt_x[j];
+			float temp_ag_x = updated_ag_tgt_y[j];
 
-        // std::cout << "Array is: ";
-        // for (i = 0; i < 6; i++)
-        //     std::cout << ptr_x[i] << "\t"; // ptr[i] is equivalent to *(ptr+i)
+			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev, &t_last);
 
-        // Re-arrange stuff
-        const std::lock_guard<std::mutex> lock(state_mutex);
-        // Copy the value from the fcu to the state variable
-        state[0] = ptr_x[0];
-        state[ag_state_idx + 1] = ptr_x[1];
+			// std::cout << "Array is: ";
+			// for (i = 0; i < 6; i++)
+			//     std::cout << ptr_x[i] << "\t"; // ptr[i] is equivalent to *(ptr+i)
 
-        // Copy the integral states to the state vector
-        if (std::abs(ag_id - hrl_id) < 0.000000001)
-        {
-            state[ag_itgrl_idx] = intgrl_state[0];
-            state[ag_itgrl_idx + 1] = intgrl_state[1];
-        }
+			// Re-arrange stuff
+			const std::lock_guard<std::mutex> lock(state_mutex);
+			// Copy the value from the fcu to the state variable
+			state[0] = ptr_x[0];
+			state[ag_state_idx + 1] = ptr_x[1];
 
-        // Update the integral state if the id is its id
-        if (std::abs(ag_id - hrl_id) < 0.000000001)
-        {
+			// Copy the integral states to the state vector
+			if (std::abs(ag_id - hrl_id) < 0.000000001)
+			{
+				state[ag_itgrl_idx] = intgrl_state[0];
+				state[ag_itgrl_idx + 1] = intgrl_state[1];
+			}
 
-            intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
-            intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
-        }
+			// Update the integral state if the id is its id
+			if (std::abs(ag_id - hrl_id) < 0.000000001)
+			{
 
-        if (gps_update == false)
-        {
-            ag_x = ptr_x[0];
-            ag_y = ptr_x[1];
-            ag_vx = ptr_x[2];
-            ag_vy = ptr_x[3];
-            ag_tgt_x = ptr_x[5];
-            ag_tgt_y = ptr_x[6];
-            t_prev = t_last;
-        }
+				intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
+				intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
+			}
+		}
 
-        // printf("value of t_last = %f", ptr_x[0]);
+		if (gps_update == false)
+		{
+			updated_ag_x = ptr_x[0];
+			updated_ag_y = ptr_x[1];
+			updated_ag_vx = ptr_x[2];
+			updated_ag_vy = ptr_x[3];
+			updated_ag_tgt_x = ptr_x[5];
+			updated_ag_tgt_y = ptr_x[6];
+			t_prev = t_last;
+		}
 
-        loop_rate.sleep();
-    }
+		// printf("value of t_last = %f", ptr_x[0]);
+
+		loop_rate.sleep();
+	}
 }
 
 int main(int argc, char **argv)
