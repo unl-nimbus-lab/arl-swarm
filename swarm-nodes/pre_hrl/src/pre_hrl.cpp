@@ -512,11 +512,11 @@ void stateEstimater()
 		for (int j = 0; j < N; j++)
 		{
 			float temp_ag_x = updated_ag_x[j];
-			float temp_ag_x = updated_ag_y[j];
-			float temp_ag_x = updated_ag_vx[j];
-			float temp_ag_x = updated_ag_vy[j];
-			float temp_ag_x = updated_ag_tgt_x[j];
-			float temp_ag_x = updated_ag_tgt_y[j];
+			float temp_ag_y = updated_ag_y[j];
+			float temp_ag_vx = updated_ag_vx[j];
+			float temp_ag_vy = updated_ag_vy[j];
+			float temp_ag_tgt_x = updated_ag_tgt_x[j];
+			float temp_ag_tgt_y = updated_ag_tgt_y[j];
 
 			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev, &t_last);
 
@@ -548,12 +548,12 @@ void stateEstimater()
 
 		if (gps_update == false)
 		{
-			updated_ag_x = ptr_x[0];
-			updated_ag_y = ptr_x[1];
-			updated_ag_vx = ptr_x[2];
-			updated_ag_vy = ptr_x[3];
-			updated_ag_tgt_x = ptr_x[5];
-			updated_ag_tgt_y = ptr_x[6];
+			updated_ag_x = *ptr_x[0];
+			updated_ag_y = *ptr_x[1];
+			updated_ag_vx = *ptr_x[2];
+			updated_ag_vy = *ptr_x[3];
+			updated_ag_tgt_x = *ptr_x[5];
+			updated_ag_tgt_y = *ptr_x[6];
 			t_prev = t_last;
 		}
 
