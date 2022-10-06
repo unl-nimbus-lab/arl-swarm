@@ -548,12 +548,12 @@ void stateEstimater()
 
 		if (gps_update == false)
 		{
-			updated_ag_x = *ptr_x[0];
-			updated_ag_y = *ptr_x[1];
-			updated_ag_vx = *ptr_x[2];
-			updated_ag_vy = *ptr_x[3];
-			updated_ag_tgt_x = *ptr_x[5];
-			updated_ag_tgt_y = *ptr_x[6];
+			*updated_ag_x = ptr_x[0];
+			*updated_ag_y = ptr_x[1];
+			*updated_ag_vx = ptr_x[2];
+			*updated_ag_vy = ptr_x[3];
+			*updated_ag_tgt_x = ptr_x[5];
+			*updated_ag_tgt_y = ptr_x[6];
 			t_prev = t_last;
 		}
 
