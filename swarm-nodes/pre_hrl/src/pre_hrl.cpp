@@ -524,26 +524,23 @@ void stateEstimater()
 			// for (i = 0; i < 6; i++)
 			//     std::cout << ptr_x[i] << "\t"; // ptr[i] is equivalent to *(ptr+i)
 
+			ag_state_idx = id2idx.get_state_idx(j+1, groups);
+			ag_itgrl_idx = id2idx.get_integral_idx(j+1, groups);
+
 			// Re-arrange stuff
 			const std::lock_guard<std::mutex> lock(state_mutex);
 			// Copy the value from the fcu to the state variable
-			state[0] = ptr_x[0];
+			state[ag_state_idx] = ptr_x[0];
 			state[ag_state_idx + 1] = ptr_x[1];
 
 			// Copy the integral states to the state vector
-			if (std::abs(ag_id - hrl_id) < 0.000000001)
-			{
-				state[ag_itgrl_idx] = intgrl_state[0];
-				state[ag_itgrl_idx + 1] = intgrl_state[1];
-			}
+			state[ag_itgrl_idx] = intgrl_state[0];
+			state[ag_itgrl_idx + 1] = intgrl_state[1];
 
 			// Update the integral state if the id is its id
-			if (std::abs(ag_id - hrl_id) < 0.000000001)
-			{
 
-				intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
-				intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
-			}
+			intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
+			intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
 		}
 
 		if (gps_update == false)
