@@ -103,7 +103,8 @@ int ag_id, ag_itgrl_idx, ag_state_idx;
 float *gps_update_x = NULL;
 float *gps_update_y = NULL;
 bool *gps_update = NULL;
-double t_prev = 0;
+double *t_prev = NULL;
+
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -484,15 +485,19 @@ void init_vars(ros::NodeHandle hl)
 	gps_update = new bool[n];
 	gps_update_x = new float[n];
 	gps_update_y = new float[n];
+	t_prev = new double[n];
 }
 
-float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_last)
+float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_prev, int j)
 {
-	double t = ros::Time::now().toSec();
-	printf("curret time = %lf\n", t);
-	double d_t = abs(t - t_last);
+	double *t = NULL;
+	t = new double[N];
+
+	t[j] = ros::Time::now().toSec();
+	printf("curret time = %lf\n", t[j]);
+	double d_t = abs(t[j] - t_prev[j]);
 	printf("change in time = %lf\n", d_t);
-	t_prev = t;
+	t_prev[j] = t[j];
 
 	int i, k;
 
@@ -547,7 +552,7 @@ void stateEstimater()
 			}
 
 			printf("t_prev = %lf\n", t_prev);
-			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev);
+			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev, j);
 
 			// std::cout << "Array is: ";
 			// for (i = 0; i < 6; i++)
