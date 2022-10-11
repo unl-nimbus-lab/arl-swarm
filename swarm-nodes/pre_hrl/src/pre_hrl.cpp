@@ -533,7 +533,7 @@ void stateEstimater()
 
 		for (int j = 0; j < N; j++)
 		{
-			printf("gps_update = %d\n", gps_update[j]?"true":"false");
+			printf("gps_update = %s\n", gps_update[j]?"true":"false");
 
 			if (gps_update[j] == true)
 			{
