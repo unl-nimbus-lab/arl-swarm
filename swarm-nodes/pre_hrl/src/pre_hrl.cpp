@@ -488,9 +488,9 @@ void init_vars(ros::NodeHandle hl)
 
 float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, float t_prev, float *t_last)
 {
-	float t = ros::Time::now().toNSec();
+	float t = ros::Time::now().toSec();
 	printf("curret time = %f\n", t);
-	float d_t = (t - t_prev) / 1000;
+	float d_t = (t - t_prev);
 	printf("change in time = %f\n", d_t);
 
 	int i, k;
@@ -582,6 +582,8 @@ void stateEstimater()
 				temp_ag_tgt_x = ptr_x[4];
 				temp_ag_tgt_y = ptr_x[5];
 			}
+
+			printf("x valu = %f\n", temp_ag_x);
 		}
 
 		// printf("value of t_last = %f", ptr_x[0]);
