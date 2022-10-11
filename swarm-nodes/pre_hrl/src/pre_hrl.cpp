@@ -495,7 +495,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 
 	t[j] = ros::Time::now().toSec();
 	printf("curret time = %lf\n", t);
-	double d_t = abs(t - t_last);
+	double d_t = abs(t[j] - t_last);
 	printf("change in time = %lf\n", d_t);
 	t_prev[j] = t[j];
 
