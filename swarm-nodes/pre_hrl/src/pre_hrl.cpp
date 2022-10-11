@@ -512,7 +512,6 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 			arr_x[i] += A[i][k] * x_last[k];
 		}
 
-	gps_update = false;
 	*t_last = t;
 
 	return arr_x;
@@ -520,6 +519,13 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 
 void stateEstimater()
 {
+	float temp_ag_x = 0;
+	float temp_ag_y = 0;
+	float temp_ag_vx = 0;
+	float temp_ag_vy = 0;
+	float temp_ag_tgt_x = 0;
+	float temp_ag_tgt_y = 0;
+
 	ros::Rate loop_rate(4);
 	while (ros::ok())
 	{
@@ -533,12 +539,12 @@ void stateEstimater()
 			if (gps_update[j] == true)
 			{
 				// new values should be fed in via updated_ag_xxxxxxxxx
-				float temp_ag_x = updated_ag_x[j];
-				float temp_ag_y = updated_ag_y[j];
-				float temp_ag_vx = updated_ag_vx[j];
-				float temp_ag_vy = updated_ag_vy[j];
-				float temp_ag_tgt_x = updated_ag_tgt_x[j];
-				float temp_ag_tgt_y = updated_ag_tgt_y[j];
+				temp_ag_x = updated_ag_x[j];
+				temp_ag_y = updated_ag_y[j];
+				temp_ag_vx = updated_ag_vx[j];
+				temp_ag_vy = updated_ag_vy[j];
+				temp_ag_tgt_x = updated_ag_tgt_x[j];
+				temp_ag_tgt_y = updated_ag_tgt_y[j];
 			}
 
 			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev, &t_last);
@@ -569,12 +575,12 @@ void stateEstimater()
 
 			if (gps_update[j] == false)
 			{
-				float temp_ag_x = ptr_x[0];
-				float temp_ag_y = ptr_x[1];
-				float temp_ag_vx = ptr_x[2];
-				float temp_ag_vy = ptr_x[3];
-				float temp_ag_tgt_x = ptr_x[4];
-				float temp_ag_tgt_y = ptr_x[5];
+				temp_ag_x = ptr_x[0];
+				temp_ag_y = ptr_x[1];
+				temp_ag_vx = ptr_x[2];
+				temp_ag_vy = ptr_x[3];
+				temp_ag_tgt_x = ptr_x[4];
+				temp_ag_tgt_y = ptr_x[5];
 			}
 		}
 
