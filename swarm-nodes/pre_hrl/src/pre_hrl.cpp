@@ -103,7 +103,7 @@ int ag_id, ag_itgrl_idx, ag_state_idx;
 float *gps_update_x = NULL;
 float *gps_update_y = NULL;
 bool *gps_update = NULL;
-float t_prev = 0;
+double t_prev = 0;
 
 std::string topic_to_hrl = "/swarm/global_states/";
 std::string topic_to_dist_to_target = "/swarm/dist_to_target/";
@@ -492,6 +492,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 	// printf("curret time = %lf\n", t);
 	double d_t = abs(t - t_prev);
 	printf("change in time = %lf\n", d_t);
+	t_prev = t;
 
 	int i, k;
 
@@ -511,8 +512,6 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 		{
 			arr_x[i] += A[i][k] * x_last[k];
 		}
-
-	t_prev = t;
 
 	return arr_x;
 }
@@ -534,7 +533,7 @@ void stateEstimater()
 
 		for (int j = 0; j < N; j++)
 		{
-			printf("gps_update = %d\n", gps_update);
+			printf("gps_update = %d\n", gps_update[j]?"true":"false");
 
 			if (gps_update[j] == true)
 			{
