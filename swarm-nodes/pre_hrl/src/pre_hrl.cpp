@@ -530,7 +530,7 @@ void stateEstimater()
 	float temp_ag_tgt_x = 0;
 	float temp_ag_tgt_y = 0;
 
-	ros::Rate loop_rate(1);
+	ros::Rate loop_rate(2);
 	while (ros::ok())
 	{
 		int i;
