@@ -489,7 +489,7 @@ void init_vars(ros::NodeHandle hl)
 float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_last)
 {
 	double t = ros::Time::now().toSec();
-	// printf("curret time = %lf\n", t);
+	printf("curret time = %lf\n", t);
 	double d_t = abs(t - t_last);
 	printf("change in time = %lf\n", d_t);
 	t_last = t;
@@ -546,6 +546,7 @@ void stateEstimater()
 				temp_ag_tgt_y = updated_ag_tgt_y[j];
 			}
 
+			printf("t_prev = %lf\n", t_prev);
 			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev);
 
 			// std::cout << "Array is: ";
