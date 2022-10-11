@@ -182,9 +182,9 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	// 	state[ag_itgrl_idx + 1] = intgrl_state[1];
 	// }
 
-	if (gps_update_x[ag_id - 1] == ag_x && gps_update_y[ag_id - 1] == ag_y)
+	if (abs(gps_update_x[ag_id - 1] - ag_x) < 0.0000000000001 && abs(gps_update_y[ag_id - 1] - ag_y) < 0.0000000000001)
 	{
-		gps_update[ag_id - 1] == false;
+		gps_update[ag_id - 1] = false;
 	}
 	else
 	{
