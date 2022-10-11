@@ -568,8 +568,8 @@ void stateEstimater()
 
 			// Update the integral state if the id is its id
 
-			intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
-			intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
+			intgrl_state[0] += (ptr_x[0] - updated_ag_tgt_x[j]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
+			intgrl_state[1] += (ptr_x[1] - updated_ag_tgt_x[j]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
 
 
 			if (gps_update[j] == false)
@@ -578,8 +578,8 @@ void stateEstimater()
 				temp_ag_y = ptr_x[1];
 				temp_ag_vx = ptr_x[2];
 				temp_ag_vy = ptr_x[3];
-				temp_ag_tgt_x = ptr_x[4];
-				temp_ag_tgt_y = ptr_x[5];
+				// temp_ag_tgt_x = ptr_x[4];
+				// temp_ag_tgt_y = ptr_x[5];
 			}
 
 			printf("x valu = %f\n", temp_ag_x);
