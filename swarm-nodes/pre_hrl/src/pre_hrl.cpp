@@ -492,7 +492,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 	printf("curret time = %lf\n", t);
 	double d_t = abs(t - t_last);
 	printf("change in time = %lf\n", d_t);
-	t_last = t;
+	t_prev = t;
 
 	int i, k;
 
