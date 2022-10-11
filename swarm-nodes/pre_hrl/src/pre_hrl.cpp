@@ -486,13 +486,13 @@ void init_vars(ros::NodeHandle hl)
 	gps_update_y = new float[n];
 }
 
-float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_prev)
+float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_last)
 {
 	double t = ros::Time::now().toSec();
 	// printf("curret time = %lf\n", t);
-	double d_t = abs(t - t_prev);
+	double d_t = abs(t - t_last);
 	printf("change in time = %lf\n", d_t);
-	t_prev = t;
+	t_last = t;
 
 	int i, k;
 
