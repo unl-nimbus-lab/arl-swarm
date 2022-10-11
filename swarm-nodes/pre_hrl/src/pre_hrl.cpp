@@ -486,11 +486,11 @@ void init_vars(ros::NodeHandle hl)
 	gps_update_y = new float[n];
 }
 
-float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_prev, double *t_last)
+float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_prev)
 {
 	double t = ros::Time::now().toSec();
 	// printf("curret time = %lf\n", t);
-	double d_t = (t - t_prev);
+	double d_t = abs(t - t_prev);
 	// printf("change in time = %lf\n", d_t);
 
 	int i, k;
@@ -512,7 +512,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 			arr_x[i] += A[i][k] * x_last[k];
 		}
 
-	*t_last = t;
+	t_prev = t;
 
 	return arr_x;
 }
@@ -531,7 +531,6 @@ void stateEstimater()
 	{
 		int i;
 		float *ptr_x;
-		double t_last; // not sure if i need this
 
 		for (int j = 0; j < N; j++)
 		{
@@ -548,7 +547,7 @@ void stateEstimater()
 				temp_ag_tgt_y = updated_ag_tgt_y[j];
 			}
 
-			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev, &t_last);
+			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev);
 
 			// std::cout << "Array is: ";
 			// for (i = 0; i < 6; i++)
@@ -572,7 +571,6 @@ void stateEstimater()
 			intgrl_state[0] += (ptr_x[0] - ptr_x[4]) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
 			intgrl_state[1] += (ptr_x[1] - ptr_x[5]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
 
-			t_prev = t_last;
 
 			if (gps_update[j] == false)
 			{
