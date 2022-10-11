@@ -531,7 +531,7 @@ void stateEstimater()
 	{
 		int i;
 		float *ptr_x;
-		float t_last; // not sure if i need this
+		double t_last; // not sure if i need this
 
 		for (int j = 0; j < N; j++)
 		{
