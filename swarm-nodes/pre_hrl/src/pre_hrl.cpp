@@ -494,7 +494,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 {
 
 	t[j] = ros::Time::now().toSec();
-	printf("curret time = %lf\n", t);
+	printf("curret time = %lf\n", t[j]);
 	double d_t = abs(t[j] - t_last);
 	printf("change in time = %lf\n", d_t);
 	t_prev[j] = t[j];
@@ -551,7 +551,7 @@ void stateEstimater()
 				temp_ag_tgt_y = updated_ag_tgt_y[j];
 			}
 
-			printf("t_prev = %lf\n", t_prev);
+			printf("t_prev = %lf\n", t_prev[j]);
 			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev[j], j);
 
 			// std::cout << "Array is: ";
