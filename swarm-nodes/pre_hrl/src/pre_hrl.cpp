@@ -156,34 +156,8 @@ void gpsCallback(const mavros_msgs::SwarmGPS::ConstPtr &new_msg)
 	updated_ag_tgt_x[ag_id - 1] = ag_tgt_x;
 	updated_ag_tgt_y[ag_id - 1] = ag_tgt_y;
 
-	// // Update the integral state if the id is its id
-	// if (std::abs(ag_id - hrl_id) < 0.000000001)
-	// {
-
-	// 	float ag_tgt_x = gc.lon_to_meters_signed(base_lat, base_lon, base_lat, target_lon[grp_nbr - 1]); // x distance to taregt with respect to the base (0,0)
-	// 	float ag_tgt_y = gc.lat_to_meters_signed(base_lat, base_lon, target_lat[grp_nbr - 1], base_lon); // y distance to taregt with respect to the base (0,0)
-
-	// 	intgrl_state[0] += (ag_x - ag_tgt_x) * INTGRL_MTPL; // multiply by a scaler to reduce the magnitiude
-	// 	intgrl_state[1] += (ag_y - ag_tgt_y) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
-
-	// 	// And save the current locations as well
-	// 	own_target_x = ag_tgt_x - ag_x;
-	// 	own_target_y = ag_tgt_y - ag_y;
-	// }
-
-	// // Re-arrange stuff
-	// const std::lock_guard<std::mutex> lock(state_mutex);
-	// // Copy the value from the fcu to the state variable
-	// state[ag_state_idx] = ag_x;
-	// state[ag_state_idx + 1] = ag_y;
-
-	// // Copy the integral states to the state vector
-	// if (std::abs(ag_id - hrl_id) < 0.000000001)
-	// {
-	// 	state[ag_itgrl_idx] = intgrl_state[0];
-	// 	state[ag_itgrl_idx + 1] = intgrl_state[1];
-	// }
-
+	// determine if new values of ag_x, ag_y etc are actually updated or the same values as last time
+	// if new values then return the true flag to be used in state estmator
 	if (abs(gps_update_x[ag_id - 1] - ag_x) < 0.0000000000001 && abs(gps_update_y[ag_id - 1] - ag_y) < 0.0000000000001)
 	{
 		gps_update[ag_id - 1] = false;
@@ -491,13 +465,13 @@ void init_vars(ros::NodeHandle hl)
 }
 
 float *positionEstimation(float x, float y, float vx, float vy, float target_x, float target_y, double t_last, int j)
+/* estimates the position of an agen */
 {
+	t[j] = ros::Time::now().toSec(); // current time
 
-	t[j] = ros::Time::now().toSec();
-	printf("curret time = %lf\n", t[j]);
-	double d_t = abs(t[j] - t_last);
-	printf("change in time = %lf\n", d_t);
-	t_prev[j] = t[j];
+	double d_t = abs(t[j] - t_last); // change in time
+
+	t_prev[j] = t[j]; // keep the time from last iteration
 
 	int i, k;
 
@@ -505,7 +479,11 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 	static float arr_x[6];
 	// x at t-1
 	float x_last[6] = {x, y, vx, vy, target_x, target_y};
+
+
 	// update position given constant velocity
+	// assuming constant velocity. If velocity is not constant it must be calculted here
+
 	float A[6][6] = {{1, 0, d_t, 0, 0, 0}, {0, 1, 0, d_t, 0, 0}, {0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0}, {0, 0, d_t, 0, 1, 0}, {0, 0, 0, d_t, 0, 1}};
 
 	int A_rows = sizeof(A) / sizeof(A[0]);	 // 6 rows
@@ -523,6 +501,7 @@ float *positionEstimation(float x, float y, float vx, float vy, float target_x, 
 
 void stateEstimater()
 {
+	// initilaize variables
 	float temp_ag_x = 0;
 	float temp_ag_y = 0;
 	float temp_ag_vx = 0;
@@ -530,19 +509,20 @@ void stateEstimater()
 	float temp_ag_tgt_x = 0;
 	float temp_ag_tgt_y = 0;
 
-	ros::Rate loop_rate(4);
+	ros::Rate loop_rate(4); // loop at 4 hz
+
 	while (ros::ok())
 	{
 		int i;
 		float *ptr_x;
 
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < N; j++) // for loop to run through each agent
 		{
-			printf("gps_update = %s\n", gps_update[j]?"true":"false");
+
 
 			if (gps_update[j] == true)
 			{
-				// new values should be fed in via updated_ag_xxxxxxxxx
+				// new values should be fed in via gps callback
 				temp_ag_x = updated_ag_x[j];
 				temp_ag_y = updated_ag_y[j];
 				temp_ag_vx = updated_ag_vx[j];
@@ -550,13 +530,8 @@ void stateEstimater()
 				temp_ag_tgt_x = updated_ag_tgt_x[j];
 				temp_ag_tgt_y = updated_ag_tgt_y[j];
 			}
-
-			printf("t_prev = %lf\n", t_prev[j]);
+			// calling the function to extimate the position
 			ptr_x = positionEstimation(temp_ag_x, temp_ag_y, temp_ag_vx, temp_ag_vy, temp_ag_tgt_x, temp_ag_tgt_y, t_prev[j], j);
-
-			// std::cout << "Array is: ";
-			// for (i = 0; i < 6; i++)
-			//     std::cout << ptr_x[i] << "\t"; // ptr[i] is equivalent to *(ptr+i)
 
 			ag_state_idx = id2idx.get_state_idx(j + 1, groups);
 			ag_itgrl_idx = id2idx.get_integral_idx(j + 1, groups);
@@ -577,20 +552,14 @@ void stateEstimater()
 			intgrl_state[1] += (ptr_x[1] - updated_ag_tgt_x[j]) * INTGRL_MTPL; // multiply by a scaller to reduce the magnitiude
 
 
-			if (gps_update[j] == false)
+			if (gps_update[j] == false) // no new values so continue to use estimated values
 			{
 				temp_ag_x = ptr_x[0];
 				temp_ag_y = ptr_x[1];
 				temp_ag_vx = ptr_x[2];
 				temp_ag_vy = ptr_x[3];
-				// temp_ag_tgt_x = ptr_x[4];
-				// temp_ag_tgt_y = ptr_x[5];
 			}
-
-			printf("x valu = %f\n", temp_ag_x);
 		}
-
-		// printf("value of t_last = %f", ptr_x[0]);
 
 		loop_rate.sleep();
 	}
