@@ -2,8 +2,8 @@ version: '3'
 
 services:
   clustering:
-    #image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/drone:latest
-    image: clustering:latest
+    image: ghcr.io/unl-nimbus-lab/arl-swarm/docker/drone_clustering:latest
+    #image: clustering:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: clustering
