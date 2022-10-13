@@ -38,6 +38,7 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<!--node pkg="rosbag" name="record" type="record" args="-a -o /home/rosbags/" /-->
+	<node pkg="rosbag" name="record" type="record" 
+	    args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global" />
 
 </launch>
