@@ -3,79 +3,114 @@
 #include "../include/clustering.h"
 
 
-TEST(ClusteringControlTest, Parse1Cluster) { 
-    int cluster;
-    int command;
-    std::string msg = "C123#987";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(cluster, 123); 
-}
-TEST(ClusteringControlTest, Parse1Command) { 
-    int cluster;
-    int command;
-    std::string msg = "C123#987";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(command, 987); 
+TEST(ClusteringControlTest, AltitudeSepModeTestNoGPS) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_GUIDED_LOCAL_MODE;
+    int lat = 0, lon = 0, alt = 0;
+    a.setFlightMode(originalFlightMode);
+    a.setCurrentPos(lat, lon, alt);
+    // execute
+    a.setFlightMode(ALTITUDE_SEP_MODE);
+    // test that mode rejected due to no gps
+    ASSERT_EQ(a.getFlightMode(), originalFlightMode); 
 }
 
-TEST(ClusteringControlTest, Parse2Cluster) { 
-    int cluster;
-    int command;
-    std::string msg = "C1#9";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(cluster, 1); 
-}
-TEST(ClusteringControlTest, Parse2Command) { 
-    int cluster;
-    int command;
-    std::string msg = "C1#9";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(command, 9); 
-}
-
-TEST(ClusteringControlTest, Parse3Cluster) { 
-    int cluster;
-    int command;
-    std::string msg = "C15#9";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(cluster, 15); 
-}
-TEST(ClusteringControlTest, Parse3Command) { 
-    int cluster;
-    int command;
-    std::string msg = "C15#9";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(command, 9); 
+TEST(ClusteringControlTest, AltitudeSepModeTestWithGPS) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_GUIDED_LOCAL_MODE;
+    int switchToMode = ALTITUDE_SEP_MODE;
+    int lat = 1, lon = 20, alt = 15;
+    a.setFlightMode(originalFlightMode);
+    a.setCurrentPos(lat, lon, alt);
+    // execute
+    a.setFlightMode(switchToMode);
+    // test that mode works since position is set (gps working)
+    ASSERT_EQ(a.getFlightMode(), switchToMode); 
 }
 
-TEST(ClusteringControlTest, Parse4Cluster) { 
-    int cluster;
-    int command;
-    std::string msg = "C1#90";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(cluster, 1); 
-}
-TEST(ClusteringControlTest, Parse4Command) { 
-    int cluster;
-    int command;
-    std::string msg = "C1#90";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(command, 90); 
+TEST(ClusteringControlTest, IgnoreInvalidFlightMode10) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_GUIDED_LOCAL_MODE;
+    int invalidFlightMode = 10;
+    a.setFlightMode(originalFlightMode);
+    // execute
+    a.setFlightMode(invalidFlightMode);
+    // test 
+    ASSERT_EQ(a.getFlightMode(), originalFlightMode); 
 }
 
-TEST(ClusteringControlTest, Parse5Cluster) { 
-    int cluster;
-    int command;
-    std::string msg = "C01#02";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(cluster, 1); 
+TEST(ClusteringControlTest, IgnoreInvalidFlightMode0) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_GUIDED_LOCAL_MODE;
+    int invalidFlightMode = 0;
+    a.setFlightMode(originalFlightMode);
+    // execute
+    a.setFlightMode(invalidFlightMode);
+    // test
+    ASSERT_EQ(a.getFlightMode(), originalFlightMode); 
 }
-TEST(ClusteringControlTest, Parse5Command) { 
-    int cluster;
-    int command;
-    std::string msg = "C01#02";
-    parseCommand(msg, &cluster, &command);
-    ASSERT_EQ(command, 2); 
+
+TEST(ClusteringControlTest, ClusterGuidedLocalModeTest) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_RALLY_MODE;
+    int switchToMode = CLUSTER_GUIDED_LOCAL_MODE;
+    a.setFlightMode(originalFlightMode);
+    // execute
+    a.setFlightMode(switchToMode);
+    // test 
+    ASSERT_EQ(a.getFlightMode(), switchToMode); 
+}
+
+TEST(ClusteringControlTest, AgentStartsFTLDisabled) { 
+    // setup
+    agent a;
+    bool expectedFTL = false;
+    // test 
+    ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
+}
+
+TEST(ClusteringControlTest, ClusterGuidedLocalModeTestCheckFTLDisabled) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_RALLY_MODE;
+    int switchToMode = CLUSTER_GUIDED_LOCAL_MODE;
+    a.setFlightMode(originalFlightMode);
+    bool expectedFTL = false;
+    // execute
+    a.setFlightMode(switchToMode);
+    // test
+    ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
+}
+
+TEST(ClusteringControlTest, ClusterRallyModeTestCheckFTLDisabled) { 
+    // setup
+    agent a;
+    int originalFlightMode = FOLLOW_THE_LEADER_MODE;
+    int switchToMode = CLUSTER_RALLY_MODE;
+    a.setFlightMode(originalFlightMode);
+    bool expectedFTL = false;
+    // execute
+    a.setFlightMode(switchToMode);
+    // test 
+    ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
+}
+
+TEST(ClusteringControlTest, FollowLeaderTestCheckFTLEnabled) { 
+    // setup
+    agent a;
+    int originalFlightMode = CLUSTER_RALLY_MODE;
+    int switchToMode = FOLLOW_THE_LEADER_MODE;
+    a.setFlightMode(originalFlightMode);
+    bool expectedFTL = true;
+    // execute
+    a.setFlightMode(switchToMode);
+    // test
+    ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
 }
 
 int main(int argc, char **argv) {

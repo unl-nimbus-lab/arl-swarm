@@ -51,6 +51,9 @@ add_subdirectory (tst)
 
 
 if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(parse_test tst/parse_test.cpp)
+  target_link_libraries(parse_test ${catkin_LIBRARIES})
+
   catkin_add_gtest(clustering_control_test tst/clustering_control_test.cpp)
   target_link_libraries(clustering_control_test ${catkin_LIBRARIES})
 endif()
