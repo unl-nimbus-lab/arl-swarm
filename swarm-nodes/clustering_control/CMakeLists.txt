@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   mavros_msgs
   custom_libs
 )
+
+include_directories(include ${catkin_INCLUDE_DIRS} )
+
 	
 generate_messages(
 	DEPENDENCIES
@@ -21,7 +24,6 @@ catkin_package(
 #  INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy std_msgs mavros_msgs geometry_msgs nav_msgs message_runtime
   DEPENDS system_lib
-  
 )
 
 include(MavrosMavlink)
@@ -41,3 +43,14 @@ include_directories(
 add_executable(clustering_control src/clustering_control.cpp)
 
 target_link_libraries(clustering_control ${catkin_LIBRARIES})
+
+# add_subdirectory(src)
+# Testing stuff
+enable_testing()
+add_subdirectory (tst)
+
+
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(clustering_control_test tst/clustering_control_test.cpp)
+  target_link_libraries(clustering_control_test ${catkin_LIBRARIES})
+endif()
