@@ -12,8 +12,9 @@
   </include>
 
     <group ns="custom_params">
-<!--        <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" /> -->
-	<rosparam file="/home/config/custom_param.yaml" />
+        <rosparam file="$(find pre_hrl)/../config/custom_param.yaml" />
+        <rosparam file="/home/config/id_file.yaml" />
+<!--	<rosparam file="/home/config/custom_param.yaml" /> -->
     </group>
 
 

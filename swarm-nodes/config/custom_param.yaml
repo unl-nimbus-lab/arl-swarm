@@ -6,27 +6,27 @@
 # -<space>item2
 
 #Own agent id
-hrl_id: 4
+#hrl_id: 4
 
 # General info on the swarm
-n_agents: 4
-n_groups: 2
+n_agents: 2
+n_groups: 1
 
 #How agnets are groupped. This is a verticle list
 #e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
 groups:
 - 2
-- 2
+#- 2
 
 # Latitude and longitude info of the taregts
 # When multiple taregtes are declared
 target_lat:
 - 40.8327215
-- 40.8328707
+#- 40.8328707
 
 target_lon:
 - -96.6958784
-- -96.6959139
+#- -96.6959139
 
 #Sample taregt at havelock 
 #target_lat: 40.8519614
@@ -43,12 +43,14 @@ base_lon: -96.6957025
 #base_lo: -96.60822380671102
 
 # Path to the JSON file conntaining A,B,K matrices
-path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_4ag_QP_22.json"
+#path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_4ag_QP_22.json"
+#path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_QP.json"
+path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_2ag_leastPathQ.json"
 
 # This maps the physical agent ids set at the Arducopter/FCU to the agents' local id used in by the HRL-LQI
 # The position of the list is the agent_id, list item is the id set by the FCU
 id_map:
-- 13
-- 12
+#- 13
+#- 12
 - 11
 - 2
