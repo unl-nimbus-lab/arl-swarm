@@ -47,7 +47,6 @@ What it does is it publishes either
 //#define MY_ID 2 
 #define CIRCLE_R 1.0 // Radius of the gps error
 #define FIXED_HEIGHT 4
-#define PROJ_TIME 1
 
 #define MAX_VEL_THRESHOLD 0.7 // limit the maximum velocity of the UAS
 #define MAX_OFFSET_THRESHOLD 2.5 // Add this amount as max-offset to the distance calculated by the algo
@@ -161,9 +160,6 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 */
 	vel_pos_msg.header.stamp = ros::Time::now();
 
-	float offset_x = vx*PROJ_TIME ;
-        float offset_y = vy*PROJ_TIME ;
-
 	// Apply thresholds to the velocity
 	if(vx > MAX_VEL_THRESHOLD){ vx = MAX_VEL_THRESHOLD; }
 	if(vx < -1*MAX_VEL_THRESHOLD){ vx = -1*MAX_VEL_THRESHOLD; }
@@ -185,8 +181,8 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 	if(own_target_y < 0){target_sign_y= -1;}
 
 	// Calculate the offset to be (x^2)/2 
-//	float offset_x = (own_target_x)*(own_target_x)*0.5*target_sign_x;
-//	float offset_y = (own_target_y)*(own_target_y)*0.5*target_sign_y;
+	float offset_x = (own_target_x)*(own_target_x)*0.5*target_sign_x;
+	float offset_y = (own_target_y)*(own_target_y)*0.5*target_sign_y;
 
 	if(own_target_x > MAX_OFFSET_THRESHOLD ){ offset_x = MAX_OFFSET_THRESHOLD ;}
 	if(own_target_x < MIN_OFFSET_THRESHOLD && own_target_x >= 0.0 ) {offset_x = 0.0;}
