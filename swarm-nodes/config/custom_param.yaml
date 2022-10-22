@@ -9,32 +9,32 @@
 #hrl_id: 4
 
 # General info on the swarm
-n_agents: 3
-n_groups: 1
+n_agents: 4
+n_groups: 2
 
 #How agnets are groupped. This is a verticle list
 #e.g of a grouping with 2 agents in the first cluster and 3 in the seconnd cluser
 groups:
-- 3
-#- 2
+- 2
+- 2
 
 # Latitude and longitude info of the taregts
 # When multiple taregtes are declared
 #QP
-#target_lat:
-#- 40.8327215
-#- 40.8328707
+target_lat:
+- 40.8327215
+- 40.8328707
 
-#target_lon:
-#- -96.6958784
-#- -96.6959139
+target_lon:
+- -96.6958784
+- -96.6959139
 
 #RMF
-target_lat: 
-- 40.8468970
+#target_lat: 
+#- 40.8468970
 
-target_lon: 
-- -96.4707732
+#target_lon: 
+#- -96.4707732
 
 #Sample taregt at havelock 
 #target_lat: 40.8519614
@@ -43,23 +43,23 @@ target_lon:
 
 # Latitude and longitude info of the two base (where all agents reference to zero)
 #QP
-#base_lat: 40.8328148
-#base_lon: -96.6957025
+base_lat: 40.8328148
+base_lon: -96.6957025
 
 #RMF
-base_lat: 40.8467440
-base_lon: -96.4718270
+#base_lat: 40.8467440
+#base_lon: -96.4718270
 #Havelock
 #base_lat: 40.8522108472926
 #base_lo: -96.60822380671102
 
 # Path to the JSON file conntaining A,B,K matrices
-path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_3ag_leastPathQ_r5.json"
+path_to_state_mtx: "/home/catkin_ws/src/config/sys_mats_4ag_QP_22.json"
 
 # This maps the physical agent ids set at the Arducopter/FCU to the agents' local id used in by the HRL-LQI
 # The position of the list is the agent_id, list item is the id set by the FCU
 id_map:
-- 11
 - 2
+- 1
 - 13
-#- 2
+- 2
