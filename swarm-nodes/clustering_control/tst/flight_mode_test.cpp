@@ -113,6 +113,111 @@ TEST(FlightModeTest, FollowLeaderTestCheckFTLEnabled) {
     ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
 }
 
+// Validate cluster offsets get set
+TEST(OffsetTest, SetClusterOffsetsCircleFormation) { 
+    // setup
+    agent a;
+    // cluster size, cluster order, 
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2;// agent's spot in the cluster
+    double radius = 10;
+    a.setClusterRadius(radius);
+    a.setClusterSize(clusterSize);
+    a.setClusterOrder(clusterOrder);
+
+    double expectedXOffset = a.circleXOffset();
+    double expectedYOffset = a.circleYOffset();
+
+    // execute
+    a.setClusterOffsets();
+
+    double resultX = a.getClusterXOffset();
+    double resultY = a.getClusterYOffset();
+
+    // test
+    ASSERT_EQ(resultX,  expectedXOffset); 
+    ASSERT_EQ(resultY,  expectedYOffset); 
+}
+
+TEST(OffsetTest, SetClusterOffsetsLinearFormation) { 
+    // setup
+    agent a;
+    a.setClusterType(LINEAR_FORMATION);
+    // cluster size, cluster order, 
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2;// agent's spot in the cluster
+    double radius = 10;
+    a.setClusterRadius(radius);
+    a.setClusterSize(clusterSize);
+    a.setClusterOrder(clusterOrder);
+
+    double expectedXOffset = a.calculateXLineOffset();
+    double expectedYOffset = a.calculateYLineOffset();
+
+    // execute
+    a.setClusterOffsets();
+
+    double resultX = a.getClusterXOffset();
+    double resultY = a.getClusterYOffset();
+
+    // test
+    ASSERT_EQ(resultX,  expectedXOffset); 
+    ASSERT_EQ(resultY,  expectedYOffset); 
+}
+
+TEST(RallyTest, SettingRally1) {
+    agent a;
+    double x = 10;
+    double y = 10;
+    a.setRally1(x, y);
+
+    // test
+    ASSERT_EQ(a.getRally1X(), x);
+    ASSERT_EQ(a.getRally1Y(), y);
+}
+
+TEST(RallyTest, SettingRally1AgainAltitudeUpdates) {
+    // setup
+    agent a;
+    double x = 10;
+    double y = 10;
+    double alt = 15;
+
+    // execute
+    a.setRally1(x, y);
+    a.setAgentAlt(alt);
+    a.setRally1(x,y);
+
+    // test
+    ASSERT_EQ(a.getRally1Z(), alt);
+}
+
+TEST(AltitudeLimits, SetAllowableAltitude) {
+    // setup
+    agent a;
+    double alt = 100.32;
+
+    // execute
+    a.setAgentAlt(alt);
+
+    // test
+    ASSERT_EQ(a.getAgentAlt(), alt);
+}
+
+TEST(AltitudeLimits, SetNotAllowableAltitude) {
+    // setup
+    agent a;
+    double alt = 122.32;
+
+    // execute
+    a.setAgentAlt(alt);
+
+    // test: ensure that the altitude is set to 
+    // max_alt when input is above max_alt
+    ASSERT_EQ(a.getAgentAlt(), MAX_ALT);
+}
+
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
