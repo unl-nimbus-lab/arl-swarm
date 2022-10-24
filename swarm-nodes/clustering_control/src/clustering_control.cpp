@@ -73,41 +73,41 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                         case CHANGE_FLIGHT_MODE:  //Change HRL_FLIGHTMODE to payload value
                             hrlAgent.setFlightMode(HRLReference.data[0]);
                             hrlAgent.setPositionTarget();
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_CLUSTER_LOCAL_POSITION: //Change CLUSTER_LOCAL_TARGET to payload
                             hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_CLUSTER_RADIUS: //Change CLUSTER_RADIUS to payload
                             hrlAgent.setClusterRadius(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_CLUSTER_TYPE: //Change the Cluster type
                             hrlAgent.setClusterType(HRLReference.data[0]);
                             hrlAgent.setClusterOffsets();
                             hrlAgent.setPositionTarget();
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case START_CLUSTER_GUIDED:
                             hrlAgent.setPublish(true);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;  
                         case STOP_CLUSTER_GUIDED:
                             hrlAgent.setPublish(false);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_HOME_POSITION:
                             hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_CLUSTER_GLOBAL_POSITION:
                             hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
-                            acknowledge(hrlAgent.getSysid(), command);
+                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_FTL_SYSID:
                             hrlAgent.setFTLSysid(HRLReference.data[0]);

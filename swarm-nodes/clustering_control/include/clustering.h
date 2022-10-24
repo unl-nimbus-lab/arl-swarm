@@ -398,14 +398,14 @@ void agent::setClusterType(int type) {
 }
 
 void acknowledge(int agentID,int* command) {
-    // agentAcknowledgement.type = NAMED_VALUE_FLOAT;
-    // agentAcknowledgement.header.stamp = ros::Time::now();
+    agentAcknowledgement.type = NAMED_VALUE_FLOAT;
+    agentAcknowledgement.header.stamp = ros::Time::now();
     
-    // //build and publish the acknowledgement
-    // char str[10];
-    // sprintf(str, "K%d#%d", agentID, *command);
-    // agentAcknowledgement.name = str; 
-    // ak_pub.publish(agentAcknowledgement);
+    //build and publish the acknowledgement
+    char str[10];
+    sprintf(str, "A%d#%d", agentID, *command);
+    agentAcknowledgement.name = str; 
+    ak_pub.publish(agentAcknowledgement);
 }
 
 double agent::getSysid() {
