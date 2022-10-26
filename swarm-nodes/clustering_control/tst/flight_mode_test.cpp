@@ -2,7 +2,6 @@
 #include <ros/ros.h>
 #include "../include/clustering.h"
 
-
 TEST(FlightModeTest, AltitudeSepModeTestNoGPS) { 
     // setup
     agent a;
@@ -138,6 +137,93 @@ TEST(PositionTargetTest, ClusterGuidedLocalMode) {
     ASSERT_EQ(a.getAgentLocalTargetY(), localTargetY + yOffset); 
     ASSERT_EQ(a.getAgentLocalTargetZ(), localTargetZ + originalAlt); 
 
+}
+
+TEST(PositionTargetTest, ClusterRallyMode) {
+    // setup
+    agent a;
+    a.setFlightMode(CLUSTER_RALLY_MODE);
+    double localTargetX = 5, localTargetY = 10, localTargetZ = 4;
+    double originalAlt = a.getAgentAlt();
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2; // agent's spot in the cluster
+    double radius = 10;
+    a.setClusterRadius(radius);
+    a.setClusterSize(clusterSize);
+    a.setClusterOrder(clusterOrder);
+    a.setClusterOffsets();
+    double xOffset = a.circleXOffset();
+    double yOffset = a.circleYOffset();
+    a.setRally1(localTargetX,localTargetY);
+
+    // execute
+    a.setPositionTarget();
+
+    // test: location should be rally points + offset
+    ASSERT_EQ(a.getAgentLocalTargetX(), localTargetX + xOffset); 
+    ASSERT_EQ(a.getAgentLocalTargetY(), localTargetY + yOffset); 
+    ASSERT_EQ(a.getAgentLocalTargetZ(), originalAlt); 
+
+}
+
+TEST(PositionTargetTest, DoesntChangeTargetClusterGuidedGlobalMode) {
+    // setup
+    agent a;
+    a.setFlightMode(CLUSTER_GUIDED_GLOBAL_MODE);
+    double origLocalTargetX = 5, origLocalTargetY = 10, origLocalTargetZ = 4;
+    double originalAlt = a.getAgentAlt();
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2; // agent's spot in the cluster
+    double radius = 10;
+    a.setAgentLocalTarget(origLocalTargetX, origLocalTargetY, origLocalTargetZ);
+    
+    // execute
+    a.setPositionTarget();
+
+    // test: location should be original local target
+    ASSERT_EQ(a.getAgentLocalTargetX(), origLocalTargetX); 
+    ASSERT_EQ(a.getAgentLocalTargetY(), origLocalTargetY); 
+    ASSERT_EQ(a.getAgentLocalTargetZ(), origLocalTargetZ); 
+}
+
+TEST(PositionTargetTest, DoesntChangeTargetAltitudeSepMode) {
+    // setup
+    agent a;
+    a.setFlightMode(ALTITUDE_SEP_MODE);
+    double origLocalTargetX = 5, origLocalTargetY = 10, origLocalTargetZ = 4;
+    double originalAlt = a.getAgentAlt();
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2; // agent's spot in the cluster
+    double radius = 10;
+    a.setAgentLocalTarget(origLocalTargetX, origLocalTargetY, origLocalTargetZ);
+    
+    // execute
+    a.setPositionTarget();
+
+    // test: location should be original local target
+    ASSERT_EQ(a.getAgentLocalTargetX(), origLocalTargetX); 
+    ASSERT_EQ(a.getAgentLocalTargetY(), origLocalTargetY); 
+    ASSERT_EQ(a.getAgentLocalTargetZ(), origLocalTargetZ); 
+}
+
+TEST(PositionTargetTest, DoesntChangeTargetFTLMode) {
+    // setup
+    agent a;
+    a.setFlightMode(FOLLOW_THE_LEADER_MODE);
+    double origLocalTargetX = 5, origLocalTargetY = 10, origLocalTargetZ = 4;
+    double originalAlt = a.getAgentAlt();
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2; // agent's spot in the cluster
+    double radius = 10;
+    a.setAgentLocalTarget(origLocalTargetX, origLocalTargetY, origLocalTargetZ);
+    
+    // execute
+    a.setPositionTarget();
+
+    // test: location should be original local target
+    ASSERT_EQ(a.getAgentLocalTargetX(), origLocalTargetX); 
+    ASSERT_EQ(a.getAgentLocalTargetY(), origLocalTargetY); 
+    ASSERT_EQ(a.getAgentLocalTargetZ(), origLocalTargetZ); 
 }
 
 // Validate cluster offsets get set
