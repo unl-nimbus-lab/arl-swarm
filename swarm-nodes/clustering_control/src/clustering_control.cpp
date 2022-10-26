@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
                         hrlAgent.setClusterOrder(order + 1);
                     }
                     //Update the cluster offsets after the order has changed
+		    printf("Cluster order: %f\n",hrlAgent.getClusterOrder());
                     hrlAgent.setClusterOffsets(hrlAgent.getClusterOrder());
                     hrlAgent.setPositionTarget();
                     //reset the counter
