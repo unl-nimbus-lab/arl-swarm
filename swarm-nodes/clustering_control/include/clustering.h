@@ -48,6 +48,8 @@
 #define SET_LOCAL_RALLY 8
 #define SET_CLUSTER_GLOBAL_POSITION 9
 #define SET_FTL_SYSID 10
+#define ENABLE_CIRCLE 11
+#define DISABLE_CIRCLE 12
 
 //Agent Commands
 
@@ -66,6 +68,7 @@ mavros_msgs::DebugValue agentAcknowledgement;
 mavros_msgs::DebugValue bootAcknowledgeMsg;
 mavros_msgs::CommandLong alt_sep;
 geo_converter convObject;
+int count = 0;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
@@ -81,6 +84,7 @@ class agent {
         void setSysid(double id);
         void setClusterid(double id);
         void setClusterOrder(double order);
+        void setOriginalClusterOrder(double order);
         void setClusterSize(double size);
         void setClusterRadius(double radius);
         void setAgentAlt(double alt);
@@ -93,14 +97,14 @@ class agent {
         double getRally2Y();
         double getAgentAlt();
         void setFlightMode(int mode);
-        void setClusterOffsets();
+        void setClusterOffsets(int order);
         void setPositionTarget();
         void setClusterLocalTarget(double x, double y, double z);
         void setClusterType(int type);
         double getSysid();
         double getClusterid();
-        double circleXOffset();
-        double circleYOffset();
+        double circleXOffset(int order);
+        double circleYOffset(int order);
         double calculateXLineOffset();
         double calculateYLineOffset();
         int getFlightMode();
@@ -114,20 +118,27 @@ class agent {
         void setFTLSysid(int id);
         int getFTLSysid();
         void setFTLloc(double lat, double lon, double alt);
+        void enableCircle();
+        void disableCircle();
+        double getOriginalClusterOrder();
+        double getClusterOrder();
+        double getClusterSize();
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
+        bool CIRCLE_FLAG = false;   //Enables/Disables circling
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
         double CLUSTERID;           //ID of the cluster this agent belongs to 
         int HRL_FLIGHTMODE = 1;     //HRL "flight mode"
         double CLUSTER_ORDER;       //This agent's "spot" in the cluster
+        double ORIGINAL_CLUSTER_ORDER; //Set this only once and never change
         double CLUSTER_SIZE;        //How many agents are in the cluster
         int CLUSTER_TYPE = 1;       //Organization of agents within the cluster 1) Circle 2) Line
         double CLUSTER_RADIUS;      //Dimension of the cluster
         double AGENT_ALT;           //Height (in meters) above "cluster target"
         bool PUBLISH = false;       //O-k to begin publishing messages to the FCU
-        int FTL_SYSID = 0;         //FOLLOW THE LEADER TARGET SYSID
+        int FTL_SYSID = 0;          //FOLLOW THE LEADER TARGET SYSID
         struct {
             double X;
             double Y;
@@ -260,12 +271,12 @@ void agent::setFlightMode(int mode) {
     }
 }
 
-void agent::setClusterOffsets() {
+void agent::setClusterOffsets(int order) {
     //This function is used to update the cluster offsets, ONLY CALL AFTER THE RADIUS HAS BEEN SET!!
     switch (CLUSTER_TYPE) {
         case CIRCLE_FORMATION:
-            CLUSTER_OFFSETS.X = circleXOffset();
-            CLUSTER_OFFSETS.Y = circleYOffset();
+            CLUSTER_OFFSETS.X = circleXOffset(order);
+            CLUSTER_OFFSETS.Y = circleYOffset(order);
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
         case LINEAR_FORMATION: //Line cluster formation
@@ -279,16 +290,16 @@ void agent::setClusterOffsets() {
     }
 }
 
-double agent::circleXOffset() {
+double agent::circleXOffset(int order) {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
-    double n = CLUSTER_ORDER - 1;
+    double n = order - 1;
     double offset = CLUSTER_RADIUS*cos(PI/180*(separation*n));
     return offset;
 }
 
-double agent::circleYOffset() {
+double agent::circleYOffset(int order) {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
-    double n = CLUSTER_ORDER - 1;
+    double n = order - 1;
     double offset = CLUSTER_RADIUS*sin(PI/180*(separation*n));
     return offset;
 }
@@ -306,6 +317,11 @@ void agent::setClusterid(double id) {
 void agent::setClusterOrder(double order) {
     CLUSTER_ORDER = order;
     printf("Cluster Order Set to %f\n",CLUSTER_ORDER);
+}
+
+void agent::setOriginalClusterOrder(double order) {
+    ORIGINAL_CLUSTER_ORDER = order;
+    printf("Original Cluster Order Set to %f\n",ORIGINAL_CLUSTER_ORDER);
 }
 
 void agent::setClusterSize(double size) {
@@ -459,6 +475,29 @@ void agent::setFTLloc(double lat, double lon, double alt) {
     FTL_LOC.LAT = lat;
     FTL_LOC.LON = lon;
     FTL_LOC.ALT = alt;
+}
+
+void agent::enableCircle() {
+    printf("Circling Enabled\n");
+}
+
+void agent::disableCircle() {
+    printf("Circling Disabled\n");
+    setClusterOffsets(getOriginalClusterOrder());
+    setPositionTarget();
+    //TODO: Do some other things to reset offsets to normal cluster offsets
+}
+
+double agent::getOriginalClusterOrder() {
+    return ORIGINAL_CLUSTER_ORDER;
+}
+
+double agent::getClusterOrder() {
+    return CLUSTER_ORDER;
+}
+
+double agent::getClusterSize() {
+    return CLUSTER_SIZE;
 }
 
 void parseCommandUnitTest()
