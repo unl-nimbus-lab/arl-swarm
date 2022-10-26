@@ -478,10 +478,12 @@ void agent::setFTLloc(double lat, double lon, double alt) {
 }
 
 void agent::enableCircle() {
+    CIRCLE_FLAG = true;
     printf("Circling Enabled\n");
 }
 
 void agent::disableCircle() {
+    CIRCLE_FLAG = false;
     printf("Circling Disabled\n");
     setClusterOffsets(getOriginalClusterOrder());
     setPositionTarget();
