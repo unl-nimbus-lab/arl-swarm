@@ -113,6 +113,33 @@ TEST(FlightModeTest, FollowLeaderTestCheckFTLEnabled) {
     ASSERT_EQ(a.FTL_ENABLE, expectedFTL); 
 }
 
+TEST(PositionTargetTest, ClusterGuidedLocalMode) {
+    // setup
+    agent a;
+    a.setFlightMode(CLUSTER_GUIDED_LOCAL_MODE);
+    double localTargetX = 5, localTargetY = 10, localTargetZ = 4;
+    double originalAlt = a.getAgentAlt();
+    double clusterSize = 5; // number of drones in the cluster
+    double clusterOrder = 2;// agent's spot in the cluster
+    double radius = 10;
+    a.setClusterRadius(radius);
+    a.setClusterSize(clusterSize);
+    a.setClusterOrder(clusterOrder);
+    a.setClusterOffsets();
+    double xOffset = a.circleXOffset();
+    double yOffset = a.circleYOffset();
+
+    // execute
+    a.setClusterLocalTarget(localTargetX, localTargetY, localTargetZ);
+    a.setPositionTarget();
+
+    // test
+    ASSERT_EQ(a.getAgentLocalTargetX(), localTargetX + xOffset); 
+    ASSERT_EQ(a.getAgentLocalTargetY(), localTargetY + yOffset); 
+    ASSERT_EQ(a.getAgentLocalTargetZ(), localTargetZ + originalAlt); 
+
+}
+
 // Validate cluster offsets get set
 TEST(OffsetTest, SetClusterOffsetsCircleFormation) { 
     // setup
@@ -190,6 +217,33 @@ TEST(RallyTest, SettingRally1AgainAltitudeUpdates) {
 
     // test
     ASSERT_EQ(a.getRally1Z(), alt);
+}
+
+TEST(RallyTest, SettingRally2) {
+    agent a;
+    double x = 10;
+    double y = 10;
+    a.setRally2(x, y);
+
+    // test
+    ASSERT_EQ(a.getRally2X(), x);
+    ASSERT_EQ(a.getRally2Y(), y);
+}
+
+TEST(RallyTest, SettingRally2AgainAltitudeUpdates) {
+    // setup
+    agent a;
+    double x = 14.231;
+    double y = 33.87;
+    double alt = 4.28;
+
+    // execute
+    a.setRally2(x, y);
+    a.setAgentAlt(alt);
+    a.setRally2(x,y);
+
+    // test
+    ASSERT_EQ(a.getRally2Z(), alt);
 }
 
 TEST(AltitudeLimits, SetAllowableAltitude) {

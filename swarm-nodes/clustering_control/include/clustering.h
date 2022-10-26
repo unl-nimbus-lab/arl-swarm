@@ -114,6 +114,9 @@ class agent {
         double latOffset();
         double lonOffset();
         void setAgentLocalTarget(double x, double y, double z);
+        double getAgentLocalTargetX();
+        double getAgentLocalTargetY();
+        double getAgentLocalTargetZ();
         void setPublish(bool logic);
         bool getPublish();
         void setClusterGlobalTarget(double lat, double lon, double alt);
@@ -377,6 +380,18 @@ double agent::getRally2Z() {
 
 double agent::getAgentAlt() {
     return AGENT_ALT;
+}
+
+double agent::getAgentLocalTargetX() {
+    return AGENT_LOCAL_TARGET.X;
+}
+
+double agent::getAgentLocalTargetY() {
+    return AGENT_LOCAL_TARGET.Y;
+}
+
+double agent::getAgentLocalTargetZ() {
+    return AGENT_LOCAL_TARGET.Z;
 }
 
 void parseCommand(std::string message, int *cluster, int *command) {
