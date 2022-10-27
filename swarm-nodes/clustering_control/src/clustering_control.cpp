@@ -148,7 +148,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             break;
                         case SET_CIRCLE_RATE:
                             //Change the Circle Rate
-                            hrlAgent.disableCircle();
+                            hrlAgent.setCircleTicks(HRLReference.data[0]);
                             break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
