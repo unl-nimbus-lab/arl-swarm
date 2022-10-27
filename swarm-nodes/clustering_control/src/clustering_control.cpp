@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             if (hrlAgent.CIRCLE_FLAG == true) {
-                if (count == 2) {//Circle rate 
+                if (count == 16) {//Circle rate 
                     //Update the cluster order
                     double order = hrlAgent.getClusterOrder();
                     if (order == hrlAgent.getClusterSize()) {
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
                         hrlAgent.setClusterOrder(order + 1);
                     }
                     //Update the cluster offsets after the order has changed
-		    printf("Cluster order: %f\n",hrlAgent.getClusterOrder());
+		            printf("Cluster order: %f\n",hrlAgent.getClusterOrder());
                     hrlAgent.setClusterOffsets(hrlAgent.getClusterOrder());
                     hrlAgent.setPositionTarget();
                     //reset the counter
