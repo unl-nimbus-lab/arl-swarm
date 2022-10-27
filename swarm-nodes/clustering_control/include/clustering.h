@@ -50,6 +50,7 @@
 #define SET_FTL_SYSID 10
 #define ENABLE_CIRCLE 11
 #define DISABLE_CIRCLE 12
+#define SET_CIRCLE_RATE 13
 
 //Agent Commands
 
@@ -123,6 +124,8 @@ class agent {
         double getOriginalClusterOrder();
         double getClusterOrder();
         double getClusterSize();
+        int getCircleTicks();
+        void setCircleTicks(int ticks);
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -139,6 +142,7 @@ class agent {
         double AGENT_ALT;           //Height (in meters) above "cluster target"
         bool PUBLISH = false;       //O-k to begin publishing messages to the FCU
         int FTL_SYSID = 0;          //FOLLOW THE LEADER TARGET SYSID
+        int CIRCLE_TICKS = 10;      //Number of ros ticks to wait before moving to next position
         struct {
             double X;
             double Y;
@@ -500,6 +504,21 @@ double agent::getClusterOrder() {
 
 double agent::getClusterSize() {
     return CLUSTER_SIZE;
+}
+
+int agent::getCircleTicks() {
+    return CIRCLE_TICKS;
+}
+
+void agent::setCircleTicks(int ticks) {
+    if (ticks < 0) {
+        //If a negative value comes across, just set it to a nice, safe 10
+        CIRCLE_TICKS = 10;
+    }
+    else {
+        CIRCLE_TICKS = ticks;
+    }
+    printf("Circle Ticks updated to %d\n", CIRCLE_TICKS);
 }
 
 void parseCommandUnitTest()

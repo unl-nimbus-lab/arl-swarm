@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             if (hrlAgent.CIRCLE_FLAG == true) {
-                if (count == 16) {//Circle rate 
+                if (count == hrlAgent.getCircleTicks()) {//Circle rate 
                     //Update the cluster order
                     double order = hrlAgent.getClusterOrder();
                     if (order == hrlAgent.getClusterSize()) {
@@ -144,6 +144,10 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             break;
                         case DISABLE_CIRCLE:
                             //Stop Circling
+                            hrlAgent.disableCircle();
+                            break;
+                        case SET_CIRCLE_RATE:
+                            //Change the Circle Rate
                             hrlAgent.disableCircle();
                             break;
                         default:
