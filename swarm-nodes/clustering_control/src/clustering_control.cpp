@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             if (hrlAgent.CIRCLE_FLAG == true) {
-                if (count == hrlAgent.getCircleTicks()) {//Circle rate 
+                if (count >= hrlAgent.getCircleTicks()) {//Circle rate 
                     //Update the cluster order
                     double order = hrlAgent.getClusterOrder();
                     if (order == hrlAgent.getClusterSize()) {
