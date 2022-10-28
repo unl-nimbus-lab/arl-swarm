@@ -38,6 +38,8 @@ using namespace Eigen;
 geo_converter gc ;
 
 MatrixXd state ; // stores all the states
+MatrixXd next_states ;
+
 std::mutex state_mutex ; // mutex for state variable
 
 id_to_idx id2idx ;
@@ -166,7 +168,7 @@ void HRLController(Sys s )
 
 	MatrixXd T_inverse = T.inverse() ;
 
-	MatrixXd next_states ;
+	//MatrixXd next_states ;
 	// Calculate the size of the swarm
 	// TODO I thought of replacing this with states.rows() but i dont wanna access the states everytime I need n.
 	int n = A.rows();
@@ -187,6 +189,9 @@ void HRLController(Sys s )
 		// TODO Finish the controller implementation
 		next_states = (A*time_delta - B*K*time_delta + MatrixXd::Identity(n,n))*(T*state-aug_state) - target_state*time_delta +aug_state ; 
 
+              for (int i = 0, nRows = next_states.rows() ;  i < nRows ; i++){
+                  state(i) = next_states(i);
+              } 
 		// Release the lock
 		state_mutex.unlock();
 
@@ -206,15 +211,51 @@ void HRLController(Sys s )
 			post_hrl_msg.states.push_back(next_states(i,0));
                 }
 
-		ns_pub.publish(post_hrl_msg);
+		//ns_pub.publish(post_hrl_msg);
 
 		// TODO Record the states and control inputs if needed
+
+              hrl_iteration_count++ ;
 
 		ros::spinOnce();
         	loop_rate.sleep();
 	}
 
 }
+
+void nextStatePublisher(){
+	// This function publishes the distance to the taregt
+	// This does not have a thread-safe mechanism. Non-critical functions should not block the critical function 'gpsCallback'
+	
+    ros::NodeHandle nh;
+	ros::Publisher ns_pub = nh.advertise<swarm_msgs::GlobalStates> ( "/ag1/swarm/next_states/global", 1, true ); //topic for the Cube
+
+	swarm_msgs::GlobalStates post_hrl_msg ;
+
+
+   while (ros::ok()) {
+
+       ros::Rate loop_rate(1);
+
+       post_hrl_msg.header.stamp = ros::Time::now();
+       post_hrl_msg.states.clear();
+
+		// Copy the elements to the array
+        for (int i = 0, nRows = next_states.rows() ;  i < nRows ; i++)
+        {
+			post_hrl_msg.states.push_back(next_states(i,0));
+        }
+
+       if(hrl_iteration_count >= 30){
+         ns_pub.publish(post_hrl_msg);
+       }
+       ros::spinOnce();
+       loop_rate.sleep();
+
+   }
+
+}
+
 
 int main( int argc, char** argv )
 {
@@ -241,10 +282,11 @@ int main( int argc, char** argv )
 	// TODO : Complete and test the local position adjustment. 
 	// Create seperate threads for processes with specific Hz requirements
 	std::thread hrl_controller (HRLController, ss); //Sperate thread for the controller
-
+       std::thread next_State_Publisher (nextStatePublisher);
 
 	// join the threads at the end
 	hrl_controller.join() ;
+	next_State_Publisher.join();
 
 	ros::spin();
 	return 0;

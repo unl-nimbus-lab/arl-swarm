@@ -50,7 +50,7 @@ I am directly accessing global variables where I should not be doing. That's bec
 #include <time.h>
 
 #define ROS_NODE_NAME "pre_hrl"
-#define CONTROLLER_RATE 50 //8    // Rate in Hz
+#define CONTROLLER_RATE 0.5 //8    // Rate in Hz
 #define INTRGL_RESET_TRGGR 1 //The RESET button in the GUI send 1
 
 #define INTGRL_MTPL 0.01 // A scalar multiplier to ewduce the magnitude of the integral state

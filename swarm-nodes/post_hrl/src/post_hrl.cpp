@@ -33,16 +33,13 @@ What it does is it publishes either
 #include <swarm_msgs/signal.h>
 #include <mavros_msgs/DebugValue.h>
 #include <swarm_msgs/GlobalStates.h>
-//#include <mavros_msgs/Mavlink.h>
 
+#include <sensor_msgs/NavSatFix.h>
+#include <geographic_msgs/GeoPoseStamped.h>
 
-//#include <mavros/setpoint_mixin.h>
-//#include <mavros/mavros_plugin.h>
-
-//setpoint_posvel_plg
 
 #define ROS_NODE_NAME "post_hrl"
-#define CONTROLLER_RATE 50    // Rate in Hz 
+#define CONTROLLER_RATE 4    // Rate in Hz 
 
 //#define MY_ID 2 
 #define CIRCLE_R 1.0 // Radius of the gps error
@@ -95,6 +92,19 @@ ros::Publisher vel_pos_pub ;
 geometry_msgs::Twist vel_msg ;
 geometry_msgs::TwistStamped vel_pos_msg ;
 
+ros::Publisher gps_pub ;
+geographic_msgs::GeoPoseStamped gps_msg ;
+
+double x = 0.0 ;
+double y = 0.0 ;
+
+double vx = 0.0 ;
+double vy = 0.0 ;
+
+double altd = 0.0 ;
+
+double bs_lat ;
+double bs_lon ;
 
 int counter = 0 ;
 
@@ -125,6 +135,7 @@ void init_vars(ros::NodeHandle hl){
       	wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true ); //topic for the Cube
 	vel_pub = nh.advertise<geometry_msgs::Twist> ( "/mavros/setpoint_velocity/cmd_vel_unstamped", 1, true ); //topic for the Cube
 	vel_pos_pub = nh.advertise<geometry_msgs::TwistStamped> ( "/mavros/setpoint_position_velocity/cmd_pos_vel", 1, true ); //topic for the Cube
+	gps_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/ag1/mavros/setpoint_position/global", 1, true ); //topic from the Cube
 
 }
 
@@ -158,7 +169,7 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
 	intgrl_y = msg->states[my_idx+5];
 	intrgl_mutex.unlock();
 */
-	vel_pos_msg.header.stamp = ros::Time::now();
+/*	vel_pos_msg.header.stamp = ros::Time::now();
 
 	// Apply thresholds to the velocity
 	if(vx > MAX_VEL_THRESHOLD){ vx = MAX_VEL_THRESHOLD; }
@@ -212,7 +223,7 @@ void HRLCallback(const swarm_msgs::GlobalStates::ConstPtr& msg){
         if(setpoint_publish){
                 vel_pos_pub.publish(vel_pos_msg);
         }
-
+*/
 }
 
 void rcCallback(const mavros_msgs::RCIn::ConstPtr& msg){
@@ -256,6 +267,38 @@ void setpointTriggerCallback(const mavros_msgs::DebugValue::ConstPtr& debug_msg)
 
 }
 
+void statePublisher()
+{
+
+   while (ros::ok()) {
+
+        ros::Rate loop_rate(1);
+
+        gps_msg.header.stamp = ros::Time::now();
+        gps_msg.pose.position.longitude = gc.meters_to_lon(bs_lat, bs_lon, x);
+        gps_msg.pose.position.latitude = gc.meters_to_lat(bs_lat, bs_lon, y);
+        
+        gps_msg.pose.position.altitude = 15 ;
+    
+        ROS_INFO(" gps_msg.pose.position.latitude : %f , gps_msg.pose.position.longitude : %f   ", gps_msg.pose.position.latitude ,  gps_msg.pose.position.longitude);
+        ROS_INFO(" altd : %f  ", altd);         
+        
+        if(setpoint_publish){      
+              gps_pub.publish(gps_msg);
+        }
+        
+        ros::spinOnce();
+        loop_rate.sleep();
+
+	}
+
+}
+
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg){
+
+    altd = msg->altitude ;
+
+}
 
 int main( int argc, char** argv )
 {
@@ -264,11 +307,26 @@ int main( int argc, char** argv )
 	ros::NodeHandle post_hrl_hl;
 	init_vars(post_hrl_hl);
 
+        float b_lat ;
+        float b_lon ;
+	
+	// Retrieve values from the param file
+        post_hrl_hl.getParam("/ag1/custom_params/base_lat", b_lat);
+        post_hrl_hl.getParam("/ag1/custom_params/base_lon", b_lon);
+        
+        bs_lat = b_lat ;
+        bs_lon = b_lon ;
+
         ros::Subscriber hrl_callback = post_hrl_hl.subscribe("/swarm/next_states/global", 100, HRLCallback);
 //	 ros::Subscriber rc_callback = post_hrl_hl.subscribe("/mavros/rc/in", 100, rcCallback);
         ros::Subscriber prehrl_callback = post_hrl_hl.subscribe("/swarm/global_states", 100, preHRLCallback);
         ros::Subscriber dist_to_tgt_callback = post_hrl_hl.subscribe("/swarm/dist_to_target/", 100, distToTgTCallback);
         ros::Subscriber setpoint_trigger_callback = post_hrl_hl.subscribe( "/mavros/debug_value/named_value_int", 100, setpointTriggerCallback );
+        ros::Subscriber gps_callback = post_hrl_hl.subscribe("/ag1/mavros/global_position/global", 100, gpsCallback);
+
+	std::thread state_publisher (statePublisher); //Sperate thread for the publisher function
+	// join the threads at the end
+	state_publisher.join() ;
 
 	ros::spin();
 	return 0;
