@@ -58,6 +58,8 @@ float local_y = 0.0 ;
 float adj_x = 0.0 ;
 float adj_y = 0.0 ;
 
+int hrl_iteration_count = 0 ;
+
 void init_states(ros::NodeHandle hl){
 
 	int id , ng, n;
