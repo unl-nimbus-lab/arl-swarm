@@ -386,13 +386,13 @@ double agent::getAgentAlt() {
 
 void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
-    //CXXX#XXX Where the "XXX" after the "C" identifies the cluster and
-    //the "XXX" after the "#" identifies the command
+    //CXXX$XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "$" identifies the command
 
-     std::string delimiter = "#";
+     std::string delimiter = "$";
      // remove 'C', 'S', or 'A'
      std::string short_message = message.substr(1);
-     // now find the '#'
+     // now find the '$'
      int split_idx = short_message.find(delimiter);
      // check for error and std::string::npos
      std::string cluster_str = short_message.substr(0, split_idx);
@@ -525,35 +525,35 @@ void parseCommandUnitTest()
 {
      int cluster;
      int command;
-     std::string msg = "C123#987";
+     std::string msg = "C123$987";
      std::cout << "msg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#9";
+     msg = "C1$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C15#9";
+     msg = "C15$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#90";
+     msg = "C1$90";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C01#02";
+     msg = "C01$02";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
