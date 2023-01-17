@@ -51,6 +51,7 @@
 #define ENABLE_CIRCLE 11
 #define DISABLE_CIRCLE 12
 #define SET_CIRCLE_RATE 13
+#define SET_CLUSTER_OFFSETZ 14
 
 //Agent Commands
 
@@ -126,6 +127,7 @@ class agent {
         double getClusterSize();
         int getCircleTicks();
         void setCircleTicks(int ticks);
+        void setClusterOffsetZ (double altitude);
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -491,7 +493,6 @@ void agent::disableCircle() {
     printf("Circling Disabled\n");
     setClusterOffsets(getOriginalClusterOrder());
     setPositionTarget();
-    //TODO: Do some other things to reset offsets to normal cluster offsets
 }
 
 double agent::getOriginalClusterOrder() {
@@ -519,6 +520,11 @@ void agent::setCircleTicks(int ticks) {
         CIRCLE_TICKS = ticks;
     }
     printf("Circle Ticks updated to %d\n", CIRCLE_TICKS);
+}
+
+void agent::setClusterOffsetZ (double altitude) {
+    CLUSTER_OFFSETS.Z = altitude - CLUSTER_LOCAL_TARGET.Z;
+
 }
 
 void parseCommandUnitTest()
