@@ -92,7 +92,8 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                         case SET_CLUSTER_OFFSETZ:
                         //Change how high this agent is
                         hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
-                        break;
+			hrlAgent.setPositionTarget();
+			break;
                     }
                 }
                 break;
