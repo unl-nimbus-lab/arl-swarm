@@ -524,6 +524,8 @@ void agent::setCircleTicks(int ticks) {
 
 void agent::setClusterOffsetZ (double altitude) {
     CLUSTER_OFFSETS.Z = altitude - CLUSTER_LOCAL_TARGET.Z;
+    //update agent alt
+    AGENT_ALT = CLUSTER_OFFSETS.Z;
 
 }
 
