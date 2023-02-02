@@ -51,6 +51,7 @@
 #define ENABLE_CIRCLE 11
 #define DISABLE_CIRCLE 12
 #define SET_CIRCLE_RATE 13
+#define SET_CLUSTER_OFFSETZ 14
 
 //Agent Commands
 
@@ -126,6 +127,7 @@ class agent {
         double getClusterSize();
         int getCircleTicks();
         void setCircleTicks(int ticks);
+        void setClusterOffsetZ (double altitude);
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -386,13 +388,13 @@ double agent::getAgentAlt() {
 
 void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
-    //CXXX#XXX Where the "XXX" after the "C" identifies the cluster and
-    //the "XXX" after the "#" identifies the command
+    //CXXX$XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "$" identifies the command
 
-     std::string delimiter = "#";
+     std::string delimiter = "$";
      // remove 'C', 'S', or 'A'
      std::string short_message = message.substr(1);
-     // now find the '#'
+     // now find the '$'
      int split_idx = short_message.find(delimiter);
      // check for error and std::string::npos
      std::string cluster_str = short_message.substr(0, split_idx);
@@ -491,7 +493,6 @@ void agent::disableCircle() {
     printf("Circling Disabled\n");
     setClusterOffsets(getOriginalClusterOrder());
     setPositionTarget();
-    //TODO: Do some other things to reset offsets to normal cluster offsets
 }
 
 double agent::getOriginalClusterOrder() {
@@ -521,39 +522,46 @@ void agent::setCircleTicks(int ticks) {
     printf("Circle Ticks updated to %d\n", CIRCLE_TICKS);
 }
 
+void agent::setClusterOffsetZ (double altitude) {
+    CLUSTER_OFFSETS.Z = altitude - CLUSTER_LOCAL_TARGET.Z;
+    //update agent alt
+    AGENT_ALT = CLUSTER_OFFSETS.Z;
+
+}
+
 void parseCommandUnitTest()
 {
      int cluster;
      int command;
-     std::string msg = "C123#987";
+     std::string msg = "C123$987";
      std::cout << "msg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#9";
+     msg = "C1$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C15#9";
+     msg = "C15$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#90";
+     msg = "C1$90";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C01#02";
+     msg = "C01$02";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;

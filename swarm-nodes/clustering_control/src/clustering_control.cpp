@@ -87,7 +87,15 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     function is agent::setPositionTarget */
         switch(entity) {
             case 'A':
-                //Nothing to see here
+                if (*targetEntity == hrlAgent.getSysid()) {
+                    switch(*command) {
+                        case SET_CLUSTER_OFFSETZ:
+                        //Change how high this agent is
+                        hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
+			            hrlAgent.setPositionTarget();
+			break;
+                    }
+                }
                 break;
             case 'C': //Cluster-level command
                 if (*targetEntity == hrlAgent.getClusterid()) {

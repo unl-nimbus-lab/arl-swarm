@@ -44,7 +44,7 @@ path_to_env = "arl-swarm/docker/drone"
 ag_username = "ubuntu"
 
 # globals
-PORT = "/dev/ttyS0"
+PORT = "/dev/ttyUSB0"
 BAUD = "921600"
 COMP_ID = "1" # always 1
 # Roger Memorial Farm
