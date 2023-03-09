@@ -97,7 +97,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	&& geographiclib-get-geoids egm96-5 \
     && geographiclib-get-gravity egm96 \
     && geographiclib-get-magnetic emm2015 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/
 
 # Install Python packages
 RUN pip3 install \

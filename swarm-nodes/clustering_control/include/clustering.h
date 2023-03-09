@@ -31,6 +31,9 @@
 #define CLUSTER_GUIDED_GLOBAL_MODE 3
 #define ALTITUDE_SEP_MODE 4
 #define FOLLOW_THE_LEADER_MODE 5
+#define FORCE_COLLISION 6
+#define AGENT_GUIDED_LOCAL 7
+#define AGENT_GUIDED_GLOBAL 8
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -60,6 +63,8 @@
 #define CHANGE_CLUSTER_ORDER 4
 #define CHANGE_CLUSTER_SIZE 5
 #define CHANGE_AGENT_ALTITUDE 6
+#define SET_AGENT_LOCAL_TARGET 7
+#define SET_AGENT_GLOBAL_TAGET 8
 
 //Some objects that are used:
 ros::Publisher ak_pub;
@@ -128,6 +133,7 @@ class agent {
         int getCircleTicks();
         void setCircleTicks(int ticks);
         void setClusterOffsetZ (double altitude);
+        void setAgentGlobalTarget(double lat, double lon, double alt);
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -157,7 +163,7 @@ class agent {
             double LAT;
             double LON;
             double ALT;
-        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET, CURRENT_POS, FTL_LOC;
+        } AGENT_RALLY, GLOBAL_ORIGIN, GPS_OFFSETS, CLUSTER_GLOBAL_TARGET, CURRENT_POS, FTL_LOC, AGENT_GLOBAL_TARGET;
         //Agent Rally: Not used
         //Cluster Rally: Locally saved point, unique to each cluster
         //Global Origin: Common world frame for the swarm
@@ -215,6 +221,28 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.longitude = convObject.meters_to_lon(FTL_LOC.LAT, FTL_LOC.LON, CLUSTER_OFFSETS.Y);
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
+        case FORCE_COLLISION:
+            pos_msg.pose.position.latitude = GLOBAL_ORIGIN.LAT;
+            pos_msg.pose.position.longitude = GLOBAL_ORIGIN.LON;
+            pos_msg.pose.position.altitude = 425;
+            break;
+        case AGENT_GUIDED_LOCAL:
+            // tempx = CLUSTER_LOCAL_TARGET.X + CLUSTER_OFFSETS.X;
+            // tempy = CLUSTER_LOCAL_TARGET.Y + CLUSTER_OFFSETS.Y;
+            // tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
+            // setAgentLocalTarget(tempx,tempy,tempz);
+            //Update the pos_msg based on agent local target and global origin
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.X);
+            pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
+        case AGENT_GUIDED_GLOBAL:
+            tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
+            setAgentLocalTarget(0.0,0.0,tempz);
+            pos_msg.pose.position.latitude = AGENT_GLOBAL_TARGET.LAT;
+            pos_msg.pose.position.longitude = AGENT_GLOBAL_TARGET.LON;
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+
         default:
             printf("INVALID FLIGHT MODE REQUESTED\n");
             break;
@@ -265,11 +293,27 @@ void agent::setFlightMode(int mode) {
             else {
                 HRL_FLIGHTMODE = mode;
             }
+            FTL_ENABLE = false;
             break;
         case FOLLOW_THE_LEADER_MODE:
             HRL_FLIGHTMODE = mode;
             FTL_ENABLE = true;
             printf("Flight mode set to Follow the leader\n");
+            break;
+        case FORCE_COLLISION:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to FORCE_COLLISION\n");
+            break;
+        case AGENT_GUIDED_LOCAL:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to AGENT_GUIDED_LOCAL\n");
+            break;
+        case AGENT_GUIDED_GLOBAL:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to AGENT_GUIDED_GLOBAL\n");
             break;
         default: 
             printf("INVALID FLIGHTMODE SELECTION\n");
@@ -570,5 +614,10 @@ void parseCommandUnitTest()
 
 }
 
+void agent::setAgentGlobalTarget(double lat, double lon, double alt) {
+    AGENT_GLOBAL_TARGET.LAT = lat;
+    AGENT_GLOBAL_TARGET.LON = lon;
+    AGENT_GLOBAL_TARGET.ALT = alt;
+}
 
 #endif

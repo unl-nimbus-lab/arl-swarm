@@ -90,10 +90,25 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 if (*targetEntity == hrlAgent.getSysid()) {
                     switch(*command) {
                         case SET_CLUSTER_OFFSETZ:
-                        //Change how high this agent is
-                        hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
-			            hrlAgent.setPositionTarget();
-			break;
+                            //Change how high this agent is
+                            hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case CHANGE_FLIGHT_MODE:  
+                            //Change HRL_FLIGHTMODE to payload value
+                            hrlAgent.setFlightMode(HRLReference.data[0]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case SET_AGENT_LOCAL_TARGET:
+                            //Change where the agent is in the local frame
+                            hrlAgent.setAgentLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case SET_AGENT_GLOBAL_TAGET:
+                            //change where the agent is in the global frame
+                            hrlAgent.setAgentGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setPositionTarget();
+
                     }
                 }
                 break;
