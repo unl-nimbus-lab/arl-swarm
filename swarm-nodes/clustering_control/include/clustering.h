@@ -6,6 +6,7 @@
 #include "mavros_msgs/DebugValue.h"
 #include "mavros_msgs/SwarmGPS.h"
 #include "mavros_msgs/CommandLong.h"
+#include "mavros_msgs/SetMode.h"
 #include "geographic_msgs/GeoPoseStamped.h"
 #include <std_msgs/String.h>
 #include <sstream>
@@ -55,6 +56,7 @@
 #define DISABLE_CIRCLE 12
 #define SET_CIRCLE_RATE 13
 #define SET_CLUSTER_OFFSETZ 14
+#define SET_BRAKE 15
 
 //Agent Commands
 
@@ -70,10 +72,12 @@
 ros::Publisher ak_pub;
 ros::Publisher wp_pub;
 ros::ServiceClient client;
+ros::ServiceClient set_mode;
 mavros_msgs::DebugValue modeBroadcast;
 mavros_msgs::DebugValue agentAcknowledgement;
 mavros_msgs::DebugValue bootAcknowledgeMsg;
 mavros_msgs::CommandLong alt_sep;
+mavros_msgs::SetMode mode_msg;
 geo_converter convObject;
 int count = 0;
 
@@ -81,6 +85,7 @@ int count = 0;
 void parseCommand(std::string message, int *cluster, int *command);
 void handleCommand(int *cluster, int *command);
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
+void brake_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
 void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
@@ -242,7 +247,6 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.latitude = AGENT_GLOBAL_TARGET.LAT;
             pos_msg.pose.position.longitude = AGENT_GLOBAL_TARGET.LON;
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
-
         default:
             printf("INVALID FLIGHT MODE REQUESTED\n");
             break;
@@ -469,7 +473,7 @@ void acknowledge(int agentID,int* command) {
     
     //build and publish the acknowledgement
     char str[10];
-    sprintf(str, "A%d#%d", agentID, *command);
+    sprintf(str, "A%d$%d", agentID, *command);
     agentAcknowledgement.name = str; 
     ak_pub.publish(agentAcknowledgement);
 }

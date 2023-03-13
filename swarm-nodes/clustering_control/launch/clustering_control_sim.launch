@@ -21,6 +21,7 @@
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
             <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/>
             <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/>
 
         </node>
 
