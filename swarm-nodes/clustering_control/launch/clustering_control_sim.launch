@@ -25,6 +25,13 @@
 
         </node>
 
+
+        <node pkg="observer" name="observer" type="observer" output="screen" args="$(arg system_ID) $(arg clusterID)">
+            <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/>
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/>
+        </node>
+
         <arg name="fcu_url" default=""/>
         <arg name="gcs_url" default="" />
         <arg name="tgt_system" default="" />
