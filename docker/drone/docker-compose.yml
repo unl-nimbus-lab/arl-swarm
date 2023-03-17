@@ -12,6 +12,7 @@ services:
       - /home/ubuntu/rosbags:/home/rosbags
     devices: 
       - ${PORT}:${PORT}
+      - ${PORT2}:${PORT2}
     command: >
       /bin/bash -c "/home/bag_manager.sh /home/rosbags 5 &&
                     source /home/catkin_ws/devel/setup.bash &&
