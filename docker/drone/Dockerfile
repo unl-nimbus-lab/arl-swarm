@@ -52,7 +52,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && wstool init src
 
 COPY Utilities/xbee-python-master /home/xbee-python-master
-# RUN pip3 install /home/xbee-python-master
+RUN pip3 install /home/xbee-python-master
 
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
@@ -82,6 +82,8 @@ COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
+
+RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
 # Rosbag management
 COPY docker/drone/bag_manager.sh /home/
