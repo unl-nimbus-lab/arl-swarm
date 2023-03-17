@@ -120,10 +120,11 @@ class TheRadio(object):
             new_agent.longitude = lon
             new_agent.latitude = lat
             new_agent.altitude = alt
-            new_agent.last_received = new_agent.current_received
+            new_agent.last_received = time_received #new_agent.current_received
             new_agent.current_received = time_received
             new_agent.time_between_locations = new_agent.current_received - new_agent.last_received
             self.agent_list.append(new_agent)
+            print("Adding Agent " + str(new_agent.node_id) + ".")
         else:
             self.update_agent_location(id_num, lon, lat, alt, time_received, remote_agent_message)
 
@@ -203,7 +204,6 @@ class TheRadio(object):
         #restrict transmission of pos to 10 Hz
         r = rospy.Rate(10)
 
-        x = 0
         while not rospy.is_shutdown():
             #change this to publish the gps coords at 10Hz.
             #Use the serial callback to update the swarm agent
@@ -212,7 +212,18 @@ class TheRadio(object):
             #configure string position info
             radio_str = 'a'+self.sys_id+':y'+self.lon+'x'+self.lat+'z'+self.alt
             self.radio.send_data_broadcast(radio_str)
-            
+
+            #check to see if more than 5 seconds have passed on any one
+            #agent's update.  If so, remove that agent from the list
+            x = 0
+            for agent in self.agent_list:
+                if (self.millis() - agent.last_received > 5000):
+                    print("Update delay > 5 seconds. Removing Agent " +str(agent.node_id) + ".")
+                    #remove the agent from the list
+                    self.agent_list.remove(agent)        
+                    #remove node from list
+                    self.node_list.remove(agent.node_id)
+
             r.sleep()
 
 if __name__ == '__main__':
