@@ -48,6 +48,10 @@
 #define SET_LOCAL_RALLY 8
 #define SET_CLUSTER_GLOBAL_POSITION 9
 #define SET_FTL_SYSID 10
+#define ENABLE_CIRCLE 11
+#define DISABLE_CIRCLE 12
+#define SET_CIRCLE_RATE 13
+#define SET_CLUSTER_OFFSETZ 14
 
 //Agent Commands
 
@@ -69,6 +73,7 @@ mavros_msgs::DebugValue agentAcknowledgement;
 mavros_msgs::DebugValue bootAcknowledgeMsg;
 mavros_msgs::CommandLong alt_sep;
 geo_converter convObject;
+int count = 0;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
@@ -84,6 +89,7 @@ class agent {
         void setSysid(double id);
         void setClusterid(double id);
         void setClusterOrder(double order);
+        void setOriginalClusterOrder(double order);
         void setClusterSize(double size);
         void setClusterRadius(double radius);
         void setAgentAlt(double alt);
@@ -101,13 +107,14 @@ class agent {
         void setClusterOffsets();
         double getClusterXOffset();
         double getClusterYOffset();
+        void setClusterOffsets(int order);
         void setPositionTarget();
         void setClusterLocalTarget(double x, double y, double z);
         void setClusterType(int type);
         double getSysid();
         double getClusterid();
-        double circleXOffset();
-        double circleYOffset();
+        double circleXOffset(int order);
+        double circleYOffset(int order);
         double calculateXLineOffset();
         double calculateYLineOffset();
         int getFlightMode();
@@ -124,20 +131,31 @@ class agent {
         void setFTLSysid(int id);
         int getFTLSysid();
         void setFTLloc(double lat, double lon, double alt);
+        void enableCircle();
+        void disableCircle();
+        double getOriginalClusterOrder();
+        double getClusterOrder();
+        double getClusterSize();
+        int getCircleTicks();
+        void setCircleTicks(int ticks);
+        void setClusterOffsetZ (double altitude);
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
+        bool CIRCLE_FLAG = false;   //Enables/Disables circling
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
         double CLUSTERID;           //ID of the cluster this agent belongs to 
         int HRL_FLIGHTMODE = 1;     //HRL "flight mode"
         double CLUSTER_ORDER;       //This agent's "spot" in the cluster
+        double ORIGINAL_CLUSTER_ORDER; //Set this only once and never change
         double CLUSTER_SIZE;        //How many agents are in the cluster
         int CLUSTER_TYPE = 1;       //Organization of agents within the cluster 1) Circle 2) Line
         double CLUSTER_RADIUS;      //Dimension of the cluster
         double AGENT_ALT;           //Height (in meters) above "cluster target"
         bool PUBLISH = false;       //O-k to begin publishing messages to the FCU
-        int FTL_SYSID = 0;         //FOLLOW THE LEADER TARGET SYSID
+        int FTL_SYSID = 0;          //FOLLOW THE LEADER TARGET SYSID
+        int CIRCLE_TICKS = 10;      //Number of ros ticks to wait before moving to next position
         struct {
             double X;
             double Y;
@@ -270,12 +288,12 @@ void agent::setFlightMode(int mode) {
     }
 }
 
-void agent::setClusterOffsets() {
+void agent::setClusterOffsets(int order) {
     //This function is used to update the cluster offsets, ONLY CALL AFTER THE RADIUS HAS BEEN SET!!
     switch (CLUSTER_TYPE) {
         case CIRCLE_FORMATION:
-            CLUSTER_OFFSETS.X = circleXOffset();
-            CLUSTER_OFFSETS.Y = circleYOffset();
+            CLUSTER_OFFSETS.X = circleXOffset(order);
+            CLUSTER_OFFSETS.Y = circleYOffset(order);
             CLUSTER_OFFSETS.Z = AGENT_ALT;
             break;
         case LINEAR_FORMATION: //Line cluster formation
@@ -289,16 +307,16 @@ void agent::setClusterOffsets() {
     }
 }
 
-double agent::circleXOffset() {
+double agent::circleXOffset(int order) {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
-    double n = CLUSTER_ORDER - 1;
+    double n = order - 1;
     double offset = CLUSTER_RADIUS*cos(PI/180*(separation*n));
     return offset;
 }
 
-double agent::circleYOffset() {
+double agent::circleYOffset(int order) {
     double separation = 360 / CLUSTER_SIZE; //Angular offset between agents in the cluster
-    double n = CLUSTER_ORDER - 1;
+    double n = order - 1;
     double offset = CLUSTER_RADIUS*sin(PI/180*(separation*n));
     return offset;
 }
@@ -316,6 +334,11 @@ void agent::setClusterid(double id) {
 void agent::setClusterOrder(double order) {
     CLUSTER_ORDER = order;
     printf("Cluster Order Set to %f\n",CLUSTER_ORDER);
+}
+
+void agent::setOriginalClusterOrder(double order) {
+    ORIGINAL_CLUSTER_ORDER = order;
+    printf("Original Cluster Order Set to %f\n",ORIGINAL_CLUSTER_ORDER);
 }
 
 void agent::setClusterSize(double size) {
@@ -396,13 +419,13 @@ double agent::getAgentLocalTargetZ() {
 
 void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
-    //CXXX#XXX Where the "XXX" after the "C" identifies the cluster and
-    //the "XXX" after the "#" identifies the command
+    //CXXX$XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "$" identifies the command
 
-     std::string delimiter = "#";
+     std::string delimiter = "$";
      // remove 'C', 'S', or 'A'
      std::string short_message = message.substr(1);
-     // now find the '#'
+     // now find the '$'
      int split_idx = short_message.find(delimiter);
      // check for error and std::string::npos
      std::string cluster_str = short_message.substr(0, split_idx);
@@ -497,41 +520,86 @@ double agent::getClusterXOffset() {
 
 double agent::getClusterYOffset() {
     return CLUSTER_OFFSETS.Y;
+    
+void agent::enableCircle() {
+    CIRCLE_FLAG = true;
+    printf("Circling Enabled\n");
+}
+
+void agent::disableCircle() {
+    CIRCLE_FLAG = false;
+    printf("Circling Disabled\n");
+    setClusterOffsets(getOriginalClusterOrder());
+    setPositionTarget();
+}
+
+double agent::getOriginalClusterOrder() {
+    return ORIGINAL_CLUSTER_ORDER;
+}
+
+double agent::getClusterOrder() {
+    return CLUSTER_ORDER;
+}
+
+double agent::getClusterSize() {
+    return CLUSTER_SIZE;
+}
+
+int agent::getCircleTicks() {
+    return CIRCLE_TICKS;
+}
+
+void agent::setCircleTicks(int ticks) {
+    if (ticks < 0) {
+        //If a negative value comes across, just set it to a nice, safe 10
+        CIRCLE_TICKS = 10;
+    }
+    else {
+        CIRCLE_TICKS = ticks;
+    }
+    printf("Circle Ticks updated to %d\n", CIRCLE_TICKS);
+}
+
+void agent::setClusterOffsetZ (double altitude) {
+    CLUSTER_OFFSETS.Z = altitude - CLUSTER_LOCAL_TARGET.Z;
+    //update agent alt
+    AGENT_ALT = CLUSTER_OFFSETS.Z;
+
 }
 
 void parseCommandUnitTest()
 {
      int cluster;
      int command;
-     std::string msg = "C123#987";
+     std::string msg = "C123$987";
      std::cout << "msg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#9";
+     msg = "C1$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C15#9";
+     msg = "C15$9";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C1#90";
+     msg = "C1$90";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;
      std::cout << "\tCluster: " << cluster << std::endl;
      std::cout << "\tCommand: " << command << std::endl;
 
-     msg = "C01#02";
+     msg = "C01$02";
      std::cout << "\nmsg sent: " << msg << std::endl;
      parseCommand(msg, &cluster, &command);
      std::cout << "parseCommand results:" << std::endl;

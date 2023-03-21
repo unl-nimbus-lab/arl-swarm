@@ -9,6 +9,7 @@ int main(int argc, char **argv) {
     hrlAgent.setSysid(std::stod(argv[1]));
     hrlAgent.setClusterid(std::stod(argv[2]));
     hrlAgent.setClusterOrder(std::stod(argv[3]));
+    hrlAgent.setOriginalClusterOrder(std::stod(argv[3]));
     hrlAgent.setClusterSize(std::stod(argv[4]));
     hrlAgent.setClusterRadius(std::stod(argv[5]));
     hrlAgent.setAgentAlt(std::stod(argv[6]));
@@ -18,7 +19,7 @@ int main(int argc, char **argv) {
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
-    hrlAgent.setClusterOffsets();
+    hrlAgent.setClusterOffsets(hrlAgent.getOriginalClusterOrder());
     hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
 
@@ -32,10 +33,34 @@ int main(int argc, char **argv) {
 
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
+            if (hrlAgent.CIRCLE_FLAG == true) {
+                if (count >= hrlAgent.getCircleTicks()) {//Circle rate 
+                    //Update the cluster order
+                    double order = hrlAgent.getClusterOrder();
+                    if (order == hrlAgent.getClusterSize()) {
+                        //Reset the order to 1 if the agent is at the top of the cluster order
+                        hrlAgent.setClusterOrder(1);
+                    }
+                    else {
+                        //If this is not at the top of the cluster order, just add one
+                        hrlAgent.setClusterOrder(order + 1);
+                    }
+                    //Update the cluster offsets after the order has changed
+		            printf("Cluster order: %f\n",hrlAgent.getClusterOrder());
+                    hrlAgent.setClusterOffsets(hrlAgent.getClusterOrder());
+                    hrlAgent.setPositionTarget();
+                    //reset the counter
+                    count = 0;
+                }
+                else {
+                    count++;
+                }
+            }
             if (hrlAgent.FTL_ENABLE == true) {
                 hrlAgent.setPositionTarget();
                 printf("FTL ENABLE is true\n");
             }
+
             hrlAgent.pos_msg.header.stamp = ros::Time::now();
             wp_pub.publish( hrlAgent.pos_msg );
         }
@@ -62,55 +87,76 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     function is agent::setPositionTarget */
         switch(entity) {
             case 'A':
-                //Nothing to see here
+                if (*targetEntity == hrlAgent.getSysid()) {
+                    switch(*command) {
+                        case SET_CLUSTER_OFFSETZ:
+                        //Change how high this agent is
+                        hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
+			            hrlAgent.setPositionTarget();
+			break;
+                    }
+                }
                 break;
             case 'C': //Cluster-level command
                 if (*targetEntity == hrlAgent.getClusterid()) {
                     switch(*command) {
-                        case PING: //Ping (just send an acknowedgemet back)
+                        case PING: 
+                            //Ping (just send an acknowedgemet back)
                             acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case CHANGE_FLIGHT_MODE:  //Change HRL_FLIGHTMODE to payload value
+                        case CHANGE_FLIGHT_MODE:  
+                            //Change HRL_FLIGHTMODE to payload value
                             hrlAgent.setFlightMode(HRLReference.data[0]);
                             hrlAgent.setPositionTarget();
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case SET_CLUSTER_LOCAL_POSITION: //Change CLUSTER_LOCAL_TARGET to payload
+                        case SET_CLUSTER_LOCAL_POSITION: 
+                            //Change CLUSTER_LOCAL_TARGET to payload
                             hrlAgent.setClusterLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case SET_CLUSTER_RADIUS: //Change CLUSTER_RADIUS to payload
+                        case SET_CLUSTER_RADIUS:
+                            //Change CLUSTER_RADIUS to vector payload
                             hrlAgent.setClusterRadius(HRLReference.data[0]);
-                            hrlAgent.setClusterOffsets();
+                            hrlAgent.setClusterOffsets(hrlAgent.getOriginalClusterOrder());
                             hrlAgent.setPositionTarget();
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
-                        case SET_CLUSTER_TYPE: //Change the Cluster type
+                        case SET_CLUSTER_TYPE:
+                            //Change the Cluster type/formation style
                             hrlAgent.setClusterType(HRLReference.data[0]);
-                            hrlAgent.setClusterOffsets();
+                            hrlAgent.setClusterOffsets(hrlAgent.getOriginalClusterOrder());
                             hrlAgent.setPositionTarget();
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case START_CLUSTER_GUIDED:
+                            //Start publishing to mavros topics
                             hrlAgent.setPublish(true);
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;  
                         case STOP_CLUSTER_GUIDED:
+                            //Stop all publishing to the mavros topics
                             hrlAgent.setPublish(false);
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_HOME_POSITION:
+                            //Update the cluster's global origin
                             hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_CLUSTER_GLOBAL_POSITION:
                             hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
-                            //acknowledge(hrlAgent.getSysid(), command);
                             break;
                         case SET_FTL_SYSID:
+                            //Chose which sysid the cluster will follow
                             hrlAgent.setFTLSysid(HRLReference.data[0]);
+                            break;
+                        case ENABLE_CIRCLE:
+                            //Start Circling
+                            hrlAgent.enableCircle();
+                            break;
+                        case DISABLE_CIRCLE:
+                            //Stop Circling
+                            hrlAgent.disableCircle();
+                            break;
+                        case SET_CIRCLE_RATE:
+                            //Change the Circle Rate
+                            hrlAgent.setCircleTicks(HRLReference.data[0]);
                             break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
@@ -133,28 +179,3 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
         hrlAgent.setFTLloc(gps_msg.latitude,gps_msg.longitude,gps_msg.altitude);
     }
 }
-//TODO:
-//ACKNOWLEDGEMENTS -- DONE -- TESTED
-//FTL -- DONE -- EDITS -- REMOVE -- DONE
-//SUPPORT FOR LINEAR CLUSTER TYPE -- DONE
-//SUPPORT FOR FLYING V CLUSTER TYPE
-//POTENTIALY REMOVE ACKNOWLEDGEMENT  -- DONE
-//CHANGE THIS PUB TO NEW TOPIC, SOMETHING LIKE 
-// /agent_command_pos --> (global_oublisher) --> /mavros_setpoint_position/global
-
-//MINIMAL FUNCTIONALITY
-//CLUSTER:
-//START HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
-//STOP HRL COMMANDS/PUBLISHING -- NEEDS TESTED -- TESTED
-//UPDATE CLUSTER TARGET POSITION IN LOCAL FRAME -- NEEDS TESTED -- TESTED
-//SET HOME POSITION MANUALLY -- NEEDS TESTED -- TESTED
-
-//NICE TO HAVE FUNCTIONALITY
-//SET HOME POSITION FROM LEADER
-//FOLLOW THE LEADER
-
-//AGENT:
-//START HRL COMMANDS/PUBLISHING
-//STOP HRL COMMANDS/PUBLISHING
-//UPDATE AGENT TARGET POSITION IN LOCAL FRAME
-//UPDATE AGENT TARGET POSIITON IN GLOBAL FRAME

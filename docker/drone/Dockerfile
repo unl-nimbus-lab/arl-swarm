@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM arm64v8/ros:noetic-robot
+FROM ros:noetic-robot
 
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
@@ -51,6 +51,9 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin init \
     && wstool init src
 
+COPY Utilities/xbee-python-master /home/xbee-python-master
+RUN pip3 install /home/xbee-python-master
+
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
 # requiring internet to rebuild swarm nodes
@@ -72,12 +75,15 @@ COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
 # COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 # COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
+COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
 COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build -j1
+
+RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
 # Rosbag management
 COPY docker/drone/bag_manager.sh /home/
