@@ -61,6 +61,9 @@
 #define CHANGE_CLUSTER_SIZE 5
 #define CHANGE_AGENT_ALTITUDE 6
 
+// Agent restraints
+#define MAX_ALT 121.92 // 400 feet (converted to meters)
+
 //Some objects that are used:
 ros::Publisher ak_pub;
 ros::Publisher wp_pub;
@@ -95,10 +98,15 @@ class agent {
         void setRally2(double x, double y);
         double getRally1X();
         double getRally1Y();
+        double getRally1Z();
         double getRally2X();
         double getRally2Y();
+        double getRally2Z();
         double getAgentAlt();
         void setFlightMode(int mode);
+        void setClusterOffsets();
+        double getClusterXOffset();
+        double getClusterYOffset();
         void setClusterOffsets(int order);
         void setPositionTarget();
         void setClusterLocalTarget(double x, double y, double z);
@@ -113,6 +121,9 @@ class agent {
         double latOffset();
         double lonOffset();
         void setAgentLocalTarget(double x, double y, double z);
+        double getAgentLocalTargetX();
+        double getAgentLocalTargetY();
+        double getAgentLocalTargetZ();
         void setPublish(bool logic);
         bool getPublish();
         void setClusterGlobalTarget(double lat, double lon, double alt);
@@ -341,7 +352,7 @@ void agent::setClusterRadius(double radius) {
 }
 
 void agent::setAgentAlt(double alt) {
-    AGENT_ALT = alt;
+    AGENT_ALT = std::min(alt,MAX_ALT);
     printf("Agent Altitude Set to %f\n",AGENT_ALT);
 }
 
@@ -367,6 +378,10 @@ double agent::getRally1Y() {
     return CLUSTER_RALLY1.Y;
 }
 
+double agent::getRally1Z() {
+    return CLUSTER_RALLY1.Z;
+}
+
 void agent::setRally2(double x, double y) {
     CLUSTER_RALLY2.X = x;
     CLUSTER_RALLY2.Y = y;
@@ -382,8 +397,24 @@ double agent::getRally2Y() {
     return CLUSTER_RALLY2.Y;
 }
 
+double agent::getRally2Z() {
+    return CLUSTER_RALLY2.Z;
+}
+
 double agent::getAgentAlt() {
     return AGENT_ALT;
+}
+
+double agent::getAgentLocalTargetX() {
+    return AGENT_LOCAL_TARGET.X;
+}
+
+double agent::getAgentLocalTargetY() {
+    return AGENT_LOCAL_TARGET.Y;
+}
+
+double agent::getAgentLocalTargetZ() {
+    return AGENT_LOCAL_TARGET.Z;
 }
 
 void parseCommand(std::string message, int *cluster, int *command) {
@@ -483,6 +514,13 @@ void agent::setFTLloc(double lat, double lon, double alt) {
     FTL_LOC.ALT = alt;
 }
 
+double agent::getClusterXOffset() {
+    return CLUSTER_OFFSETS.X;
+}
+
+double agent::getClusterYOffset() {
+    return CLUSTER_OFFSETS.Y;
+    
 void agent::enableCircle() {
     CIRCLE_FLAG = true;
     printf("Circling Enabled\n");

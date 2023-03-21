@@ -33,3 +33,5 @@ bundles/
 vendor/pkg/
 pyenv
 Vagrantfile
+swarm-nodes/clustering_control/build/*
+swarm-nodes/clustering_control/tst/build/*
