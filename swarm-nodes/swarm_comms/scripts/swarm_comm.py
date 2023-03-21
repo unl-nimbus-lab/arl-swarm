@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+#Aircraft position updater and 
+#swarm position tracker.
+
+#Adam Plowcha
+#Jack Smiley
+
 import sys
 import serial
 from digi.xbee.devices import *
