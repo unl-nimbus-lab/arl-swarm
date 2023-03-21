@@ -520,6 +520,7 @@ double agent::getClusterXOffset() {
 
 double agent::getClusterYOffset() {
     return CLUSTER_OFFSETS.Y;
+}
     
 void agent::enableCircle() {
     CIRCLE_FLAG = true;
