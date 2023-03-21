@@ -27,7 +27,8 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
-    ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
+    //ros::Subscriber brake_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, brake_cb);    ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
+    set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
@@ -71,6 +72,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //over-the radio commands are handled here, the first step is to deconstruct the command
     //sent over the debug vector channel
@@ -90,10 +92,30 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                 if (*targetEntity == hrlAgent.getSysid()) {
                     switch(*command) {
                         case SET_CLUSTER_OFFSETZ:
-                        //Change how high this agent is
-                        hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
-			            hrlAgent.setPositionTarget();
-			break;
+                            //Change how high this agent is
+                            hrlAgent.setClusterOffsetZ(HRLReference.data[0]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case CHANGE_FLIGHT_MODE:  
+                            //Change HRL_FLIGHTMODE to payload value
+                            hrlAgent.setFlightMode(HRLReference.data[0]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case SET_AGENT_LOCAL_TARGET:
+                            //Change where the agent is in the local frame
+                            hrlAgent.setAgentLocalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case SET_AGENT_GLOBAL_TAGET:
+                            //change where the agent is in the global frame
+                            hrlAgent.setAgentGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                            hrlAgent.setPositionTarget();
+                            break;
+                        case SET_BRAKE:
+                            std::cout << "Braking" << std::endl;
+                            mode_msg.request.custom_mode = "BRAKE";
+                            set_mode.call(mode_msg);
+                            break;
                     }
                 }
                 break;

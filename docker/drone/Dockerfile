@@ -77,6 +77,7 @@ COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
 COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
 COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
+COPY swarm-nodes/observer /home/catkin_ws/src/observer
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
