@@ -91,7 +91,7 @@ COPY docker/drone/bag_manager.sh /home/
 RUN ["chmod","+x","/home/bag_manager.sh"]
 
 # Overlay the ROS environment on top of the existing environment
-COPY ../../docker/drone/ros_entrypoint.sh /
+COPY docker/drone/ros_entrypoint.sh /
 RUN ["chmod", "+x", "/ros_entrypoint.sh"]
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
