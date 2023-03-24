@@ -51,13 +51,13 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin init \
     && wstool init src
 
-COPY ../../Utilities/xbee-python-master /home/xbee-python-master
+COPY Utilities/xbee-python-master /home/xbee-python-master
 RUN pip3 install /home/xbee-python-master
 
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
 # requiring internet to rebuild swarm nodes
-COPY ../../swarm-nodes/mavros /home/catkin_ws/src/mavros
+COPY swarm-nodes/mavros /home/catkin_ws/src/mavros
 
 # Install MAVLink and configure workspace
 RUN rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
@@ -71,13 +71,13 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build
 
 # Copy the swarm ROS nodes into the image
-COPY ../../swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
+COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
 # COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 # COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
-COPY ../../swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
-COPY ../../swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
-COPY ../../swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
-COPY ../../swarm-nodes/observer /home/catkin_ws/src/observer
+COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
+COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
+COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
+COPY swarm-nodes/observer /home/catkin_ws/src/observer
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
