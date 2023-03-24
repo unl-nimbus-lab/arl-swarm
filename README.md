@@ -66,3 +66,5 @@ cd path/to/arl-swarm/docker/drone/
 # Run the docker services
 docker-compose up
 ```
+
+CI TEST
