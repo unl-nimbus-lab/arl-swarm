@@ -3,6 +3,7 @@
 agent hrlAgent;
 
 int main(int argc, char **argv) {
+    std::cout << "ELLO" << std::endl;
 
     //read in command line arguments
     //TODO: this block is hideous, clean it up
