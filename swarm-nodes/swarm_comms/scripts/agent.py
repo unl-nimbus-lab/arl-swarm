@@ -9,6 +9,12 @@ class Agent:
         self.last_received = 0
         self.current_received = 0
         self.time_between_locations = 0
+        self.vx = 0
+        self.vy = 0
+        self.vz = 0
+        self.ix = 0
+        self.iy = 0
+        self.iz = 0
 
     def __str__(self):
         ret_str = "id:"+str(self.node_id)

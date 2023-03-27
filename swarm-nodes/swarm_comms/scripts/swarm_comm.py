@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-
-#Aircraft position updater and 
-#swarm position tracker.
-
-#Adam Plowcha
-#Jack Smiley
-
 import sys
 import serial
 from digi.xbee.devices import *
@@ -13,6 +6,7 @@ from digi.xbee.util import utils
 import time
 import rospy
 from std_msgs.msg import String
+from geometry_msgs.msg import TwistStamped
 from swarm_comms.msg import allAgentsPosStamped
 from swarm_comms.msg import agentPos
 from mavros_msgs.msg import SwarmGPS
@@ -27,6 +21,12 @@ class TheRadio(object):
     lon = '0.0'
     alt = '0.0'
     sys_id = '0'
+    vx = '0.0'
+    vy = '0.0'
+    vz = '0.0'
+    ix = '0.0'
+    iy = '0.0'
+    iz = '0.0'
     agent_list = []
     node_list = []
 
@@ -65,6 +65,12 @@ class TheRadio(object):
                 a.lon = agent.longitude
                 a.lat = agent.latitude
                 a.alt = agent.altitude
+                a.vx = agent.vx
+                a.vy = agent.vy
+                a.vz = agent.vz
+                a.ix = agent.ix
+                a.iy = agent.iy
+                a.iz = agent.iz
                 a.time_since_update = agent.time_between_locations
                 allAgents.agents.append(a)
 
@@ -108,15 +114,65 @@ class TheRadio(object):
             temp_str = ''
             idx+=1
             
-            while (idx < len(data)):
+            #alt
+            while (data[idx] !='v'):
                 temp_str += data[idx]
                 idx += 1
             alt = float(temp_str)
+            temp_str = ''
+            idx+=2
 
-            return id_num, lon, lat, alt
+            #vx
+            while (data[idx] !='v'):
+                temp_str += data[idx]
+                idx += 1
+            vx = float(temp_str)
+            temp_str = ''
+            idx+=2
+
+            #vy
+            while (data[idx] != 'v'):
+                temp_str += data[idx]
+                idx += 1
+            vy = float(temp_str)
+            temp_str = ''
+            idx+= 2
+
+            #vz
+            while (data[idx] != 'i'):
+                temp_str += data[idx]
+                idx += 1
+            vz = float(temp_str)
+            temp_str = ''
+            idx+= 2
+
+            #ix
+            while (data[idx] != 'i'):
+                temp_str += data[idx]
+                idx += 1
+            ix = float(temp_str)
+            temp_str = ''
+            idx += 2
+
+            #iy
+            while (data[idx] != 'i'):
+                temp_str += data[idx]
+                idx+= 1
+            iy = float(temp_str)
+            temp_str = ''
+            idx += 2
+
+            #iz
+            while(idx < len(data)):
+                temp_str += data[idx]
+                idx += 1
+            iz = float(temp_str)
+
+
+            return id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz
 
     def store_remote_agent_data(self, data, time_received):
-        id_num, lon, lat, alt = self.parse_remote_agent_location(data)
+        id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
         #print('id:%d lon%f lat%f alt%f' % (id_num, lon, lat, alt))
         remote_agent_message = (id_num, data, time_received)
         #print(remote_agent_message)
@@ -127,20 +183,32 @@ class TheRadio(object):
             new_agent.longitude = lon
             new_agent.latitude = lat
             new_agent.altitude = alt
+            new_agent.vx = vx
+            new_agent.vy = vy
+            new_agent.vz = vz
+            new_agent.ix = ix
+            new_agent.iy = iy
+            new_agent.iz = iz
             new_agent.last_received = time_received #new_agent.current_received
             new_agent.current_received = time_received
             new_agent.time_between_locations = new_agent.current_received - new_agent.last_received
             self.agent_list.append(new_agent)
             print("Adding Agent " + str(new_agent.node_id) + ".")
         else:
-            self.update_agent_location(id_num, lon, lat, alt, time_received, remote_agent_message)
+            self.update_agent_location(id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message)
 
-    def update_agent_location(self, id_num, lon, lat, alt, time_received, remote_agent_message):
+    def update_agent_location(self, id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message):
         for agent in self.agent_list:
             if (id_num == agent.node_id):
                 agent.longitude = lon
                 agent.latitude = lat
                 agent.altitude = alt
+                agent.vx = vx
+                agent.vy = vy
+                agent.vz = vz
+                agent.ix = ix
+                agent.iy = iy
+                agent.iz = iz
                 agent.last_received = agent.current_received
                 agent.current_received = time_received
                 agent.time_between_locations = agent.current_received - agent.last_received
@@ -165,7 +233,11 @@ class TheRadio(object):
             self.lon = str(data.longitude)
             self.alt = str(data.altitude)
 
-            
+    
+    def vel_callback(self, data):
+        self.vx = str(data.linear.x)
+        self.vy = str(data.linear.y)
+        self.vz = str(data.linear.z)
 
     def __init__(self):
         rospy.init_node('mesh_radio')
@@ -181,6 +253,8 @@ class TheRadio(object):
         self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
 
         rospy.Subscriber("/mavros/global_position/swarm", SwarmGPS, self.gps_callback)
+        rospy.Subscriber("/mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
+
 
         self.radio = XBeeDevice(radio_port, radio_baud)
         print("Opening radio...")
@@ -217,8 +291,10 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+self.sys_id+':y'+self.lon+'x'+self.lat+'z'+self.alt
+            radio_str = 'a'+self.sys_id+':y'+self.lon+'x'+self.lat+'z'+self.alt+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
             self.radio.send_data_broadcast(radio_str)
+            #debug print
+            #print(radio_str)
 
             #check to see if more than 5 seconds have passed on any one
             #agent's update.  If so, remove that agent from the list
