@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
-    //ros::Subscriber brake_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, brake_cb);    ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
+    //ros::Subscriber brake_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, brake_cb);    
+    ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );

@@ -41,7 +41,6 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(clustering_control src/clustering_control.cpp)
-
 target_link_libraries(clustering_control ${catkin_LIBRARIES})
 
 # add_subdirectory(src)
