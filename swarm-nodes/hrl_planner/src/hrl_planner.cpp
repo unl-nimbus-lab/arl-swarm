@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ros/ros.h"
+#include "swarm_comms/allAgentsPosStamped.h"
 
 //ROS message includes
 #include "geographic_msgs/GeoPoseStamped.h"

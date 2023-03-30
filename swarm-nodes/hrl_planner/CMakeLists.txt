@@ -13,8 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   mavros 
   mavlink 
-  mavros_msgs 
+  mavros_msgs
   custom_libs
+  swarm_comms
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS} )
@@ -48,3 +49,6 @@ include_directories(
 ## Declare a C++ executable
 add_executable(hrl_planner src/hrl_planner.cpp)
 target_link_libraries(hrl_planner ${catkin_LIBRARIES})
+
+add_executable(state_conditioning src/state_conditioning.cpp)
+target_link_libraries(state_conditioning ${catkin_LIBRARIES})
