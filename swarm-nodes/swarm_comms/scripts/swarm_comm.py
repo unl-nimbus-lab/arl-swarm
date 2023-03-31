@@ -29,6 +29,7 @@ class TheRadio(object):
     iz = '0.0'
     agent_list = []
     node_list = []
+    simming = False
 
 
     def millis(self):
@@ -173,9 +174,12 @@ class TheRadio(object):
 
     def store_remote_agent_data(self, data, time_received):
         id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
-        #print('id:%d lon%f lat%f alt%f' % (id_num, lon, lat, alt))
+
+        #For simulation purposes, we exit out here if the data is our own
+        if (id_num == int(self.sys_id)):
+            return None
+
         remote_agent_message = (id_num, data, time_received)
-        #print(remote_agent_message)
 
         if (id_num not in self.node_list):
             self.node_list.append(id_num)
@@ -239,48 +243,92 @@ class TheRadio(object):
         self.vy = str(data.linear.y)
         self.vz = str(data.linear.z)
 
+    def radio_callback(self, xb_msg):
+        #mimic the data_rcvd_callback for the radio here
+        time_received = self.millis()
+        #store the string from the topic 
+        data = xb_msg.data
+
+        if (data[0]=='C'):
+            self.process_command(data[1])
+        else:
+            self.store_remote_agent_data(data, time_received)
+            allAgents = allAgentsPosStamped()
+            for agent in self.agent_list:
+                a = agentPos()
+                a.id = agent.node_id
+                a.lon = agent.longitude
+                a.lat = agent.latitude
+                a.alt = agent.altitude
+                a.vx = agent.vx
+                a.vy = agent.vy
+                a.vz = agent.vz
+                a.ix = agent.ix
+                a.iy = agent.iy
+                a.iz = agent.iz
+                a.time_since_update = agent.time_between_locations
+                allAgents.agents.append(a)
+
+                                                                                                                                    #add time to header
+            allAgents.header.stamp = rospy.Time.now()
+                                                                                                                                                                                                                                                            #publish to topic
+            self.agent_pos_pub.publish(allAgents)
+
     def __init__(self):
         rospy.init_node('mesh_radio')
         
-        # grab the system id as a command line arg
+        # grab the system id as the first command line arg
         if (len(sys.argv) > 1):
             self.sys_id = sys.argv[1]
+            print(f"Setting sys_id to {self.sys_id}.")
 
-        radio_port = '/dev/ttyUSB0'
-        radio_baud = 57600
+        if (len(sys.argv) > 2):
+            if (sys.argv[2] == 'sim'):
+                self.simming = True
+        print(f"Simming is set to {self.simming}.")
+
+        #initialize the actual radio hardware if not simming
+        if (self.simming == False):
+            radio_port = '/dev/ttyUSB0'
+            radio_baud = 57600
 
         self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
         self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
 
-        rospy.Subscriber("/mavros/global_position/swarm", SwarmGPS, self.gps_callback)
-        rospy.Subscriber("/mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
+        rospy.Subscriber("mavros/global_position/swarm", SwarmGPS, self.gps_callback)
+        rospy.Subscriber("mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
+
+        if (self.simming==True):
+            print("Setting up sim publisher/subscriber...")
+            self.radio_pub = rospy.Publisher('/radio_traffic', String, queue_size = 10)
+            rospy.Subscriber("/radio_traffic", String, self.radio_callback)
+
+        if (self.simming == False):
+            self.radio = XBeeDevice(radio_port, radio_baud)
+            print("Opening radio...")
+            self.radio.open()
+
+            #Add radio data reception callback
+            print("Activating serial data callback...")
+            self.radio.add_data_received_callback(self.data_rcvd_callback)
 
 
-        self.radio = XBeeDevice(radio_port, radio_baud)
-        print("Opening radio...")
-        self.radio.open()
-
-        #Add radio data reception callback
-        print("Activating serial data callback...")
-        self.radio.add_data_received_callback(self.data_rcvd_callback)
-
-
-        print("Polling network...")
-        self.xnet = self.radio.get_network()
-        self.xnet.start_discovery_process()
-        while self.xnet.is_discovery_running():
-            time.sleep(0.1)
-        self.nodes = self.xnet.get_devices()
-        print("Found the following radios:")
-        for node in self.nodes:
-            print(node.get_node_id())
+            print("Polling network...")
+            self.xnet = self.radio.get_network()
+            self.xnet.start_discovery_process()
+            while self.xnet.is_discovery_running():
+                time.sleep(0.1)
+            self.nodes = self.xnet.get_devices()
+            print("Found the following radios:")
+            for node in self.nodes:
+                print(node.get_node_id())
     
-        #Add network modification callback
-        print("Activating network modification callback...")
-        self.xnet.add_network_modified_callback(self.net_modified_callback)
+            #Add network modification callback
+            print("Activating network modification callback...")
+            self.xnet.add_network_modified_callback(self.net_modified_callback)
 
     def main_loop(self):
-        print("Radio node is running.")
+        print("Swarm Comms node is running.")
 
         #restrict transmission of pos to 10 Hz
         r = rospy.Rate(10)
@@ -292,7 +340,16 @@ class TheRadio(object):
 
             #configure string position info
             radio_str = 'a'+self.sys_id+':y'+self.lon+'x'+self.lat+'z'+self.alt+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
-            self.radio.send_data_broadcast(radio_str)
+            
+            if (self.simming == False):
+                #broadcast on radio if not simming
+                self.radio.send_data_broadcast(radio_str)
+            else:
+                #publish to topic
+                s = String()
+                s.data = radio_str;
+                self.radio_pub.publish(s)
+
             #debug print
             #print(radio_str)
 
