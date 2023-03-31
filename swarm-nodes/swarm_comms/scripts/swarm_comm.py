@@ -239,9 +239,9 @@ class TheRadio(object):
 
     
     def vel_callback(self, data):
-        self.vx = str(data.linear.x)
-        self.vy = str(data.linear.y)
-        self.vz = str(data.linear.z)
+        self.vx = str(data.twist.linear.x)
+        self.vy = str(data.twist.linear.y)
+        self.vz = str(data.twist.linear.z)
 
     def radio_callback(self, xb_msg):
         #mimic the data_rcvd_callback for the radio here
