@@ -250,7 +250,7 @@ class TheRadio(object):
         data = xb_msg.data
 
         #TEMPORARY DEBUG ONLY!!!
-        print(self.sys_id + 'rcvd: ' + data)
+        #print(self.sys_id + 'rcvd: ' + data)
 
         if (data[0]=='C'):
             self.process_command(data[1])
@@ -272,7 +272,7 @@ class TheRadio(object):
                 a.time_since_update = agent.time_between_locations
                 allAgents.agents.append(a)
 
-                                                                                                                                    #add time to header
+            #add time to header
             allAgents.header.stamp = rospy.Time.now()
                                                                                                                                                                                                                                                             #publish to topic
             self.agent_pos_pub.publish(allAgents)
