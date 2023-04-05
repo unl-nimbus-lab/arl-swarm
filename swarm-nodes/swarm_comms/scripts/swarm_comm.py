@@ -249,6 +249,9 @@ class TheRadio(object):
         #store the string from the topic 
         data = xb_msg.data
 
+        #TEMPORARY DEBUG ONLY!!!
+        print(self.sys_id + 'rcvd: ' + data)
+
         if (data[0]=='C'):
             self.process_command(data[1])
         else:
