@@ -302,9 +302,11 @@ class TheRadio(object):
         rospy.Subscriber("mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
 
         if (self.simming==True):
-            print("Setting up sim publisher/subscriber...")
+            print(f"Setting up sim publisher/subscriber for agent {self.sys_id} ...")
             self.radio_pub = rospy.Publisher('/radio_traffic', String, queue_size = 10)
+            print("Publishing to radio_traffic.")
             rospy.Subscriber("/radio_traffic", String, self.radio_callback)
+            print("Subscribed to radio_traffic.")
 
         if (self.simming == False):
             self.radio = XBeeDevice(radio_port, radio_baud)
