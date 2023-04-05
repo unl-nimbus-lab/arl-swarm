@@ -295,7 +295,7 @@ class TheRadio(object):
             radio_port = '/dev/ttyUSB0'
             radio_baud = 57600
 
-        self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
+        #self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
         self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
 
         rospy.Subscriber("mavros/global_position/swarm", SwarmGPS, self.gps_callback)
