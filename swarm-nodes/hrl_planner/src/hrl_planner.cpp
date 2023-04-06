@@ -40,10 +40,6 @@ int main(int argc, char **argv) {
 
     I << 0, 0, 0, 0, x_target, y_target;
 
-
-    
-
-
     //Setup the hrl_planner node
     ros::init(argc, argv, "hrl_planner");
     ros::NodeHandle nh;
