@@ -29,6 +29,8 @@ int main(int argc, char **argv) {
     //ros::Subscriber swarm_state_sub = nh.subscribe("/agent_pos", 10, state_update_cb); NEED TO USE THIS ONE IN THE FUTURE
     global_position_sub = nh.subscribe("/mavros/global_position/swarm",1, position_update_callback);
     agent_location_pub = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy",1,true);
+
+    ros::spin();
     
 }
 
