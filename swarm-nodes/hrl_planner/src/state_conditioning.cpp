@@ -3,6 +3,7 @@
 #include "geometry_msgs/TwistStamped.h"
 #include "mavros_msgs/SwarmGPS.h"
 #include "custom_libs/geo_converter.hpp"
+#include "geometry_msgs/PointStamped.h"
 
 
 void velocity_update_callback(const geometry_msgs::TwistStamped::ConstPtr& msg);
@@ -23,6 +24,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     //ros::Subscriber swarm_state_sub = nh.subscribe("/agent_pos", 10, state_update_cb); NEED TO USE THIS ONE IN THE FUTURE
     ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, position_update_callback);
+    ros::Publisher  agent_locating_pub = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy",1,true);
     
 }
 

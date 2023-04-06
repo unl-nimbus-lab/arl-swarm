@@ -38,6 +38,10 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
+	<include file="$(find swarm_comms)/launch/swarm_comms_sim.launch">
+        <arg name="system_ID" value="$(arg system_ID)"/>
+    </include>
+
 	<node pkg="rosbag" name="record" type="record" 
 	    args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global" />
 

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ros:noetic-robot
+FROM arm64v8/ros:noetic-robot
 
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
