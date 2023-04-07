@@ -233,7 +233,7 @@ class TheRadio(object):
 
 
     def gps_callback(self, data):
-        if (data.header.frame_is == self.sys_id):
+        if (data.header.frame_id == self.sys_id):
             self.x = str(data.point.x)
             self.y = str(data.point.y)
             self.z = str(data.point.z)
