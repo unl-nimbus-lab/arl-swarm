@@ -38,13 +38,13 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<include file="$(find swarm_comms)/launch/swarm_comms.launch">
-        <arg name="system_ID" value="$(arg system_ID)"/>
-    </include>
+	<!-- include file="$(find swarm_comms)/launch/swarm_comms.launch">
+        	<arg name="system_ID" value="$(arg system_ID)"/>
+   	 </include-->
 
-	<node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" args="$(arg system_ID)">
+	<!-- node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" args="$(arg system_ID)">
 
-    </node>
+    </node-->
 
 	<node pkg="rosbag" name="record" type="record" 
 	    args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global" />

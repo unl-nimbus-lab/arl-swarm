@@ -3,6 +3,7 @@ import sys
 import serial
 from digi.xbee.devices import *
 from digi.xbee.util import utils
+from digi.xbee.exception import *
 import time
 import rospy
 from std_msgs.msg import String
@@ -58,6 +59,7 @@ class TheRadio(object):
         if (data[0] == 'C'):
             self.process_command(data[1])
         else:
+            #self.parse_remote_agent_location(data)
             self.store_remote_agent_data(data, time_received)
             #now publish remote agent data to the agent_pos topic
             allAgents = allAgentsPosStamped()
@@ -99,7 +101,7 @@ class TheRadio(object):
             id_num = int(temp_str)
             temp_str = ''
 
-            #increment idx so we go past the 'y' in the 
+            #increment idx so we go past the 'x' in the 
             #received string
             idx += 2
             while (data[idx] != 'y'):
@@ -170,7 +172,6 @@ class TheRadio(object):
                 idx += 1
             iz = float(temp_str)
 
-
             return id_num, px, py, pz, vx, vy, vz, ix, iy, iz
 
     def store_remote_agent_data(self, data, time_received):
@@ -234,9 +235,9 @@ class TheRadio(object):
 
     def gps_callback(self, data):
         if (data.header.frame_id == self.sys_id):
-            self.x = str(data.point.x)
-            self.y = str(data.point.y)
-            self.z = str(data.point.z)
+            self.x = str(round(data.point.x,2))
+            self.y = str(round(data.point.y,2))
+            self.z = str(round(data.point.z,2))
 
     
     def vel_callback(self, data):
@@ -251,7 +252,7 @@ class TheRadio(object):
         data = xb_msg.data
 
         #TEMPORARY DEBUG ONLY!!!
-        #print(self.sys_id + 'rcvd: ' + data)
+        print(self.sys_id + 'rcvd: ' + data)
 
         if (data[0]=='C'):
             self.process_command(data[1])
@@ -346,10 +347,14 @@ class TheRadio(object):
 
             #configure string position info
             radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
-            
+            #print(f"The length of radio_str is: {len(radio_str)}")
             if (self.simming == False):
                 #broadcast on radio if not simming
-                self.radio.send_data_broadcast(radio_str)
+                try:
+                    self.radio.send_data_broadcast(radio_str)
+                except TransmitException:
+                    print("Data block too long.")
+                #print(radio_str)
             else:
                 #publish to topic
                 s = String()
