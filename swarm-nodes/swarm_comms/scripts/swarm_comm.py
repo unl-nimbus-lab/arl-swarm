@@ -7,6 +7,7 @@ import time
 import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import PointStamped
 from swarm_comms.msg import allAgentsPosStamped
 from swarm_comms.msg import agentPos
 from mavros_msgs.msg import SwarmGPS
@@ -17,9 +18,9 @@ class TheRadio(object):
     '''Class to get xbee data and publish to ros topic'''
 
     #class vars to transmit position data
-    lat = '0.0'
-    lon = '0.0'
-    alt = '0.0'
+    x = '0.0'
+    y = '0.0'
+    z = '0.0'
     sys_id = '0'
     vx = '0.0'
     vy = '0.0'
@@ -63,9 +64,9 @@ class TheRadio(object):
             for agent in self.agent_list:
                 a = agentPos()
                 a.id = agent.node_id
-                a.lon = agent.longitude
-                a.lat = agent.latitude
-                a.alt = agent.altitude
+                a.x = agent.x
+                a.y = agent.y
+                a.z = agent.z
                 a.vx = agent.vx
                 a.vy = agent.vy
                 a.vz = agent.vz
@@ -104,14 +105,14 @@ class TheRadio(object):
             while (data[idx] != 'x'):
                 temp_str += data[idx]
                 idx += 1
-            lon = float(temp_str)
+            px = float(temp_str)
             temp_str = ''
             idx+=1
             
             while (data[idx] != 'z'):
                 temp_str += data[idx]
                 idx += 1
-            lat = float(temp_str)
+            py = float(temp_str)
             temp_str = ''
             idx+=1
             
@@ -119,7 +120,7 @@ class TheRadio(object):
             while (data[idx] !='v'):
                 temp_str += data[idx]
                 idx += 1
-            alt = float(temp_str)
+            pz = float(temp_str)
             temp_str = ''
             idx+=2
 
@@ -170,10 +171,10 @@ class TheRadio(object):
             iz = float(temp_str)
 
 
-            return id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz
+            return id_num, px, py, pz, vx, vy, vz, ix, iy, iz
 
     def store_remote_agent_data(self, data, time_received):
-        id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
+        id_num, px, py, pz, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
 
         #For simulation purposes, we exit out here if the data is our own
         if (id_num == int(self.sys_id)):
@@ -184,9 +185,9 @@ class TheRadio(object):
         if (id_num not in self.node_list):
             self.node_list.append(id_num)
             new_agent = Agent(id_num, [remote_agent_message])
-            new_agent.longitude = lon
-            new_agent.latitude = lat
-            new_agent.altitude = alt
+            new_agent.x = px
+            new_agent.y = py
+            new_agent.z = pz
             new_agent.vx = vx
             new_agent.vy = vy
             new_agent.vz = vz
@@ -199,14 +200,14 @@ class TheRadio(object):
             self.agent_list.append(new_agent)
             print("Adding Agent " + str(new_agent.node_id) + ".")
         else:
-            self.update_agent_location(id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message)
+            self.update_agent_location(id_num, px, py, pz, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message)
 
-    def update_agent_location(self, id_num, lon, lat, alt, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message):
+    def update_agent_location(self, id_num, px, py, pz, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message):
         for agent in self.agent_list:
             if (id_num == agent.node_id):
-                agent.longitude = lon
-                agent.latitude = lat
-                agent.altitude = alt
+                agent.x = px
+                agent.y = py
+                agent.z = pz
                 agent.vx = vx
                 agent.vy = vy
                 agent.vz = vz
@@ -232,10 +233,10 @@ class TheRadio(object):
 
 
     def gps_callback(self, data):
-        if (data.system_id == int(self.sys_id)):
-            self.lat = str(data.latitude)
-            self.lon = str(data.longitude)
-            self.alt = str(data.altitude)
+        if (data.header.frame_is == self.sys_id):
+            self.x = str(data.point.x)
+            self.y = str(data.point.y)
+            self.z = str(data.point.z)
 
     
     def vel_callback(self, data):
@@ -260,9 +261,9 @@ class TheRadio(object):
             for agent in self.agent_list:
                 a = agentPos()
                 a.id = agent.node_id
-                a.lon = agent.longitude
-                a.lat = agent.latitude
-                a.alt = agent.altitude
+                a.x = agent.x
+                a.y = agent.y
+                a.z = agent.z
                 a.vx = agent.vx
                 a.vy = agent.vy
                 a.vz = agent.vz
@@ -298,7 +299,7 @@ class TheRadio(object):
         #self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
         self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
 
-        rospy.Subscriber("mavros/global_position/swarm", SwarmGPS, self.gps_callback)
+        rospy.Subscriber("agent_position_xy", PointStamped, self.gps_callback)
         rospy.Subscriber("mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
 
         if (self.simming==True):
