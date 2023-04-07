@@ -252,7 +252,7 @@ class TheRadio(object):
         data = xb_msg.data
 
         #TEMPORARY DEBUG ONLY!!!
-        print(self.sys_id + 'rcvd: ' + data)
+        #print(self.sys_id + 'rcvd: ' + data)
 
         if (data[0]=='C'):
             self.process_command(data[1])
@@ -276,7 +276,7 @@ class TheRadio(object):
 
             #add time to header
             allAgents.header.stamp = rospy.Time.now()
-                                                                                                                                                                                                                                                            #publish to topic
+            
             self.agent_pos_pub.publish(allAgents)
 
     def __init__(self):
