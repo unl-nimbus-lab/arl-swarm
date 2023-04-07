@@ -50,6 +50,9 @@
             <arg name="system_ID" value="$(arg system_ID)"/>
         </include>
 
+        <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" >
+        </node>
+
         <node pkg="rosbag" name="record" type="record" 
             args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global" />
     </group>
