@@ -7,7 +7,8 @@
 #include "mavros_msgs/SwarmGPS.h"
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/PointStamped.h"
-#include <sstream>
+#include <string>
+#include <cstring>
 
 /*
 Here is the frame we are using:
@@ -40,8 +41,7 @@ double agent_global_y;
 geo_converter convObject;
 geometry_msgs::PointStamped agent_pos;
 int SYSID_THISMAV;
-std::stringstream ss;
-std::string s;
+std::string string_id;
 
 //global initialized variables
 double RMF_ORIGIN_LAT = 40.8467784;
@@ -65,8 +65,7 @@ int main(int argc, char **argv) {
 void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     double latitude = msg->latitude;
     double longitude = msg->longitude;
-    ss << msg-> system_id;
-    ss >> s;
+    string_id = std::to_string(msg->system_id);
     
     //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
     double x_sign = sign(latitude - RMF_ORIGIN_LAT);
@@ -84,7 +83,7 @@ void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     agent_pos.point.y = agent_global_y;
     agent_pos.point.z = msg->altitude;
     agent_pos.header.stamp = ros::Time::now();
-    agent_pos.header.frame_id = s;
+    agent_pos.header.frame_id = string_id;
 
     agent_location_pub.publish(agent_pos);
 }
