@@ -51,6 +51,8 @@
         </include>
 
         <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" >
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
+
         </node>
 
         <node pkg="rosbag" name="record" type="record" 
