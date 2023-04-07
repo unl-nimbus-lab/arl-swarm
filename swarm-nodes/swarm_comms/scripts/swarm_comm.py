@@ -345,7 +345,7 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+self.sys_id+':y'+self.lon+'x'+self.lat+'z'+self.alt+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
+            radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
             
             if (self.simming == False):
                 #broadcast on radio if not simming
