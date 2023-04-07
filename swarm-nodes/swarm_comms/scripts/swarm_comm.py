@@ -102,7 +102,7 @@ class TheRadio(object):
             #increment idx so we go past the 'y' in the 
             #received string
             idx += 2
-            while (data[idx] != 'x'):
+            while (data[idx] != 'y'):
                 temp_str += data[idx]
                 idx += 1
             px = float(temp_str)
