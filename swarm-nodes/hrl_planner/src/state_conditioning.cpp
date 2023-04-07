@@ -7,6 +7,7 @@
 #include "mavros_msgs/SwarmGPS.h"
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/PointStamped.h"
+#include <sstream>
 
 /*
 Here is the frame we are using:
@@ -39,6 +40,8 @@ double agent_global_y;
 geo_converter convObject;
 geometry_msgs::PointStamped agent_pos;
 int SYSID_THISMAV;
+std::stringstream ss;
+std::string s;
 
 //global initialized variables
 double RMF_ORIGIN_LAT = 40.8467784;
@@ -60,28 +63,30 @@ int main(int argc, char **argv) {
 }
 
 void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
-    if (msg->system_id == SYSID_THISMAV) {
-        double latitude = msg->latitude;
-        double longitude = msg->longitude;
-        
-        //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
-        double x_sign = sign(latitude - RMF_ORIGIN_LAT);
-        double y_sign = sign(longitude - RMF_ORIGIN_LON);
+    double latitude = msg->latitude;
+    double longitude = msg->longitude;
+    ss << msg-> system_id;
+    ss >> s;
+    
+    //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
+    double x_sign = sign(latitude - RMF_ORIGIN_LAT);
+    double y_sign = sign(longitude - RMF_ORIGIN_LON);
 
-        //Calculate the x position, hold the longitude constant
-        agent_global_x = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,latitude,RMF_ORIGIN_LON);
-        agent_global_x = x_sign * agent_global_x;
-        
-        //Calculate the y position, hold the latitude constant
-        agent_global_y = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,RMF_ORIGIN_LAT,longitude);
-        agent_global_y = y_sign * agent_global_y;
+    //Calculate the x position, hold the longitude constant
+    agent_global_x = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,latitude,RMF_ORIGIN_LON);
+    agent_global_x = x_sign * agent_global_x;
+    
+    //Calculate the y position, hold the latitude constant
+    agent_global_y = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,RMF_ORIGIN_LAT,longitude);
+    agent_global_y = y_sign * agent_global_y;
 
-        agent_pos.point.x = agent_global_x;
-        agent_pos.point.y = agent_global_y;
-        agent_pos.header.stamp = ros::Time::now();
+    agent_pos.point.x = agent_global_x;
+    agent_pos.point.y = agent_global_y;
+    agent_pos.point.z = msg->altitude;
+    agent_pos.header.stamp = ros::Time::now();
+    agent_pos.header.frame_id = s;
 
-        agent_location_pub.publish(agent_pos);
-    }
+    agent_location_pub.publish(agent_pos);
 }
 
 double sign(double input) {
