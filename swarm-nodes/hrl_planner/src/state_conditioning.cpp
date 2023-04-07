@@ -8,13 +8,14 @@
 
 void velocity_update_callback(const geometry_msgs::TwistStamped::ConstPtr& msg);
 void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg);
+double sign(double input);
 
 ros::Publisher agent_location_pub;
 ros::Subscriber global_position_sub;
 
 //global declared variables
-float agent_global_x;
-float agent_global_y;
+double agent_global_x;
+double agent_global_y;
 geo_converter convObject;
 
 //global initialized variables
@@ -38,14 +39,29 @@ void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     double latitude = msg->latitude;
     double longitude = msg->longitude;
     
+    //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
+    double x_sign = sign(latitude - RMF_ORIGIN_LAT);
+    double y_sign = sign(longitude - RMF_ORIGIN_LON);
+
     //Calculate the x position, hold the longitude constant
     agent_global_x = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,latitude,RMF_ORIGIN_LON);
+    agent_global_x = x_sign * agent_global_x;
+    
     //Calculate the y position, hold teh latitude constant
     agent_global_y = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,RMF_ORIGIN_LAT,longitude);
+    agent_global_y = y_sign * agent_global_y;
 
     agent_pos.point.x = agent_global_x;
     agent_pos.point.y = agent_global_y;
     agent_pos.header.stamp = ros::Time::now();
 
     agent_location_pub.publish(agent_pos);
+}
+
+double sign(double input) {
+    if (input < 0) {
+        return -1.0;
+    } else {
+        return 1.0;
+    }
 }
