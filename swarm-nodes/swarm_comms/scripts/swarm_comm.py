@@ -301,7 +301,8 @@ class TheRadio(object):
         self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
 
         rospy.Subscriber("agent_position_xy", PointStamped, self.gps_callback)
-        rospy.Subscriber("mavros/global_position/raw/gps_vel", TwistStamped, self.vel_callback)
+        print("Subscribing to mavros/local_position/velocity_local for velocity information.")
+        rospy.Subscriber("mavros/local_position/velocity_local", TwistStamped, self.vel_callback)
 
         if (self.simming==True):
             print(f"Setting up sim publisher/subscriber for agent {self.sys_id} ...")
