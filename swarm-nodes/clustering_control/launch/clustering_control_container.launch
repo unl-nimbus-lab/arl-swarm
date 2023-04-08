@@ -38,9 +38,9 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<!-- <include file="$(find swarm_comms)/launch/swarm_comms.launch">
+	<include file="$(find swarm_comms)/launch/swarm_comms.launch">
         	<arg name="system_ID" value="$(arg system_ID)"/>
-   	 </include> -->
+   	 </include>
 
 	<node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" args="$(arg system_ID)">
 
