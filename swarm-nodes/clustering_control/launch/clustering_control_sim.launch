@@ -56,7 +56,7 @@
 
         </node>
 
-        <node pkg="hrl_planner" name="hrl_planner" type="hrl_planner">
+        <node pkg="hrl_planner" name="hrl_planner" output="screen" type="hrl_planner">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
         </node>
 
