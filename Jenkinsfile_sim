@@ -4,8 +4,8 @@ pipeline {
     environment {
         // Set the Docker image name
         DOCKER_CREDENTIALS_ID = '70c50f5b-47a1-474c-9afb-b8e4a875f48e'
-        DOCKER_REPOSITORY = 'grantphllps/arl_swarm'
-        DOCKER_IMAGE_NAME = "grantphllps/arl_swarm"
+        DOCKER_REPOSITORY = 'grantphllps/arl_swarm_sim'
+        DOCKER_IMAGE_NAME = "grantphllps/arl_swarm_sim"
     }
 
     stages {
