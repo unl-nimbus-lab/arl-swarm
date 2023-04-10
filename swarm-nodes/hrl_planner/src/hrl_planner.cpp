@@ -2,7 +2,7 @@
 
 //Global Variables
 float hrl_publish_rate = 0.5;
-int hrl_propogation_steps = 5;
+int hrl_propogation_steps = 1;
 
 //READ IN TRANSFORM MATRICIES
 
@@ -12,9 +12,8 @@ int hrl_propogation_steps = 5;
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
     X << msg->point.x, msg->point.y, 0.0, 0.0, 0.0, 0.0;
     //std::cout << "my state is: " << std::endl;
-    ROS_WARN("callback");
-    ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
-    std::cout << X << std::endl;
+    //ROS_WARN("callback");
+    //ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
 }
 
 //Specify the setpoints
@@ -67,7 +66,7 @@ int main(int argc, char **argv) {
 
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
             DX = A*X - I + B*U;
-            std::cout << DX << std::endl;
+            ROS_INFO_STREAM("NEXT TARGET: X: " << DX(1,1) << " Y: " << DX(2,1) );
         }
 
         //publish the next setpoint to the FMU
