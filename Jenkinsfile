@@ -20,20 +20,21 @@ pipeline {
                 }
             }
         }
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Set the Docker image name and tag
-                    def imageName = "${DOCKER_REPOSITORY}"
-                    def imageTag = "latest"
 
-                    // Log in to Docker Hub
-                    withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/') {
-                        // Push the Docker image
-                        sh "docker push ${imageName}:${imageTag}"
-                    }
-                }
-            }
-        }
+        // stage('Push Docker Image') {
+        //     steps {
+        //         script {
+        //             // Set the Docker image name and tag
+        //             def imageName = "${DOCKER_REPOSITORY}"
+        //             def imageTag = "latest"
+
+        //             // Log in to Docker Hub
+        //             withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/') {
+        //                 // Push the Docker image
+        //                 sh "docker push ${imageName}:${imageTag}"
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
