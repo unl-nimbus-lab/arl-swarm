@@ -60,17 +60,20 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         ROS_WARN("LOOP");
 
-        for (int i = 0; i < hrl_propogation_steps; i++) {
+        T_X = X;
+
+        do {
             //Calculate the control input, u = -kx
-            U = -K*X;
+            U = -K*T_X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
-            std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
+            //std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
 
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
-            DX = A*X - I + B*U;
+            DX = A*T_X - I + B*U;
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
-        }
+            T_X = DX;
+        } while ( (DX(0,0) - X(0,0)) < movement_threshold );
 
         //publish the next setpoint to the FMU
         //gps_setpoint_pub.publish(setpoint_msg);
