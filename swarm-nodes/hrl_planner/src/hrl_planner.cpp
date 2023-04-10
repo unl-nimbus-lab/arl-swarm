@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
             U = -K*X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
+            std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
+
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
             DX = A*X - I + B*U;
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
