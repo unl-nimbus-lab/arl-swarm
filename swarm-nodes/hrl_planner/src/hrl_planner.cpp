@@ -10,8 +10,8 @@ int hrl_propogation_steps = 5;
 
 //STATE UPDATE CALLBACK
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
-    X << msg->point.x, msg->point.y, 0, 0, 0, 0;
-    std::cout << "my state is: " << X << std::endl;
+    //X << msg->point.x, msg->point.y, 0, 0, 0, 0;
+    std::cout << "my state is: " << std::endl;
 }
 
 //Specify the setpoints
@@ -20,6 +20,7 @@ double x_target, y_target;
 int main(int argc, char **argv) {
 
     //Assign Values to Variables:
+    std::cout << "node started" << std::endl;
 
     x_target = 25.0;
     y_target = 60.0;
@@ -55,6 +56,7 @@ int main(int argc, char **argv) {
 
     //begin main ROS LOOP
     while (ros::ok()) {
+        std::cout << "Loop" << std::endl;
 
         for (int i = 0; i < hrl_propogation_steps; i++) {
             //Calculate the control input, u = -kx
