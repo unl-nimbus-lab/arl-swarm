@@ -3,16 +3,11 @@ pipeline {
 
     environment {
         // Set the Docker image name
-        DOCKER_IMAGE_NAME = 'grantphllps/arl_swarm'
+        DOCKER_CREDENTIALS_ID = '70c50f5b-47a1-474c-9afb-b8e4a875f48e'
+        DOCKER_REPOSITORY = 'grantphllps/arl_swarm'
     }
 
     stages {
-        // stage('Checkout') {
-        //     steps {
-        //         // Clone the GitHub repository
-        //         git url: 'https://github.com/unl-nimbus-lab/arl-swarm.git'
-        //     }
-        // }
         stage('Build Docker Image') {
             steps {
                 script {
@@ -25,5 +20,17 @@ pipeline {
                 }
             }
         }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Set the Docker image name and tag
+                    def imageName = "${DOCKER_REPOSITORY}"
+                    def imageTag = "latest"
+
+                    // Log in to Docker Hub
+                    withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/') {
+                        // Push the Docker image
+                        sh "docker push ${imageName}:${imageTag}"
+                    }
     }
 }
