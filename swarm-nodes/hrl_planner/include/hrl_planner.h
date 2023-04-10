@@ -7,9 +7,10 @@
 
 //ROS message includes
 #include "geographic_msgs/GeoPoseStamped.h"
+#include "geometry_msgs/PointStamped.h"
 #include "swarm_comms/allAgentsPosStamped.h"
 
 
-Eigen::MatrixXd A(6,6), B(6,2), K(2,6), X(6,1), U(2,1), I(6,1);
+Eigen::MatrixXd A(6,6), B(6,2), K(2,6), X(6,1), U(2,1), I(6,1), DX(6,1);
 
 #endif
