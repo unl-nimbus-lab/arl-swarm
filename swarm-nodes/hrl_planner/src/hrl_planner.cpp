@@ -10,7 +10,7 @@ int hrl_propogation_steps = 5;
 
 //STATE UPDATE CALLBACK
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
-    X << msg->point.x, msg->point.y, 0, 0, 0, 0, 0, 0;
+    X << msg->point.x, msg->point.y, 0, 0, 0, 0;
     std::cout << "my state is: " << X << std::endl;
 }
 
