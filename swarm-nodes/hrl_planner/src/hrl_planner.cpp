@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     //ROS subscribers
-    ros::Subscriber swarm_state_sub = nh.subscribe("/agent_position_xy",1, state_update_callback);
+    ros::Subscriber swarm_state_sub = nh.subscribe("/agent_1/agent_position_xy",1, state_update_callback);
 
     //ROS publishers
     ros::Publisher gps_setpoint_pub = nh.advertise<geographic_msgs::GeoPoseStamped>("/mavros/setpoint_position/global", 10, true);
