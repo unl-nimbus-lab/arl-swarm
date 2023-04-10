@@ -19,6 +19,11 @@ void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
 //Specify the setpoints
 double x_target, y_target;
 
+double RMF_ORIGIN_LAT = 40.8467784;
+double RMF_ORIGIN_LON = -96.4719180;
+geo_converter convObject;
+geographic_msgs::GeoPoseStamped position_target_msg;
+
 int main(int argc, char **argv) {
 
     //Assign Values to Variables:
@@ -58,7 +63,6 @@ int main(int argc, char **argv) {
 
     //begin main ROS LOOP
     while (ros::ok()) {
-        ROS_WARN("LOOP");
 
         T_X = X;
 
@@ -75,8 +79,12 @@ int main(int argc, char **argv) {
             T_X = DX;
         }
 
+        position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
+        position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
+        position_target_msg.pose.position.altitude =  410.0;
+
         //publish the next setpoint to the FMU
-        //gps_setpoint_pub.publish(setpoint_msg);
+        gps_setpoint_pub.publish(position_target_msg);
 
         ros::Duration(hrl_publish_rate).sleep();
         ros::spinOnce();
