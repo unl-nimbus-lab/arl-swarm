@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
     //begin main ROS LOOP
     while (ros::ok()) {
-        ROS_INFO(LOOP);
+        ROS_INFO('LOOP');
 
         for (int i = 0; i < hrl_propogation_steps; i++) {
             //Calculate the control input, u = -kx
