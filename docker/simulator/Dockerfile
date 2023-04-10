@@ -51,13 +51,13 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin init \
     && wstool init src
 
-COPY ../../Utilities/xbee-python-master /home/xbee-python-master
+COPY ${WORKSPACE}/Utilities/xbee-python-master /home/xbee-python-master
 RUN pip3 install /home/xbee-python-master
 
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
 # requiring internet to rebuild swarm nodes
-COPY ../../swarm-nodes/mavros /home/catkin_ws/src/mavros
+COPY swarm-nodes/mavros /home/catkin_ws/src/mavros
 
 # Install MAVLink and configure workspace
 RUN rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
