@@ -51,7 +51,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin init \
     && wstool init src
 
-COPY Utilities/xbee-python-master /home/xbee-python-master
+COPY ../../Utilities/xbee-python-master /home/xbee-python-master
 RUN pip3 install /home/xbee-python-master
 
 # Install MAVROS
