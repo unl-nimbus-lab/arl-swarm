@@ -17,7 +17,7 @@ pipeline {
                     def imageTag = "latest"
 
                     // Build the Docker image
-                    sh "docker build -f DroneDockerfile -t ${imageName}:${imageTag} ."
+                    sh "docker buildx build --platform linux/arm64 -f DroneDockerfile -t ${imageName}:${imageTag} ."
                 }
             }
         }
