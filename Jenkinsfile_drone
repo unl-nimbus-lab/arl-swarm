@@ -32,7 +32,7 @@ pipeline {
                     // Log in to Docker Hub
                     withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/') {
                         // Push the Docker image
-                        sh "docker push ${imageName}:${imageTag}"
+                        sh "docker push ${DOCKER_IMAGE_NAME}:${imageTag}"
                     }
                 }
             }
