@@ -57,7 +57,7 @@ RUN pip3 install /home/xbee-python-master
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
 # requiring internet to rebuild swarm nodes
-COPY swarm-nodes/mavros /home/catkin_ws/src/mavros
+COPY ../../swarm-nodes/mavros /home/catkin_ws/src/mavros
 
 # Install MAVLink and configure workspace
 RUN rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
