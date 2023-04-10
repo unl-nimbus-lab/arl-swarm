@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < hrl_propogation_steps; i++) {
             //Calculate the control input, u = -kx
             U = -K*X;
+            ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
             DX = A*X - I + B*U;
