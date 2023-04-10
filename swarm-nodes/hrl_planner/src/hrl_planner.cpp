@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
         T_X = X;
 
-        do {
+        for (int i = 0; i < 3; i++) {
             //Calculate the control input, u = -kx
             U = -K*T_X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
             DX = A*T_X - I + B*U;
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
             T_X = DX;
-        } while ( (DX(0,0) - X(0,0)) < movement_threshold );
+        }
 
         //publish the next setpoint to the FMU
         //gps_setpoint_pub.publish(setpoint_msg);
