@@ -7,12 +7,12 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Clone the GitHub repository
-                git url: 'https://github.com/unl-nimbus-lab/arl-swarm.git'
-            }
-        }
+        // stage('Checkout') {
+        //     steps {
+        //         // Clone the GitHub repository
+        //         git url: 'https://github.com/unl-nimbus-lab/arl-swarm.git'
+        //     }
+        // }
         stage('Build Docker Image') {
             steps {
                 script {
