@@ -32,5 +32,8 @@ pipeline {
                         // Push the Docker image
                         sh "docker push ${imageName}:${imageTag}"
                     }
+                }
+            }
+        }
     }
 }
