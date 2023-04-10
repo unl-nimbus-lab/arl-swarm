@@ -13,7 +13,8 @@ void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
     X << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     //std::cout << "my state is: " << std::endl;
     ROS_WARN("callback");
-    std::cout << X << std::endl;
+    std::cout << msg->point.x << std::endl;
+    std::cout << msg->point.y << std::endl;
 }
 
 //Specify the setpoints
