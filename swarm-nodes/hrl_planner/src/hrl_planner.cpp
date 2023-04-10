@@ -10,11 +10,11 @@ int hrl_propogation_steps = 5;
 
 //STATE UPDATE CALLBACK
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
-    X << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    X << msg->point.x, msg->point.y, 0.0, 0.0, 0.0, 0.0;
     //std::cout << "my state is: " << std::endl;
     ROS_WARN("callback");
-    std::cout << msg->point.x << std::endl;
-    std::cout << msg->point.y << std::endl;
+    ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
+    std::cout << X << std::endl;
 }
 
 //Specify the setpoints
