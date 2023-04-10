@@ -2,7 +2,7 @@
 
 //Global Variables
 float hrl_publish_rate = 0.5;
-int hrl_propogation_steps = 1;
+int hrl_propogation_steps = 5;
 
 //READ IN TRANSFORM MATRICIES
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
             DX = A*X - I + B*U;
-            ROS_INFO_STREAM("NEXT TARGET: X: " << DX(1,1) << " Y: " << DX(2,1) );
+            ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
         }
 
         //publish the next setpoint to the FMU
