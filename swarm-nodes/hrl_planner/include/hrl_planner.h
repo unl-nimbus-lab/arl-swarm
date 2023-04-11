@@ -19,7 +19,7 @@
 Eigen::MatrixXd A(6,6), B(6,2), K(2,6), X(6,1), T_X(6,1), U(2,1), I(6,1), DX(6,1);
 
 double movement_threshold = 3.0;
-double max_input = 60.0;
+double max_input = 100.0;
 
 void parseCommand(std::string message, int *cluster, int *command) {
     //Process a command of the form:
