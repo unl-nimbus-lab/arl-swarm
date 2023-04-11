@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     //BEGIN FILE READ
     using namespace std;
     string line;
-    ifstream myfile("trajectory1.txt");
+    ifstream myfile("/home/catkin_ws/src/clustering_control/src/trajectory1.txt");
     float hrl_trajectory[2][1001];
     int i = 0;
     int j = 0;
