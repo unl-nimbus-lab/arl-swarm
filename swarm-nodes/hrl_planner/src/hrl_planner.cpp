@@ -3,6 +3,7 @@
 //Global Variables
 float hrl_publish_rate = 0.5;
 int hrl_propogation_steps = 5;
+bool publish_flag = false;
 
 //READ IN TRANSFORM MATRICIES
 
@@ -10,10 +11,46 @@ int hrl_propogation_steps = 5;
 
 //STATE UPDATE CALLBACK
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+    /* This function updates this vehicle's state based on information from
+    the agent_position_xy topic */
     X << msg->point.x, msg->point.y, 0.0, 0.0, 0.0, 0.0;
-    //std::cout << "my state is: " << std::endl;
-    //ROS_WARN("callback");
     //ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
+}
+
+//COMMAND PARSE CALLBACK
+void debug_vector_callback(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    mavros_msgs::DebugValue debug_message = *msg;
+    int *target_entity = new int;
+    int *command = new int;
+    char entity = debug_message.name[0];
+    parseCommand(debug_message.name, target_entity, command);
+    ROS_INFO("DEBUG COMMAND PARSED");
+
+    switch(entity) {
+        // //Agent Command
+        // case 'A':
+        //     switch(*command):
+
+        //     break;
+        // break;
+        //Cluster Command
+        case 'C':
+            switch(*command) {
+                case ENABLE_PUBLISH:
+                    publish_flag = true;
+                    break;
+                case DISABLE_PUBLISH:
+                    publish_flag = false;
+                    break;
+            }
+            break;
+        // //Swarm Command
+        // case 'S':
+        //     switch(*command):
+        //         c
+        //     break;
+        // break;
+    }
 }
 
 //Specify the setpoints
@@ -27,7 +64,6 @@ geographic_msgs::GeoPoseStamped position_target_msg;
 int main(int argc, char **argv) {
 
     //Assign Values to Variables:
-    ROS_WARN("NODE STARTED");
 
     x_target = 25.0;
     y_target = 60.0;
@@ -57,6 +93,8 @@ int main(int argc, char **argv) {
 
     //ROS subscribers
     ros::Subscriber swarm_state_sub = nh.subscribe("/agent_position_xy",1, state_update_callback);
+    ros::Subscriber debug_vector_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, debug_vector_callback);
+
 
     //ROS publishers
     ros::Publisher gps_setpoint_pub = nh.advertise<geographic_msgs::GeoPoseStamped>("/mavros/setpoint_position/global", 10, true);
@@ -79,12 +117,14 @@ int main(int argc, char **argv) {
             T_X = DX;
         }
 
-        position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
-        position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
-        position_target_msg.pose.position.altitude =  410.0;
+        if (publish_flag) {
+            position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
+            position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
+            position_target_msg.pose.position.altitude =  410.0;
 
-        //publish the next setpoint to the FMU
-        gps_setpoint_pub.publish(position_target_msg);
+            //publish the next setpoint to the FMU
+            gps_setpoint_pub.publish(position_target_msg);
+        }
 
         ros::Duration(hrl_publish_rate).sleep();
         ros::spinOnce();
