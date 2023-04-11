@@ -15,7 +15,7 @@
 	<arg name="rally2Lon" default="" />
 
     <group ns="agent_$(arg system_ID)">
-        <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon))"> 
+        <!-- <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon))"> 
 
             <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/>
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
@@ -23,7 +23,7 @@
             <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/>
             <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/>
 
-        </node>
+        </node> -->
 
         <arg name="fcu_url" default=""/>
         <arg name="gcs_url" default="" />
@@ -59,6 +59,7 @@
         <node pkg="hrl_planner" name="hrl_planner"  type="hrl_planner" output="screen">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
             <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/>
+             <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/>
         </node>
 
         <node pkg="rosbag" name="record" type="record" 
