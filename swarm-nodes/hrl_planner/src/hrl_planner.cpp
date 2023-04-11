@@ -4,6 +4,8 @@
 float hrl_publish_rate = 0.5;
 int hrl_propogation_steps = 5;
 bool publish_flag = false;
+float integral_state_x = 0.0;
+float integral_state_y = 0.0;
 
 //READ IN TRANSFORM MATRICIES
 
@@ -13,7 +15,7 @@ bool publish_flag = false;
 void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
     /* This function updates this vehicle's state based on information from
     the agent_position_xy topic */
-    X << msg->point.x, msg->point.y, 0.0, 0.0, 0.0, 0.0;
+    X << msg->point.x, msg->point.y, 0.0, 0.0, integral_state_x, integral_state_y;
     //ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
 }
 
@@ -106,7 +108,7 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < 3; i++) {
             //Calculate the control input, u = -kx
-            U = -K*T_X;
+            U = K*T_X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
             //std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
@@ -121,6 +123,9 @@ int main(int argc, char **argv) {
             position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
             position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
             position_target_msg.pose.position.altitude =  410.0;
+
+            integral_state_x = DX(4,0);
+            integral_state_y = DX(5,0);
 
             //publish the next setpoint to the FMU
             gps_setpoint_pub.publish(position_target_msg);
