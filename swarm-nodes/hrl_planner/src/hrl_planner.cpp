@@ -140,8 +140,8 @@ int main(int argc, char **argv) {
             position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
             position_target_msg.pose.position.altitude =  410.0;
 
-            integral_state_x = DX(4,0);
-            integral_state_y = DX(5,0);
+            integral_state_x = 0.0;//DX(4,0);
+            integral_state_y = 0.0;//DX(5,0);
 
             //publish the next setpoint to the FMU
             gps_setpoint_pub.publish(position_target_msg);
