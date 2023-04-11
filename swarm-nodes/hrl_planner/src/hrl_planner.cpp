@@ -73,24 +73,20 @@ int main(int argc, char **argv) {
     x_target = 25.0;
     y_target = 60.0;
 
-    A << 0, 0, 1, 0, 0, 0,
-     0, 0, 0, 1, 0, 0,
-     0, 0, -1, 0, 0, 0,
-     0, 0, 0, -1, 0, 0,
-     1, 0, 0, 0, 0, 0,
-     0, 1, 0, 0, 0, 0;
+    A << 0, 0, 1, 0,
+         0, 0, 0,  1,
+         0, 0, -1, 0,
+         0, 0, 0, -1,
 
     B << 0, 0,
          0, 0,
          -1, 0,
-         0, -1,
-         0, 0,
-         0, 0;
+         0, -1;
 
-    K << -2.5, 0, -1.6494, 0, -1, 0,
-         0, -2.5, 0, -1.6494, 0, -1;
+    K << -1, 0, -1, 0,
+         0, -1, 0, -1;
 
-    I << 0, 0, 0, 0, x_target, y_target;
+    //I << 0, 0, 0, 0, x_target, y_target;
 
     //Setup the hrl_planner node
     ros::init(argc, argv, "hrl_planner");
@@ -121,7 +117,7 @@ int main(int argc, char **argv) {
             //std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
 
             //Propogate the control input forward, x + 1 = Ax + Bu + Zd
-            DX = A*T_X - I + B*U;
+            DX = A*T_X + B*U;
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
             T_X = DX;
         }
@@ -130,8 +126,6 @@ int main(int argc, char **argv) {
         state_message.ixy = X(1,0);
         state_message.ixz = X(2,0);
         state_message.iyy = X(3,0);
-        state_message.iyz = X(4,0);
-        state_message.izz = X(5,0);
 
         state_pub.publish(state_message);
 
@@ -139,9 +133,6 @@ int main(int argc, char **argv) {
             position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
             position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
             position_target_msg.pose.position.altitude =  410.0;
-
-            integral_state_x = 0.0;//DX(4,0);
-            integral_state_y = 0.0;//DX(5,0);
 
             //publish the next setpoint to the FMU
             gps_setpoint_pub.publish(position_target_msg);
