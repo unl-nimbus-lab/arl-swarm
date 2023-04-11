@@ -3,8 +3,6 @@
 agent hrlAgent;
 
 int main(int argc, char **argv) {
-    std::cout << "ELLO" << std::endl;
-
     //read in command line arguments
     //TODO: this block is hideous, clean it up
     hrlAgent.setSysid(std::stod(argv[1]));
@@ -24,6 +22,38 @@ int main(int argc, char **argv) {
     hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
 
+    //BEGIN FILE READ
+    using namespace std;
+    string line;
+    ifstream myfile("trajectory1.txt");
+    float hrl_trajectory[2][1001];
+    int i = 0;
+    int j = 0;
+    string temp;
+
+    if (myfile.is_open()) //error handling
+    {
+        while (myfile && getline(myfile, line)) //split each line from the file into "line"
+        {
+            stringstream ss(line); // substream takes a string and begins to read it like ifstream does to a file. Creates a stream that we can use
+            j = 0;
+            while (ss && ss >> temp) { // goes as long as the stream from ss has stuff to read in
+                hrl_trajectory[i][j] = stof(temp);
+                j++;
+            }
+            i++;
+        }
+        myfile.close();
+        ROS_WARN("Trajectory successfuly loaded");
+    }
+
+    else 
+    {
+    ROS_ERROR("Unable to load trajectory");
+    return 1;
+    }
+    //END FILE READ
+
     //ROS-Specific items:
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
@@ -37,7 +67,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         if (hrlAgent.getPublish() == true) {
             if (hrlAgent.CIRCLE_FLAG == true) {
-                if (count >= hrlAgent.getCircleTicks()) {//Circle rate 
+                if (tick_count >= hrlAgent.getCircleTicks()) {//Circle rate 
                     //Update the cluster order
                     double order = hrlAgent.getClusterOrder();
                     if (order == hrlAgent.getClusterSize()) {
@@ -53,10 +83,10 @@ int main(int argc, char **argv) {
                     hrlAgent.setClusterOffsets(hrlAgent.getClusterOrder());
                     hrlAgent.setPositionTarget();
                     //reset the counter
-                    count = 0;
+                    tick_count = 0;
                 }
                 else {
-                    count++;
+                    tick_count++;
                 }
             }
             if (hrlAgent.FTL_ENABLE == true) {
@@ -89,7 +119,7 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //the new information. In general, some private variable within the agent class is changed.
     Then, handler functions are used to ultimatlely update the agent.pos_msg (the commonly used
     function is agent::setPositionTarget */
-        switch(entity) {
+        switch(entity) { 
             case 'A':
                 if (*targetEntity == hrlAgent.getSysid()) {
                     switch(*command) {

@@ -82,7 +82,7 @@ mavros_msgs::DebugValue bootAcknowledgeMsg;
 mavros_msgs::CommandLong alt_sep;
 mavros_msgs::SetMode mode_msg;
 geo_converter convObject;
-int count = 0;
+int tick_count = 0;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
@@ -662,5 +662,7 @@ void agent::setAgentGlobalTarget(double lat, double lon, double alt) {
     AGENT_GLOBAL_TARGET.LON = lon;
     AGENT_GLOBAL_TARGET.ALT = alt;
 }
+
+
 
 #endif
