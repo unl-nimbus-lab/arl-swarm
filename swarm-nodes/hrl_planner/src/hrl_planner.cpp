@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
         T_X = X;
 
-        for (int i = 0; i < 3; i++) {
+        //for (int i = 0; i < 3; i++) {
             //Calculate the control input, u = -kx
             U = K*T_X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
@@ -117,11 +117,11 @@ int main(int argc, char **argv) {
             DX = A*T_X - I + B*U;
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
             T_X = DX;
-        }
+        //}
 
         if (publish_flag) {
-            position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
-            position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
+            position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
+            position_target_msg.pose.position.longitude = convObject.meters_to_lon(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(0,0));
             position_target_msg.pose.position.altitude =  410.0;
 
             integral_state_x = DX(4,0);
