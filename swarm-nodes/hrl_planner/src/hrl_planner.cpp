@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < 2; i++) {
             //Calculate the control input, u = -kx
-            U = K*T_X;
+            U = -1.0*K*T_X;
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
             //std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
