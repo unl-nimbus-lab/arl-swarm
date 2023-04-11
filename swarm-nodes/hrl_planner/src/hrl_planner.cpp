@@ -7,6 +7,8 @@ bool publish_flag = false;
 float integral_state_x = 0.0;
 float integral_state_y = 0.0;
 
+ros::Publisher state_pub;
+
 //READ IN TRANSFORM MATRICIES
 
 //READ IN GAIN MATRIX
@@ -17,6 +19,7 @@ void state_update_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
     the agent_position_xy topic */
     X << msg->point.x, msg->point.y, 0.0, 0.0, integral_state_x, integral_state_y;
     //ROS_INFO_STREAM("X: " << msg->point.x << " Y: " << msg->point.y);
+    state_message.ixx = X(0,0);
 }
 
 //COMMAND PARSE CALLBACK
@@ -100,6 +103,7 @@ int main(int argc, char **argv) {
 
     //ROS publishers
     ros::Publisher gps_setpoint_pub = nh.advertise<geographic_msgs::GeoPoseStamped>("/mavros/setpoint_position/global", 10, true);
+    state_pub = nh.advertise<geometry_msgs::Inertia>("/vehicle_state", 10, true);
 
     //begin main ROS LOOP
     while (ros::ok()) {
@@ -111,7 +115,7 @@ int main(int argc, char **argv) {
             U = K*T_X;
             U(0,0) = input_saturtion_check(U(0,0), max_input);
             U(1,0) = input_saturtion_check(U(1,0), max_input);
-            
+
             ROS_INFO_STREAM("U1: " << U(0,0) << " U2: " << U(1,0));
 
             //std::cout << "\nStart\n" << A << "\n" << X << "\n" << I << "\n" << B << "\n" << U << std::endl;
@@ -121,6 +125,15 @@ int main(int argc, char **argv) {
             ROS_INFO_STREAM("NEXT TARGET: X: " << DX(0,0) << " Y: " << DX(1,0) );
             T_X = DX;
         }
+
+        state_message.ixx = X(0,0);
+        state_message.ixy = X(1,0);
+        state_message.ixz = X(2,0);
+        state_message.iyy = X(3,0);
+        state_message.iyz = X(4,0);
+        state_message.izz = X(5,0);
+
+        state_pub.publish(state_message);
 
         if (publish_flag) {
             position_target_msg.pose.position.latitude =  convObject.meters_to_lat(RMF_ORIGIN_LAT,RMF_ORIGIN_LON, DX(1,0));
