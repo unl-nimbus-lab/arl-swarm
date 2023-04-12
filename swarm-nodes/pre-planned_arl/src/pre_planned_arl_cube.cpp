@@ -93,6 +93,7 @@ int main(int argc, char **argv)
 {
 
     file_var = argv[1];     //Read in the file name as a command line argument
+    std::cout << "file path" << file_var << std::endl;
     heightFixed = std::stod(argv[2]);  //Read in the altitude as a command line argument
 
     ros::init(argc, argv, "prePlanned_cube");
@@ -108,8 +109,7 @@ int main(int argc, char **argv)
     int j = 0;
     string temp;
 
-    if (myfile.is_open()) //error handling
-    {
+    if (myfile.is_open()) {
         while (myfile && getline(myfile, line)) //split each line from the file into "line"
         {
             stringstream ss(line); // substream takes a string and begins to read it like ifstream does to a file. Creates a stream that we can use
@@ -124,10 +124,9 @@ int main(int argc, char **argv)
         ROS_WARN("Trajectory successfuly loaded");
     }
 
-    else 
-    {
-    ROS_ERROR("Unable to load trajectory");
-    return 1;
+    else {
+        ROS_ERROR("Unable to load trajectory");
+        return 1;
     }
     ////////// END FILE READ //////////
 
