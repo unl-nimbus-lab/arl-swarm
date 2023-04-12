@@ -11,7 +11,17 @@
 #include "custom_libs/geo_converter.hpp"
 //TODO: Add GPS transform
 
-int mode = 1;
+//Debug commands
+#define ENABLE_PUBLISH 1
+#define DISABLE_PUBLISH 2
+#define BEGIN_TRAJECTORY_FOLLOW 3
+#define RESET_TRAJECTORY_FOLLOW 4
+
+//Planner States
+#define PRE_FOLLOW 1
+#define FOLLOWING 2
+
+
 bool initialPositionFlag = true;
 bool finalPositionFlag = true;
 ros::Time init_time;
@@ -19,56 +29,77 @@ ros::Duration length;
 float sysTime;
 int columnIndex = 0;
 int numberOfColumns = 1001;
-int numberOfRows = 5;
-mavros_msgs::DebugValue modeBroadcast;
-mavros_msgs::DebugValue HRLReference;
+int numberOfRows = 2;
+
 std::string file_var;
-int system_ID;
-float heightFixed = -3.0;
-geo_converter thing;
 
-float liveX;
-float liveY;
-float liveZ;
+int *cluster = new int;
+int *command = new int;
+bool publishFlag = false;
+geometry_msgs::PoseStamped pos_msg;
+mavros_msgs::DebugValue hrl_command;
+int mode = 1;
+double heightFixed;
 
-void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
-    //update the state
-    modeBroadcast = *msg;
-    mode = modeBroadcast.value_int;
-    //ROS_INFO("[%i",mode);
+// void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
+//     //update the state
+//     modeBroadcast = *msg;
+//     mode = modeBroadcast.value_int;
+//     //ROS_INFO("[%i",mode);
+// }
+
+void parseCommand(std::string message, int *cluster, int *command) {
+    //Process a command of the form:
+    //CXXX$XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "$" identifies the command
+
+     std::string delimiter = "$";
+     // remove 'C', 'S', or 'A'
+     std::string short_message = message.substr(1);
+     // now find the '$'
+     int split_idx = short_message.find(delimiter);
+     // check for error and std::string::npos
+     std::string cluster_str = short_message.substr(0, split_idx);
+     // remove cluster and delimiter
+     short_message.erase(0, split_idx+delimiter.length());
+     std::string command_str = short_message;
+     // convert the command to an int
+     *cluster = atoi(cluster_str.c_str());
+     *command = atoi(command_str.c_str());
 }
 
 void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
     //update the reference
-    ROS_WARN("DEBUG_VECTOR_RECEIVED");
-    HRLReference = *msg;
-    if (stoi(HRLReference.name) == system_ID) {
-	ROS_WARN("THIS ONE IS FOR ME!!!!");
-        liveX = HRLReference.data[0];
-        liveY = HRLReference.data[1];
-        liveZ = HRLReference.data[2];
+    parseCommand(msg->name, cluster, command);
+    ROS_WARN("COMMAND PARSED");
+
+    switch(*command) {
+        case ENABLE_PUBLISH:
+            publishFlag = true;
+            break;
+        case DISABLE_PUBLISH:
+            publishFlag = false;
+            break;
+        case BEGIN_TRAJECTORY_FOLLOW:
+            mode = FOLLOWING;
+            break;
+        case RESET_TRAJECTORY_FOLLOW:
+            mode = PRE_FOLLOW;
+            break;
     }
 }
 
 int main(int argc, char **argv)
 {
 
+    file_var = argv[1];     //Read in the file name as a command line argument
+    heightFixed = std::stod(argv[2]);  //Read in the altitude as a command line argument
+
     ros::init(argc, argv, "prePlanned_cube");
     ros::NodeHandle nh;
 
-    if (nh.getParam("/trajectory_file", file_var))
-        std::cout << file_var << "\n";
-    else
-        ROS_ERROR("BAD FILE PARAMETER");
-
-    if (nh.getParam("/height", heightFixed))
-        ROS_WARN("HEIGHT REFERNCE IS: %f", heightFixed);
-        //std::cout << heightFixed << "\n";
-    else
-        ROS_ERROR("BAD HEIGHT PARAMETER");
 
     ////////// BEGIN FILE READ //////////
-
     using namespace std;
     string line;
     ifstream myfile(file_var);
@@ -100,11 +131,6 @@ int main(int argc, char **argv)
     }
     ////////// END FILE READ //////////
 
-    if (nh.getParam("/drone_name", system_ID))
-        ROS_WARN("SYSTEM ID IS: %d", system_ID);
-    else
-        ROS_ERROR("BAD system_ID PARAMETER");
-
 
 //Set initial conditions 
 float initialX = freyjaTrajectory[1][0];
@@ -113,58 +139,31 @@ float finalX = freyjaTrajectory[1][1000];
 float finalY = freyjaTrajectory[2][1000];
 float yaw = 0.0;
 
-liveX = finalX;
-liveY = finalY;
-liveZ = heightFixed; 
-
-ros::Subscriber stateBroadcast_sub = nh.subscribe("/mavros/debug_value/named_value_int", 1, stateBroadcast_cb);
-
 ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 1, HRLReference_cb);
 
 ros::Publisher wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true );
-while (ros::ok())
-{
+while (ros::ok()) {
+    switch(mode) {
 
-geometry_msgs::PoseStamped pos_msg ;
-
-// State machine as switch 
-switch(mode) {
-
-    case 0 :
-        //Final ARL Positoin
-        if (finalPositionFlag) {
-            initialPositionFlag = true;
-            finalPositionFlag = false;
-            ROS_WARN("MOVING TO FINAL POSITION ...");
-        }
-        pos_msg.pose.position.x = finalX;
-        pos_msg.pose.position.y = finalY;
-	    pos_msg.pose.position.z = heightFixed;
-        break;
+        case PRE_FOLLOW:
+            pos_msg.pose.position.x = initialX;
+            pos_msg.pose.position.y = initialY;
+            pos_msg.pose.position.z = heightFixed;
+            break;
+        case FOLLOWING:
+            pos_msg.pose.position.x = finalX;
+            pos_msg.pose.position.y = finalY;
+            pos_msg.pose.position.z = heightFixed;
+            break;
+    }
+    if (publishFlag == true) {
+        pos_msg.header.stamp = ros::Time::now();
+        wp_pub.publish( pos_msg );
+    }
     
-    case 1 :
-        //Starting Position
-        if (initialPositionFlag) {
-            initialPositionFlag = false;
-            finalPositionFlag = true;
-            ROS_WARN("MOVING TO INITIAL POSITION ...");
-        }
-        pos_msg.pose.position.x = initialX;
-        pos_msg.pose.position.y = initialY;
-	    pos_msg.pose.position.z = heightFixed;
-        break;
-    case 3 : 
-        //Live HRL
-	ROS_WARN("LIVE HRL");
-        pos_msg.pose.position.x = liveX;
-        pos_msg.pose.position.y = liveY;
-        pos_msg.pose.position.z = liveZ;
-        break;
-}
-    pos_msg.header.stamp = ros::Time::now();
-    wp_pub.publish( pos_msg );
     ros::Duration(0.5).sleep();
     ros::spinOnce();
 }
 return 0;
 }
+

@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "custom_libs/geo_converter.hpp"
+#include "geometry_msgs/PointStamped.h"
 
 //Universal constants:
 #define PI 3.14159265
@@ -35,6 +36,7 @@
 #define FORCE_COLLISION 6
 #define AGENT_GUIDED_LOCAL 7
 #define AGENT_GUIDED_GLOBAL 8
+#define FOLLOW_HRL_TRAJECTORY 9
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -83,6 +85,10 @@ mavros_msgs::CommandLong alt_sep;
 mavros_msgs::SetMode mode_msg;
 geo_converter convObject;
 int tick_count = 0;
+float hrl_trajectory[2][1001];
+double distanceThreshold = 0.0;
+double GLOBAL_POSITION_X;
+double GLOBAL_POSITION_Y;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
@@ -92,6 +98,7 @@ void brake_cb(const mavros_msgs::DebugValue::ConstPtr& msg);
 void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
+int updateTrajectoryTarget(int previousIndex);
 
 //agent class:
 class agent {
@@ -153,6 +160,7 @@ class agent {
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
+
 
     private:
         double SYSID;               //Unique ID of this agent within the swarm
@@ -258,6 +266,7 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.latitude = AGENT_GLOBAL_TARGET.LAT;
             pos_msg.pose.position.longitude = AGENT_GLOBAL_TARGET.LON;
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
         default:
             printf("INVALID FLIGHT MODE REQUESTED\n");
             break;
@@ -662,7 +671,5 @@ void agent::setAgentGlobalTarget(double lat, double lon, double alt) {
     AGENT_GLOBAL_TARGET.LON = lon;
     AGENT_GLOBAL_TARGET.ALT = alt;
 }
-
-
 
 #endif
