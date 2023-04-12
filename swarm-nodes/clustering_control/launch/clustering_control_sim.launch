@@ -26,7 +26,7 @@
 
         </node> -->
 
-        <node pkg="pre-planned_arl" name="pre_planned_arl_cube" type="pre_planned_arl_cube" output="screen" args="/home/catkin_ws/src/pre-planned_arl/src/trajectory$(arg clusterPosition) $(arg agentAlt)"> 
+        <node pkg="pre-planned_arl" name="pre_planned_arl_cube" type="pre_planned_arl_cube" output="screen" args="/home/catkin_ws/src/pre-planned_arl/src/trajectory$(arg clusterPosition).txt $(arg agentAlt)"> 
 
             <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/>
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
