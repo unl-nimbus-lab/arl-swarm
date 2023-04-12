@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include "custom_libs/geo_converter.hpp"
-//TODO: Add GPS transform
 
 //Debug commands
 #define ENABLE_PUBLISH 1
@@ -40,6 +39,10 @@ geometry_msgs::PoseStamped pos_msg;
 mavros_msgs::DebugValue hrl_command;
 int mode = 1;
 double heightFixed;
+geo_converter convObject;
+double GLOBAL_ORIGIN_LAT;
+double GLOBAL_ORIGIN_LON;
+
 
 // void stateBroadcast_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
 //     //update the state
@@ -93,8 +96,11 @@ int main(int argc, char **argv)
 {
 
     file_var = argv[1];     //Read in the file name as a command line argument
-    std::cout << "file path" << file_var << std::endl;
-    heightFixed = std::stod(argv[2]);  //Read in the altitude as a command line argument
+    heightFixed = std::stod(argv[2]) + std::stod(argv[3]);  //Read in the altitude as a command line argument
+    GLOBAL_ORIGIN_LAT = std::stod(argv[4]);
+    GLOBAL_ORIGIN_LON = std::stod(argv[5]);
+
+
 
     ros::init(argc, argv, "prePlanned_cube");
     ros::NodeHandle nh;
@@ -140,18 +146,18 @@ float yaw = 0.0;
 
 ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 1, HRLReference_cb);
 
-ros::Publisher wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/local", 1, true );
+ros::Publisher wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/global", 1, true );
 while (ros::ok()) {
     switch(mode) {
 
         case PRE_FOLLOW:
-            pos_msg.pose.position.x = initialX;
-            pos_msg.pose.position.y = initialY;
+            pos_msg.pose.position.x = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialX);
+            pos_msg.pose.position.y = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialY);
             pos_msg.pose.position.z = heightFixed;
             break;
         case FOLLOWING:
-            pos_msg.pose.position.x = finalX;
-            pos_msg.pose.position.y = finalY;
+            pos_msg.pose.position.x = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalX);
+            pos_msg.pose.position.y = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalY);
             pos_msg.pose.position.z = heightFixed;
             break;
     }
