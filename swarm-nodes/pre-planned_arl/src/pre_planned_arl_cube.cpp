@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     GLOBAL_ORIGIN_LAT = std::stod(argv[4]);
     GLOBAL_ORIGIN_LON = std::stod(argv[5]);
     std::cout << "home Lat: " << GLOBAL_ORIGIN_LAT << std::endl;
-    std::cout << "home Lon: " << GLOBAL_ORIGIN_LON << std;:endl;
+    std::cout << "home Lon: " << GLOBAL_ORIGIN_LON << std::endl;
 
 
 
