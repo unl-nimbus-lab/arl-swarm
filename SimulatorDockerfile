@@ -79,6 +79,7 @@ COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
 COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 COPY swarm-nodes/observer /home/catkin_ws/src/observer
 COPY swarm-nodes/hrl_planner /home/catkin_ws/src/hrl_planner
+COPY swarm-nodes/pre-planned_arl /home/catkin_ws/src/pre-planned_arl
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
 
 # Build the catkin workspace
