@@ -147,6 +147,9 @@ float finalX = freyjaTrajectory[1][1000];
 float finalY = freyjaTrajectory[2][1000];
 float yaw = 0.0;
 
+std::cout << "initial X: " << initialX << std::endl;
+std::cout << "initial Y: " << initialY << std::endl;
+
 ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 1, HRLReference_cb);
 
 ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 1, true );
