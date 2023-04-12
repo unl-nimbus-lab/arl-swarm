@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include "custom_libs/geo_converter.hpp"
+#include "geographic_msgs/GeoPoseStamped.h"
 
 //Debug commands
 #define ENABLE_PUBLISH 1
@@ -35,7 +36,7 @@ std::string file_var;
 int *cluster = new int;
 int *command = new int;
 bool publishFlag = false;
-geometry_msgs::PoseStamped pos_msg;
+geographic_msgs::GeoPoseStamped pos_msg;
 mavros_msgs::DebugValue hrl_command;
 int mode = 1;
 double heightFixed;
@@ -146,19 +147,19 @@ float yaw = 0.0;
 
 ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 1, HRLReference_cb);
 
-ros::Publisher wp_pub = nh.advertise<geometry_msgs::PoseStamped> ( "/mavros/setpoint_position/global", 1, true );
+ros::Publisher wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 1, true );
 while (ros::ok()) {
     switch(mode) {
 
         case PRE_FOLLOW:
-            pos_msg.pose.position.x = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialX);
-            pos_msg.pose.position.y = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialY);
-            pos_msg.pose.position.z = heightFixed;
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialX);
+            pos_msg.pose.position.longitude = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, initialY);
+            pos_msg.pose.position.altitude = heightFixed;
             break;
         case FOLLOWING:
-            pos_msg.pose.position.x = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalX);
-            pos_msg.pose.position.y = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalY);
-            pos_msg.pose.position.z = heightFixed;
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalX);
+            pos_msg.pose.position.longitude = convObject.meters_to_lat(GLOBAL_ORIGIN_LAT,GLOBAL_ORIGIN_LON, finalY);
+            pos_msg.pose.position.altitude = heightFixed;
             break;
     }
     if (publishFlag == true) {
