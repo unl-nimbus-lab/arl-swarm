@@ -22,18 +22,25 @@ int main(int argc, char **argv) {
     hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
 
-    //ROS-Specific items:
+    //Setup ROS
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
+
+    //ROS subscribers
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
     //ros::Subscriber brake_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, brake_cb);    
     ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
+
+    //ROS Publishers
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
 
+    //main loop
     while (ros::ok()) {
-        if (hrlAgent.getPublish() == true) {
+        
+
+        if (hrlAgent.getPublish() == true) { //Flag that indicates if the pos_msg should be published
             if (hrlAgent.CIRCLE_FLAG == true) {
                 if (tick_count >= hrlAgent.getCircleTicks()) {//Circle rate 
                     //Update the cluster order
@@ -61,9 +68,11 @@ int main(int argc, char **argv) {
                 hrlAgent.setPositionTarget();
                 printf("FTL ENABLE is true\n");
             }
-            hrlAgent.pos_msg.header.stamp = ros::Time::now();
-            wp_pub.publish( hrlAgent.pos_msg );
+
+            hrlAgent.pos_msg.header.stamp = ros::Time::now(); //Add the header to the position target message
+            wp_pub.publish( hrlAgent.pos_msg ); //publish the position target message
         }
+        
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
