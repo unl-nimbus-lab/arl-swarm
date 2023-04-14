@@ -38,7 +38,9 @@ int main(int argc, char **argv) {
 
     //main loop
     while (ros::ok()) {
-        
+        //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
+
+        //////////// END HRL PERIODIC CALCULATIONS ////////////
 
         if (hrlAgent.getPublish() == true) { //Flag that indicates if the pos_msg should be published
             if (hrlAgent.CIRCLE_FLAG == true) {
@@ -72,6 +74,7 @@ int main(int argc, char **argv) {
             hrlAgent.pos_msg.header.stamp = ros::Time::now(); //Add the header to the position target message
             wp_pub.publish( hrlAgent.pos_msg ); //publish the position target message
         }
+        
         
         ros::Duration(0.5).sleep();
         ros::spinOnce();
