@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     //Read in JSON swarm configs from JSON files
     json_reader jsonReader;
 
-    jsonReader.readJSON(filename);
+    struct Sys system_matricies = jsonReader.readJSON(filename);
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");

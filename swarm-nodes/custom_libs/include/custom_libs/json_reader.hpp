@@ -18,13 +18,17 @@ using namespace Eigen;
 
 
 struct Sys {
-        MatrixXd A ;
-        MatrixXd B ;
-        MatrixXd K ;
-	MatrixXd Tr ; // Transformation matrix
-	MatrixXd Tgt; // Target vector
-	MatrixXd Aug ; // Augmentation vector to the integral state
-//      MatrixXd Formation;
+    MatrixXd T;
+    MatrixXd TA;
+    MatrixXd TB;
+	MatrixXd ZD; 
+	MatrixXd KL;
+	MatrixXd Ka;
+	MatrixXd DKL;
+	MatrixXd DTA;
+	MatrixXd DTB;
+	MatrixXd aug_state;
+
 } ;
 
 class json_reader{
