@@ -44,7 +44,7 @@ path_to_env = "arl-swarm/docker/drone"
 ag_username = "ubuntu"
 
 # globals
-PORT = "/dev/ttyUSB1"
+PORT = "/dev/ttyUSB0"
 BAUD = "921600"
 COMP_ID = "1" # always 1
 # Roger Memorial Farm
@@ -84,7 +84,7 @@ class Agent:
     def print(self):
         print("PORT="+PORT)
         print("BAUD="+BAUD)
-        print("PORT2=/dev/ttyUSB0")
+        print("PORT2=/dev/ttyUSB1")
         print("SYS_ID="+str(self.sys_id))
         print("COMP_ID=1") # always 1
         print("CLUSTER_ID="+str(self.cluster_ID)) # which cluster it is

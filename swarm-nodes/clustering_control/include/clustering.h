@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/PointStamped.h"
+#include "custom_libs/json_reader.hpp"
 
 //Universal constants:
 #define PI 3.14159265
@@ -99,6 +100,9 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
 int updateTrajectoryTarget(int previousIndex);
+
+using json = nlohmann::json;
+using namespace std;
 
 //agent class:
 class agent {
@@ -671,5 +675,25 @@ void agent::setAgentGlobalTarget(double lat, double lon, double alt) {
     AGENT_GLOBAL_TARGET.LON = lon;
     AGENT_GLOBAL_TARGET.ALT = alt;
 }
+
+int read_integer_from_json_file(const string &filename, const string &key) {
+    ifstream input_file(filename);
+    if (!input_file.is_open()) {
+        cerr << "Error: Couldn't open the file" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    json j;
+    input_file >> j;
+    input_file.close();
+
+    if (j.contains(key) && j[key].is_number_integer()) {
+        return j[key];
+    } else {
+        cerr << "Error: Key not found or not an integer" << endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 
 #endif

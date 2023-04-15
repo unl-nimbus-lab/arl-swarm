@@ -5,9 +5,9 @@ agent hrlAgent;
 int main(int argc, char **argv) {
     //read in command line arguments
     //TODO: this block is hideous, clean it up
-    hrlAgent.setSysid(std::stod(argv[1]));
-    hrlAgent.setClusterid(std::stod(argv[2]));
-    hrlAgent.setClusterOrder(std::stod(argv[3]));
+    hrlAgent.setSysid(std::stod(argv[1])); //The ardupilot SYSID_THISMAV parameter
+    hrlAgent.setClusterid(std::stod(argv[2]));  //Cluster ID parameter (should always == 1)
+    hrlAgent.setClusterOrder(std::stod(argv[3])); 
     hrlAgent.setOriginalClusterOrder(std::stod(argv[3]));
     hrlAgent.setClusterSize(std::stod(argv[4]));
     hrlAgent.setClusterRadius(std::stod(argv[5]));
@@ -15,12 +15,15 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
+    string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_2_2_best.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
     hrlAgent.setClusterOffsets(hrlAgent.getOriginalClusterOrder());
     hrlAgent.setClusterLocalTarget(hrlAgent.getRally1X(),hrlAgent.getRally1Y(),hrlAgent.getAgentAlt());
     hrlAgent.setPositionTarget();
+
+    //Read in JSON swarm configs from JSON files
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
