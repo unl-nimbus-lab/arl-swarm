@@ -132,6 +132,122 @@ Sys json_reader::readJSON(std::string path_to_json)
 	std::cout << "======" << std::endl;
 	std::cout << T << std::endl;
 
+	// assign the TA matrix from the json file
+	for (auto& el : TA_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					TA(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "TA Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << TA << std::endl;
+
+	// assign the TB matrix from the json file
+	for (auto& el : TB_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					TB(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "TB Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << TB << std::endl;
+
+	// assign the ZD matrix from the json file
+	for (auto& el : ZD_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					ZD(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "ZD Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << ZD << std::endl;
+
+	// assign the KL matrix from the json file
+	for (auto& el : KL_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					KL(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "KL Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << KL << std::endl;
+
+	// assign the Ka matrix from the json file
+	for (auto& el : Ka_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					Ka(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "Ka Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << Ka << std::endl;
+
+	// assign the DKL matrix from the json file
+	for (auto& el : DKL_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					DKL(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "DKL Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << DKL << std::endl;
+
+	// assign the DTA matrix from the json file
+	for (auto& el : DTA_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					DTA(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "DTA Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << DTA << std::endl;
+
+	// assign the TA matrix from the json file
+	for (auto& el : DTB_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					DTB(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "DTB Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << DTB << std::endl;
+
+	// assign the aug_state matrix from the json file
+	for (auto& el : aug_state_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					aug_state(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "aug_state Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << aug_state << std::endl;
 
 	// // assign the target vectorfrom the json file
 	// int k = 0 ;
