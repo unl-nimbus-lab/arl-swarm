@@ -49,57 +49,68 @@ Sys json_reader::readJSON(std::string path_to_json)
 			i++ ;
 		}
 	}
-//	std::cout << A_matrix ;
+	std::cout << "A Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << A_matrix << std::endl;
 
 
-        // Assign each value for B matrix to Eigen matrix
-        for (auto& el : TB_matrix.items())
-        {
-                int i = 0 ;
-                for (auto& subel : el.value()){
-                        B_matrix(stoi(el.key()),i) = subel ;
-                        i++ ;
-                }
-        }
+	// Assign each value for B matrix to Eigen matrix
+	for (auto& el : TB_matrix.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					B_matrix(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "B Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << B_matrix << std::endl;
 
 
 	// assign the K matrix from the json file
-        for (auto& el : TG_matrix.items())
-        {
-                int i = 0 ;
-                for (auto& subel : el.value()){
-                        K_matrix(stoi(el.key()),i) = subel ;
-                        i++ ;
-                }
-        }
+	for (auto& el : TG_matrix.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					K_matrix(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "K Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << K_matrix << std::endl;
 
 
-        // assign the T matrix from the json file
-        for (auto& el : T_matrix.items())
-        {
-                int i = 0 ;
-                for (auto& subel : el.value()){
-                        T(stoi(el.key()),i) = subel ;
-                        i++ ;
-                }
-        }
+	// assign the T matrix from the json file
+	for (auto& el : T_matrix.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					T(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "T Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << T_matrix << std::endl;
 
 
-        // assign the target vectorfrom the json file
-        int k = 0 ;
+	// assign the target vectorfrom the json file
+	int k = 0 ;
 	for (auto& el : Tgt_vector.items())
         {
 		Tgt_vec(k) = el.value();
 		k++ ;
 	}
 
-        // assign the target vectorfrom the json file
-        k = 0 ;
-        for (auto& el : Aug_vector.items())
-        {
-                Aug_vec(k) = el.value();
-                k++ ;
-        }
+	// assign the target vectorfrom the json file
+	k = 0 ;
+	for (auto& el : Aug_vector.items())
+	{
+			Aug_vec(k) = el.value();
+			k++ ;
+	}
 
 	struct Sys s = {A_matrix, B_matrix, K_matrix, T, Tgt_vec, Aug_vec } ;
 
