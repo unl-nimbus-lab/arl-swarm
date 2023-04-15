@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_2_2_best.json";
+    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_2_2_best.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -24,6 +24,9 @@ int main(int argc, char **argv) {
     hrlAgent.setPositionTarget();
 
     //Read in JSON swarm configs from JSON files
+    json_reader jsonReader;
+
+    jsonReader.readJSON(filename);
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
