@@ -7,7 +7,32 @@ project(custom_libs)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+	roscpp
+	std_msgs
+#	tf2_eigen
+  	mavros
+#	message_generation
+)
+#find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+#find_package( Eigen REQUIRED )
+#include_directories(${EIGEN3_INCLUDE_DIR})
+#add_definitions( ${EIGEN3_DEFINITIONS} )
+
+#if( NOT EIGEN3_FOUND )
+  # resort to cmake_modules
+#  find_package( cmake_modules REQUIRED )
+#  find_package(Eigen REQUIRED)
+#  set( EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS} )
+#  set( EIGEN3_LIBRARIES ${EIGEN_LIBRARIES} )
+#else()
+#  set( EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} )
+#endif()
+
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -101,6 +126,8 @@ catkin_package(
   LIBRARIES custom_libs
 #  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
+#  CATKIN_DEPENDS Eigen3 roscpp
+#  DEPENDS Eigen
 )
 
 ###########
@@ -118,6 +145,8 @@ include_directories(
 add_library(${PROJECT_NAME}
    src/geo_converter.cpp
    src/json_reader.cpp
+   src/id_to_idx.cpp
+#   src/setpoint_posvel.cpp
  )
 
 ## Add cmake target dependencies of the library

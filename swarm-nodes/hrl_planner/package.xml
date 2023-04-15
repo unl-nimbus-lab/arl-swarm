@@ -25,6 +25,8 @@
 <build_depend>geometry_msgs</build_depend>
 <build_depend>nav_msgs</build_depend>
 <build_depend>mavlink_libraries</build_depend>
+<build_depend>mavros</build_depend>
+<build_depend>custom_libs</build_depend>
 <build_export_depend>roscpp</build_export_depend>
 <build_export_depend>rospy</build_export_depend>
 <build_export_depend>spre_planned_arl_cubetd_msgs</build_export_depend>

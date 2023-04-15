@@ -1,4 +1,3 @@
-
 /* This implements the functions of the json_reader for the swarm project.
 */
 
@@ -10,7 +9,6 @@ Sys json_reader::readJSON(std::string path_to_json)
 	//	1. A sys martix
 	//	2. B sys matrix 
 
-	std::cout << "INSIDE HRL" ;
 
 	std::ifstream i(path_to_json);
 	json j;
@@ -18,16 +16,29 @@ Sys json_reader::readJSON(std::string path_to_json)
 
 	auto TA_matrix = j["TA"] ;
 	auto TB_matrix = j["TB"] ;
-//	auto K_matrix = j["K"] ;
+	auto TG_matrix = j["TG"] ;// This is the K matrix although I name the varibale TG
+	auto T_matrix = j["T"];
+	auto Tgt_vector = j["TGT"];
+	auto Aug_vector = j["AUG"];
 
 	// TODO Make sure the B matrix is a squre on or not. If not square, change TB_size
 	int TA_size =  TA_matrix.size() ;
-	int TB_size =  TB_matrix.size() ;
-//	int K_size = K_matrix.size();
+	int TB_rows =  TB_matrix.size() ;
+	int TB_cols =  TB_matrix[0].size() ;
+	int TG_rows = TG_matrix.size();
+	int TG_cols = TG_matrix[0].size();
+	int T_rows = T_matrix.size();
+	int T_cols = T_matrix[0].size();
+	int Tgt_rows = Tgt_vector.size();
+	int Aug_ros = Aug_vector.size();
 
 
 	MatrixXd A_matrix(TA_size,TA_size);
-	MatrixXd B_matrix(TB_size,TB_size);
+	MatrixXd B_matrix(TB_rows,TB_cols);
+	MatrixXd K_matrix(TG_rows,TG_cols);
+	MatrixXd T(T_rows,T_cols);
+	MatrixXd Tgt_vec(Tgt_rows,1);
+	MatrixXd Aug_vec(Aug_ros,1);
 
 	// Assign each value for A matrix to Eigen matrix
 	for (auto& el : TA_matrix.items())
@@ -38,7 +49,7 @@ Sys json_reader::readJSON(std::string path_to_json)
 			i++ ;
 		}
 	}
-	std::cout << A_matrix ;
+//	std::cout << A_matrix ;
 
 
         // Assign each value for B matrix to Eigen matrix
@@ -51,11 +62,46 @@ Sys json_reader::readJSON(std::string path_to_json)
                 }
         }
 
-        std::cout << B_matrix  ;
 
-	// TODO : assign the K matrix from the json file
+	// assign the K matrix from the json file
+        for (auto& el : TG_matrix.items())
+        {
+                int i = 0 ;
+                for (auto& subel : el.value()){
+                        K_matrix(stoi(el.key()),i) = subel ;
+                        i++ ;
+                }
+        }
 
-	struct Sys s = {A_matrix, B_matrix} ;
+
+        // assign the T matrix from the json file
+        for (auto& el : T_matrix.items())
+        {
+                int i = 0 ;
+                for (auto& subel : el.value()){
+                        T(stoi(el.key()),i) = subel ;
+                        i++ ;
+                }
+        }
+
+
+        // assign the target vectorfrom the json file
+        int k = 0 ;
+	for (auto& el : Tgt_vector.items())
+        {
+		Tgt_vec(k) = el.value();
+		k++ ;
+	}
+
+        // assign the target vectorfrom the json file
+        k = 0 ;
+        for (auto& el : Aug_vector.items())
+        {
+                Aug_vec(k) = el.value();
+                k++ ;
+        }
+
+	struct Sys s = {A_matrix, B_matrix, K_matrix, T, Tgt_vec, Aug_vec } ;
 
 	return s ;
 }

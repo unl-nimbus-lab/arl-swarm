@@ -20,8 +20,10 @@ using namespace Eigen;
 struct Sys {
         MatrixXd A ;
         MatrixXd B ;
-//      MatrixXd T ;
         MatrixXd K ;
+	MatrixXd Tr ; // Transformation matrix
+	MatrixXd Tgt; // Target vector
+	MatrixXd Aug ; // Augmentation vector to the integral state
 //      MatrixXd Formation;
 } ;
 
