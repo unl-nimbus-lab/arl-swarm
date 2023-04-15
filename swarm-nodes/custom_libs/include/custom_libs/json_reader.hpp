@@ -18,6 +18,8 @@ using namespace Eigen;
 
 
 struct Sys {
+	int num_clusters;
+	MatrixXd p;
     MatrixXd T;
     MatrixXd TA;
     MatrixXd TB;
