@@ -20,6 +20,7 @@
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/PointStamped.h"
 #include "custom_libs/json_reader.hpp"
+#include "swarm_comms/allAgentsPosStamped.h"
 
 //Universal constants:
 #define PI 3.14159265
@@ -105,6 +106,7 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
 int updateTrajectoryTarget(int previousIndex);
+void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 
 //agent class:
 class agent {

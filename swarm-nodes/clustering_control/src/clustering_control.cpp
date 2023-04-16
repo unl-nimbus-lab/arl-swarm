@@ -53,6 +53,7 @@ int main(int argc, char **argv) {
     ros::Subscriber liveHRLReference_sub = nh.subscribe("/mavros/debug_value/debug_vector", 10, HRLReference_cb);
     //ros::Subscriber brake_sub = nh.subscribe("/mavros/debug_value/named_value_int", 10, brake_cb);    
     ros::Subscriber globalPosition_sub = nh.subscribe("/mavros/global_position/swarm",1, GPS_cb);
+    ros::Subscriber localPosition_sub = nh.subscribe("/agent_pos",1, stateUpdate_cb);
 
     //ROS Publishers
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -98,7 +99,7 @@ int main(int argc, char **argv) {
             wp_pub.publish( hrlAgent.pos_msg ); //publish the position target message
         }
         
-        
+        std::cout << hrl_state << std::endl;
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
@@ -233,4 +234,34 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     if (gps_msg.system_id == hrlAgent.getFTLSysid()) {
         hrlAgent.setFTLloc(gps_msg.latitude,gps_msg.longitude,gps_msg.altitude);
     }
+}
+
+void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
+    //This function serves to update the global hrl_state vector
+    //each time a new swarm comms message hits. 
+
+    //First cycle through the "swarm_comp" matrix and find the matching state
+    int numberOfclusters = swarm_comp.rows();
+    int maxAgentsPerCluster = swarm_comp.cols();
+    int numberOfAgentsInMsg = msg->agents.size();
+
+    for (int i = 0; i < numberOfclusters; i++) {
+        for (int j = 0; j < maxAgentsPerCluster; j++) {
+            //For each agent in each cluster, we need to find the corresponding agent
+            //in the allAgents... Message
+            int working_agent = swarm_comp(i,j);
+            if (working_agent > 0) { //this is a check to make sure there is actually an agent here
+                for(int k = 0; k < numberOfAgentsInMsg; k++) {
+                    if (working_agent == msg->agents[k].id) {
+                    //If the id in the message at the kth index matches the working id,
+                    //then update the hrl_vector
+                    hrl_state( index_encodings(i,j) , 1) = msg->agents[k].x;
+                    hrl_state( index_encodings(i,j)+1,1) = msg->agents[k].y; 
+                    }
+                }
+            }
+        }
+
+    }
+
 }
