@@ -21,6 +21,7 @@
 #include "geometry_msgs/PointStamped.h"
 #include "custom_libs/json_reader.hpp"
 #include "swarm_comms/allAgentsPosStamped.h"
+#include "swarm_comms/agentPos.h"
 
 //Universal constants:
 #define PI 3.14159265
