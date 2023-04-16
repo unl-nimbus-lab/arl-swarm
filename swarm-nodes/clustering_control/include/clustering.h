@@ -108,6 +108,7 @@ void parseCommandUnitTest();
 int updateTrajectoryTarget(int previousIndex);
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 
+
 //agent class:
 class agent {
     public:

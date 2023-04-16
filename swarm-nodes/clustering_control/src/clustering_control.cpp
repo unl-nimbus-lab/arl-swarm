@@ -13,6 +13,7 @@ MatrixXd index_encodings(2,2);
 int numberOfHRLStates = 24;
 
 MatrixXd hrl_state(numberOfHRLStates, 1);
+MatrixXd raw_hrl_state(32,1);
 
 int main(int argc, char **argv) {
     //read in command line arguments
@@ -45,6 +46,9 @@ int main(int argc, char **argv) {
 
     std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
 
+    int max_count = 8;
+    int current_count = 0;
+
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
     ros::NodeHandle nh;
@@ -63,6 +67,13 @@ int main(int argc, char **argv) {
     //main loop
     while (ros::ok()) {
         //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
+        if (current_count == max_count) {
+                std::cout << raw_hrl_state << std::endl;
+
+            current_count = 0;
+        } else {
+            current_count++;
+        }
 
         //////////// END HRL PERIODIC CALCULATIONS ////////////
 
@@ -237,31 +248,35 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
 }
 
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
-    //This function serves to update the global hrl_state vector
-    //each time a new swarm comms message hits. 
-
-    //First cycle through the "swarm_comp" matrix and find the matching state
-    int numberOfclusters = swarm_comp.rows();
-    int maxAgentsPerCluster = swarm_comp.cols();
-    int numberOfAgentsInMsg = msg->agents.size();
-
-    for (int i = 0; i < numberOfclusters; i++) {
-        for (int j = 0; j < maxAgentsPerCluster; j++) {
-            //For each agent in each cluster, we need to find the corresponding agent
-            //in the allAgents... Message
-            int working_agent = swarm_comp(i,j);
-            if (working_agent > 0) { //this is a check to make sure there is actually an agent here
-                for(int k = 0; k < numberOfAgentsInMsg; k++) {
-                    if (working_agent == msg->agents[k].id) {
-                    //If the id in the message at the kth index matches the working id,
-                    //then update the hrl_vector
-                    hrl_state( index_encodings(i,j) , 1) = msg->agents[k].x;
-                    hrl_state( index_encodings(i,j)+1,1) = msg->agents[k].y; 
-                    }
-                }
-            }
-        }
-
+//Just save it
+    int numberOfAgents = msg->agents.size();
+    for (int i = 0; i < numberOfAgents; i++) {
+        raw_hrl_state( msg->agents[i].id * 2, 1) = msg->agents[i].x;
+        raw_hrl_state( msg->agents[i].id * 2 + 1, 1) = msg->agents[i].y;
     }
+
+    // //First cycle through the "swarm_comp" matrix and find the matching state
+    // int numberOfclusters = swarm_comp.rows();
+    // int maxAgentsPerCluster = swarm_comp.cols();
+    // int numberOfAgentsInMsg = msg->agents.size();
+
+    // for (int i = 0; i < numberOfclusters; i++) {
+    //     for (int j = 0; j < maxAgentsPerCluster; j++) {
+    //         //For each agent in each cluster, we need to find the corresponding agent
+    //         //in the allAgents... Message
+    //         int working_agent = swarm_comp(i,j);
+    //         if (working_agent > 0) { //this is a check to make sure there is actually an agent here
+    //             for(int k = 0; k < numberOfAgentsInMsg; k++) {
+    //                 if (working_agent == msg->agents[k].id) {
+    //                 //If the id in the message at the kth index matches the working id,
+    //                 //then update the hrl_vector
+    //                 hrl_state( index_encodings(i,j) , 1) = msg->agents[k].x;
+    //                 hrl_state( index_encodings(i,j)+1,1) = msg->agents[k].y; 
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    // }
 
 }
