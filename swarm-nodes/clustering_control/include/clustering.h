@@ -16,6 +16,7 @@
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include <eigen3/Eigen/Dense>
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/PointStamped.h"
 #include "custom_libs/json_reader.hpp"
@@ -103,6 +104,7 @@ int updateTrajectoryTarget(int previousIndex);
 
 using json = nlohmann::json;
 using namespace std;
+using namespace Eigen;
 
 //agent class:
 class agent {

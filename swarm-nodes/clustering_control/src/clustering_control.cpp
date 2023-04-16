@@ -25,8 +25,17 @@ int main(int argc, char **argv) {
 
     //Read in JSON swarm configs from JSON files
     json_reader jsonReader;
-
     struct Sys system_matricies = jsonReader.readJSON(filename);
+
+    //Setup the State handler
+    MatrixXd swarm_comp(2,2);
+    swarm_comp(0,0) = 1;
+    swarm_comp(0,1) = 2;
+    swarm_comp(1,0) = 3;
+    swarm_comp(1,1) = 4;
+
+    std::cout << std::endl;
+    std::cout << "Swarm Composition" << std::endl << "========" << swarm_comp << std::endl;
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
