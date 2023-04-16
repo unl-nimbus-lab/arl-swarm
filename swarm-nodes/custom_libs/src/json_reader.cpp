@@ -15,7 +15,7 @@ Sys json_reader::readJSON(std::string path_to_json)
 	i >> j;
 
 	//Read the json arrays as C arrays
-	int num_clusters = j["num_clusters"];
+	int num_clusters = j["num_clusters"]; //
 	auto p_json = j["p"];
 	auto T_json = j["T"];
 	auto TA_json = j["TA"];
