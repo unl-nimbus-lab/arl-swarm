@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
         if (current_count == max_count) {
                 //std::cout << raw_hrl_state << std::endl;
-
+                //
             current_count = 0;
         } else {
             current_count++;
@@ -110,7 +110,6 @@ int main(int argc, char **argv) {
             wp_pub.publish( hrlAgent.pos_msg ); //publish the position target message
         }
         
-        std::cout << hrl_state << std::endl;
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
