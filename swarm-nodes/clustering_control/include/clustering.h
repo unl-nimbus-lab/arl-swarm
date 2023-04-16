@@ -75,6 +75,10 @@
 // Agent restraints
 #define MAX_ALT 121.92 // 400 feet (converted to meters)
 
+using json = nlohmann::json;
+using namespace std;
+using namespace Eigen;
+
 //Some objects that are used:
 ros::Publisher ak_pub;
 ros::Publisher wp_pub;
@@ -101,10 +105,6 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
 int updateTrajectoryTarget(int previousIndex);
-
-using json = nlohmann::json;
-using namespace std;
-using namespace Eigen;
 
 //agent class:
 class agent {
@@ -696,6 +696,5 @@ int read_integer_from_json_file(const string &filename, const string &key) {
         exit(EXIT_FAILURE);
     }
 }
-
 
 #endif

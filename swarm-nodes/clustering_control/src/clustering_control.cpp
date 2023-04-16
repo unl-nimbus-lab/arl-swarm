@@ -2,6 +2,18 @@
 
 agent hrlAgent;
 
+//Setup the State handler
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
+MatrixXd swarm_comp(2,2);
+
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
+MatrixXd index_encodings(2,2);
+
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
+int numberOfHRLStates = 24;
+
+MatrixXd hrl_state(numberOfHRLStates, 1);
+
 int main(int argc, char **argv) {
     //read in command line arguments
     //TODO: this block is hideous, clean it up
@@ -27,15 +39,11 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
-    //Setup the State handler
-    MatrixXd swarm_comp(2,2);
-    swarm_comp(0,0) = 1;
-    swarm_comp(0,1) = 2;
-    swarm_comp(1,0) = 3;
-    swarm_comp(1,1) = 4;
+    swarm_comp << 1, 2, 3, 4;
+    index_encodings << 1, 4, 12, 16;
+    std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
 
-    std::cout << std::endl;
-    std::cout << "Swarm Composition" << std::endl << "========" << swarm_comp << std::endl;
+    std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
