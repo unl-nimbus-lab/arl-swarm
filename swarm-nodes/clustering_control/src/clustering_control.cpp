@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     while (ros::ok()) {
         //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
         if (current_count == max_count) {
-                std::cout << raw_hrl_state << std::endl;
+                //std::cout << raw_hrl_state << std::endl;
 
             current_count = 0;
         } else {
@@ -251,6 +251,7 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
 //Just save it
     int numberOfAgents = msg->agents.size();
     for (int i = 0; i < numberOfAgents; i++) {
+        std::cout << msg->agents[i].id << std::endl;
         raw_hrl_state( msg->agents[i].id * 2, 1) = msg->agents[i].x;
         raw_hrl_state( msg->agents[i].id * 2 + 1, 1) = msg->agents[i].y;
     }
