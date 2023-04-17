@@ -250,7 +250,7 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
 //Just save it
     int numberOfAgents = msg->agents.size();
     for (int i = 0; i < numberOfAgents; i++) {
-        std::cout << msg->agents[i] << std::endl;
+        std::cout << (*msg).agents[i].id << std::endl;
         //raw_hrl_state( msg->agents[i].id * 2, 1) = msg->agents[i].x;
         //raw_hrl_state( msg->agents[i].id * 2 + 1, 1) = msg->agents[i].y;
     }
