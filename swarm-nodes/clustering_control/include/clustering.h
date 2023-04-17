@@ -22,6 +22,7 @@
 #include "custom_libs/json_reader.hpp"
 #include "swarm_comms/allAgentsPosStamped.h"
 #include "swarm_comms/agentPos.h"
+#include "std_msgs/Float64MultiArray.h"
 
 //Universal constants:
 #define PI 3.14159265
@@ -84,6 +85,7 @@ using namespace Eigen;
 //Some objects that are used:
 ros::Publisher ak_pub;
 ros::Publisher wp_pub;
+ros::Publisher debug_pub;
 ros::ServiceClient client;
 ros::ServiceClient set_mode;
 mavros_msgs::DebugValue modeBroadcast;
@@ -139,6 +141,8 @@ double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
 double waypoint_dist_req = 6.0; // meters
 double final_dist_req = 4.0; // meters
+
+std_msgs::Float64MultiArray debugMsg;
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);

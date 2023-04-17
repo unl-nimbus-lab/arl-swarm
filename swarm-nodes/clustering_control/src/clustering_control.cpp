@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     ak_pub = nh.advertise<mavros_msgs::DebugValue> ( "/mavros/debug_value/send", 10, true );
     wp_pub = nh.advertise<geographic_msgs::GeoPoseStamped> ( "/mavros/setpoint_position/global", 10, true );
+    debug_pub = nh.advertise<std_msgs::Float64MultiArray> ( "/state_debug", 10, true);
 
     //main loop
     while (ros::ok()) {
@@ -69,6 +70,10 @@ int main(int argc, char **argv) {
                     //1. Collect all the agent states
                     hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
                     HRLx0 = hrl_state;
+                    
+                    debugMsg.data.resize(HRLx0.size());
+                    memcpy(&debugMsg.data[0], HRLx0.data(), HRLx0.size() * sizeof(double));
+                    debug_pub.publish(debugMsg);
 
                     HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
                     //HRLxCurrent = HRLx0;

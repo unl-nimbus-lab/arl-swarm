@@ -24,6 +24,7 @@
             <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/>
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
             <remap from="/agent_pos" to="/agent_$(arg system_ID)/agent_pos"/>
+            <remap from="/state_debug" to="/agent_$(arg system_ID)/state_debug"/>
 
 
         </node>
