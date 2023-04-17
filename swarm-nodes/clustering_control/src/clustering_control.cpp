@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
                             ROS_WARN("Met Dist Requirement from converge check");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
                             //ROS: UPDATE THE POS MESSAGE
-                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
+                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
                         //Otherwise, compute the distance away from initial state
                         double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
