@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
-    swarm_comp << 1, 2, 3, 4;
-    index_encodings << 0, 4, 12, 16;
+    swarm_comp << 1, 2, 3, 4, 5, 6, 7, 8;
+    index_encodings << 0, 4, 8, 12, 24, 28, 32, 36;
     std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
 
     std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
@@ -65,15 +65,32 @@ int main(int argc, char **argv) {
 
                 //1. Collect all the agent states
                 hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
+                HRLx0 = hrl_state;
 
-                HRLxCurrent = system_matricies.T*hrl_state; //CRITICAL: transform into new coordinate system
+                std::cout << "HRLx0" << HRLx0 << std::endl;
+
+                HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
+                //HRLxCurrent = HRLx0;
 
                 //2. Propogate HRL states until we find a rec >6 m away from current location
                 bool met_dist_req = false;
-                while ( (!met_dist_req) && (arrived == false) ) {
-                    
-                }
+                //while ( (!met_dist_req) && (arrived == false) ) {
+                    //HRLxCurrentLast = HRLxCurrent;
+                    //compute input for planner
+                    //U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
 
+                    //propogate HRL states
+                    //HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
+
+                    //check to see if HRL is converging, in which case we're near the target
+                    //un-transform
+                    // tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
+                    // tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
+                    // tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
+                    //extract the relevant states
+
+
+                //}
 
             }
 

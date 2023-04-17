@@ -101,18 +101,31 @@ double GLOBAL_POSITION_Y;
 //New globals for HRL planner
 //Setup the State handler
 // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-MatrixXd swarm_comp(2,2);
+
+MatrixXd swarm_comp(2,4); //Each cluster is a row, for example:
+/*
+1 2 3 4
+5 6 7 8
+*/
 
 // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-MatrixXd index_encodings(2,2);
+MatrixXd index_encodings(2,4);
 
 // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-int numberOfHRLStates = 24;
+int numberOfHRLStates = 48;
 
 MatrixXd hrl_state(numberOfHRLStates, 1);
-MatrixXd raw_hrl_state(50,1);
+MatrixXd raw_hrl_state(100,1);
 
 MatrixXd HRLxCurrent(numberOfHRLStates,1);
+MatrixXd HRLxCurrentLast(numberOfHRLStates,1);
+MatrixXd HRLx0(numberOfHRLStates,1);
+MatrixXd U(16,1);
+MatrixXd tempX0(numberOfHRLStates,1);
+MatrixXd tempXCurrent(numberOfHRLStates,1);
+MatrixXd tempXCurrentLast(numberOfHRLStates,1);
+
+double hrl_sampling_time = 0.2; //s
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
