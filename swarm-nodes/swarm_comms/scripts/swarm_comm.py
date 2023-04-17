@@ -294,7 +294,7 @@ class TheRadio(object):
 
         #initialize the actual radio hardware if not simming
         if (self.simming == False):
-            radio_port = '/dev/ttyUSB1'
+            radio_port = '/dev/ttyXBEE'
             radio_baud = 57600
 
         #self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
