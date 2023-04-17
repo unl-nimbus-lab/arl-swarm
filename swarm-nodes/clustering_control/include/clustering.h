@@ -128,9 +128,16 @@ MatrixXd tempXCurrentLast(numberOfHRLStates,1);
 MatrixXd tempX0Agent(2,1);
 MatrixXd tempXCurrentAgent(2,1);
 MatrixXd tempXCurrentLastAgent(2,1);
+MatrixXd agent_refs(2,1);
+
+MatrixXd targets_rel(2,3);
+MatrixXd tmpXCurrentAgent(1,2);
+MatrixXd tmpDist(2,1);
 
 double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
+double waypoint_dist_req = 6.0; // meters
+double final_dist_req = 4.0; // meters
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
@@ -144,6 +151,7 @@ int updateTrajectoryTarget(int previousIndex);
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state);
 int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
+int getHRLCluster(int sysID, MatrixXd swarm_comp);
 
 
 //agent class:
@@ -760,8 +768,21 @@ int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings) {
     for (int i = 0; i < numberOfClusters; i++) {
         for (int j = 0; j < maxAgents; j++) {
             if (swarm_comp(i,j) == sysID) {
-                std::cout << "My Index is: " << index_encodings(i,j);
+                std::cout << "My Index is: " << index_encodings(i,j) << std::endl;
                 return(index_encodings(i,j));
+            }
+        }
+    }
+}
+
+int getHRLCluster(int sysID, MatrixXd swarm_comp) {
+    int numberOfClusters = swarm_comp.rows();
+    int maxAgents = swarm_comp.cols();
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 0; j < maxAgents; j++) {
+            if (swarm_comp(i,j) == sysID) {
+                std::cout << "My cluster is: " << i << std::endl;
             }
         }
     }

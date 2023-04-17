@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
 
     swarm_comp << 1, 2, 3, 4, 5, 6, 7, 8;
     index_encodings << 0, 4, 8, 12, 24, 28, 32, 36;
+    targets_rel << 125, 138, 5, 180, 80, 5;
     std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
 
     std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
@@ -37,6 +38,7 @@ int main(int argc, char **argv) {
     int current_count = 0;
 
     int myIndex = getHRLIndex(hrlAgent.getSysid(), swarm_comp, index_encodings);
+    int myCluster = getHRLCluster(hrlAgent.getSysid(), swarm_comp);
     bool arrived = false;
 
     //Setup ROS
@@ -86,20 +88,40 @@ int main(int argc, char **argv) {
                     tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
                     tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
                     //extract the relevant states
-                    tempX0Agent(0,0) = tempX0(myIndex    , 0);
+                    tempX0Agent(0,0) = tempX0(myIndex    , 0); //The tempX...Agent variables are used bcause I can't do matlab matrix magic here
                     tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
+
                     tempXCurrentAgent(0,0) = tempXCurrent(myIndex    , 0);
                     tempXCurrentAgent(1,0) = tempXCurrent(myIndex + 1, 0);
                     tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
                     tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
                     double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
-                    if (converge < convergent_dist) {
+                    if (converge < convergent_dist) {//Check for convergence
                         met_dist_req = true;
-                        //Agent refs thing?
+                        ROS_WARN("Met Dist Requirement");
+                        agent_refs = tempXCurrentAgent;
+                    }
+                    //Otherwise, compute the distance away from initial state
+                    double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
+                    if (abs(dist) > waypoint_dist_req) {
+                        met_dist_req = true;
+                        ROS_WARN("Met Dist Requirement");
+                        agent_refs = tempXCurrentAgent;
                     }
 
-                //}
+
+                //} //end while
+                //3. Propogate each agent (not going to do anyting as per instructions)
+
+                //4. Check to see if we've arrived at the final waypoint
+                if (arrived == false) {
+                    tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
+                    tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
+                    // tmpDst = 
+                    // dist = norm()
+
+                }
 
             }
 
