@@ -70,10 +70,6 @@ int main(int argc, char **argv) {
                     //1. Collect all the agent states
                     hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
                     HRLx0 = hrl_state;
-                    
-                    debugMsg.data.resize(HRLx0.size());
-                    memcpy(&debugMsg.data[0], HRLx0.data(), HRLx0.size() * sizeof(double));
-                    debug_pub.publish(debugMsg);
 
                     HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
                     HRLxCurrent = HRLx0;
@@ -84,6 +80,10 @@ int main(int argc, char **argv) {
                         HRLxCurrentLast = HRLxCurrent;
                         //compute input for planner
                         U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
+
+                        debugMsg.data.resize(U.size());
+                        memcpy(&debugMsg.data[0], U.data(), U.size() * sizeof(double));
+                        debug_pub.publish(debugMsg);
 
                         //propogate HRL states
                         HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
