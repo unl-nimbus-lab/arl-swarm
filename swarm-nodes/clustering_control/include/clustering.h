@@ -40,7 +40,7 @@
 #define FORCE_COLLISION 6
 #define AGENT_GUIDED_LOCAL 7
 #define AGENT_GUIDED_GLOBAL 8
-#define FOLLOW_HRL_TRAJECTORY 9
+#define HRL_NAVIGATE 9
 
 //Cluster Formation types
 #define CIRCLE_FORMATION 1
@@ -132,6 +132,7 @@ MatrixXd agent_refs(2,1);
 
 MatrixXd targets_rel(2,3);
 MatrixXd tmpXCurrentAgent(1,2);
+MatrixXd tmpTarget_rel(1,2);
 MatrixXd tmpDist(2,1);
 
 double hrl_sampling_time = 0.2; //s
@@ -321,6 +322,17 @@ void agent::setPositionTarget() {
             pos_msg.pose.position.longitude = AGENT_GLOBAL_TARGET.LON;
             pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
             break;
+        case HRL_NAVIGATE:
+            tempx = CLUSTER_LOCAL_TARGET.X;
+            tempy = CLUSTER_LOCAL_TARGET.Y;
+            tempz = CLUSTER_LOCAL_TARGET.Z;
+            setAgentLocalTarget(tempx,tempy,tempz);
+            
+            //Update the pos_msg based on agent local target and global origin
+            pos_msg.pose.position.latitude = convObject.meters_to_lat(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.X);
+            pos_msg.pose.position.longitude = convObject.meters_to_lon(GLOBAL_ORIGIN.LAT,GLOBAL_ORIGIN.LON,AGENT_LOCAL_TARGET.Y);
+            pos_msg.pose.position.altitude = GLOBAL_ORIGIN.ALT + AGENT_LOCAL_TARGET.Z;
+            break;
         default:
             printf("INVALID FLIGHT MODE REQUESTED\n");
             break;
@@ -393,6 +405,10 @@ void agent::setFlightMode(int mode) {
             FTL_ENABLE = false;
             printf("Flight mode set to AGENT_GUIDED_GLOBAL\n");
             break;
+        case HRL_NAVIGATE:
+            HRL_FLIGHTMODE = mode;
+            FTL_ENABLE = false;
+            printf("Flight mode set to HRL_NAVIGATE\n");
         default: 
             printf("INVALID FLIGHTMODE SELECTION\n");
             break;
@@ -783,6 +799,7 @@ int getHRLCluster(int sysID, MatrixXd swarm_comp) {
         for (int j = 0; j < maxAgents; j++) {
             if (swarm_comp(i,j) == sysID) {
                 std::cout << "My cluster is: " << i << std::endl;
+                return i;
             }
         }
     }

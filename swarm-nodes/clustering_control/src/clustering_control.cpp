@@ -59,78 +59,90 @@ int main(int argc, char **argv) {
     //main loop
     while (ros::ok()) {
 
-        //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
-        if (current_count == max_count) { //hacky way to set the HRL rate without disturbing the clustering control update rate
+        if (hrlAgent.getFlightMode() == HRL_NAVIGATE) {
+            //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
+            if (current_count == max_count) { //hacky way to set the HRL rate without disturbing the clustering control update rate
 
-            //Check for arrival condition
-            if (arrived == false) {
-
-                //1. Collect all the agent states
-                hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
-                HRLx0 = hrl_state;
-
-                HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
-                //HRLxCurrent = HRLx0;
-
-                //2. Propogate HRL states until we find a rec >6 m away from current location
-                bool met_dist_req = false;
-                //while ( (!met_dist_req) && (arrived == false) ) {
-                    HRLxCurrentLast = HRLxCurrent;
-                    //compute input for planner
-                    U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
-
-                    //propogate HRL states
-                    HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
-
-                    //check to see if HRL is converging, in which case we're near the target
-                    //un-transform
-                    tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
-                    tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
-                    tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
-                    //extract the relevant states
-                    tempX0Agent(0,0) = tempX0(myIndex    , 0); //The tempX...Agent variables are used bcause I can't do matlab matrix magic here
-                    tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
-
-                    tempXCurrentAgent(0,0) = tempXCurrent(myIndex    , 0);
-                    tempXCurrentAgent(1,0) = tempXCurrent(myIndex + 1, 0);
-                    tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
-                    tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
-
-                    double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
-                    if (converge < convergent_dist) {//Check for convergence
-                        met_dist_req = true;
-                        ROS_WARN("Met Dist Requirement");
-                        agent_refs = tempXCurrentAgent;
-                    }
-                    //Otherwise, compute the distance away from initial state
-                    double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
-                    if (abs(dist) > waypoint_dist_req) {
-                        met_dist_req = true;
-                        ROS_WARN("Met Dist Requirement");
-                        agent_refs = tempXCurrentAgent;
-                    }
-
-
-                //} //end while
-                //3. Propogate each agent (not going to do anyting as per instructions)
-
-                //4. Check to see if we've arrived at the final waypoint
+                //Check for arrival condition
                 if (arrived == false) {
-                    tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
-                    tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
-                    // tmpDst = 
-                    // dist = norm()
 
+                    //1. Collect all the agent states
+                    hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
+                    HRLx0 = hrl_state;
+
+                    HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
+                    //HRLxCurrent = HRLx0;
+
+                    //2. Propogate HRL states until we find a rec >6 m away from current location
+                    bool met_dist_req = false;
+                    //while ( (!met_dist_req) && (arrived == false) ) {
+                        HRLxCurrentLast = HRLxCurrent;
+                        //compute input for planner
+                        U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
+
+                        //propogate HRL states
+                        HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
+
+                        //check to see if HRL is converging, in which case we're near the target
+                        //un-transform
+                        tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
+                        tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
+                        tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
+                        //extract the relevant states
+                        tempX0Agent(0,0) = tempX0(myIndex    , 0); //The tempX...Agent variables are used bcause I can't do matlab matrix magic here
+                        tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
+
+                        tempXCurrentAgent(0,0) = tempXCurrent(myIndex    , 0);
+                        tempXCurrentAgent(1,0) = tempXCurrent(myIndex + 1, 0);
+                        tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
+                        tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
+
+                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
+                        if (converge < convergent_dist) {//Check for convergence
+                            met_dist_req = true;
+                            ROS_WARN("Met Dist Requirement");
+                            agent_refs = tempXCurrentAgent; //I don't think this is necessary
+                            //ROS: UPDATE THE POS MESSAGE
+                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
+                        }
+                        //Otherwise, compute the distance away from initial state
+                        double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
+                        if (abs(dist) > waypoint_dist_req) {
+                            met_dist_req = true;
+                            ROS_WARN("Met Dist Requirement");
+                            agent_refs = tempXCurrentAgent; //I don't think this is necessary
+                            //ROS: UPDATE THE POS MESSAGE
+                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
+                        }
+
+
+                    //} //end while
+                    //3. Propogate each agent (not going to do anyting as per instructions)
+
+                    //4. Check to see if we've arrived at the final waypoint
+                    if (arrived == false) {
+                        tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
+                        tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
+                        tmpTarget_rel(0,0) = targets_rel(myCluster - 1, 0);
+                        tmpTarget_rel(0,1) = targets_rel(myCluster - 1, 1);
+
+                        double dist = (tmpTarget_rel - tmpXCurrentAgent).squaredNorm();
+                        if (abs(dist) <= final_dist_req) {
+                            ROS_WARN("Arrived");
+                            arrived = true;
+                        } else {
+                            arrived = false;
+                        }
+                    }
                 }
-
+                hrlAgent.setPositionTarget();
+                current_count = 0;
+            } else {
+                current_count++;
             }
 
-            current_count = 0;
-        } else {
-            current_count++;
+            //////////// END HRL PERIODIC CALCULATIONS ////////////
         }
-
-        //////////// END HRL PERIODIC CALCULATIONS ////////////
 
         if (hrlAgent.getPublish() == true) { //Flag that indicates if the pos_msg should be published
             if (hrlAgent.CIRCLE_FLAG == true) {
