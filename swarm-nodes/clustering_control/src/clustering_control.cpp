@@ -248,9 +248,11 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
 
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
 //Just save it
+    swarm_comms::agentPos temp;
     int numberOfAgents = msg->agents.size();
     for (int i = 0; i < numberOfAgents; i++) {
-        std::cout << (*msg).agents[i].id << std::endl;
+        temp = (*msg).agents[i];
+        std::cout << temp << std::endl;
         //raw_hrl_state( msg->agents[i].id * 2, 1) = msg->agents[i].x;
         //raw_hrl_state( msg->agents[i].id * 2 + 1, 1) = msg->agents[i].y;
     }
