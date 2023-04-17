@@ -84,7 +84,7 @@ COPY swarm-nodes/pre-planned_arl /home/catkin_ws/src/pre-planned_arl
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && catkin build
+    && catkin build -j1
 
 RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
