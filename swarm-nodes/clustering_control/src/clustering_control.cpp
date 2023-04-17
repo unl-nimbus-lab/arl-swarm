@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
                     ROS_WARN("STEP 1 COMPLETE");
                     //2. Propogate HRL states until we find a rec >6 m away from current location
                     bool met_dist_req = false;
-                    //while ( (!met_dist_req) && (arrived == false) ) {
+                    while ( (!met_dist_req) && (arrived == false) ) {
                         HRLxCurrentLast = HRLxCurrent;
                         //compute input for planner
                         U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
@@ -115,16 +115,16 @@ int main(int argc, char **argv) {
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
 
+                    } //end while
                     ROS_WARN("STEP 2 COMPLETE");
-                    //} //end while
                     //3. Propogate each agent (not going to do anyting as per instructions)
 
                     //4. Check to see if we've arrived at the final waypoint
                     if (arrived == false) {
                         tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
                         tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
-                        tmpTarget_rel(0,0) = targets_rel(myCluster - 1, 0);
-                        tmpTarget_rel(0,1) = targets_rel(myCluster - 1, 1);
+                        tmpTarget_rel(0,0) = targets_rel(myCluster, 0);
+                        tmpTarget_rel(0,1) = targets_rel(myCluster, 1);
 
                         double dist = (tmpTarget_rel - tmpXCurrentAgent).squaredNorm();
                         if (abs(dist) <= final_dist_req) {
