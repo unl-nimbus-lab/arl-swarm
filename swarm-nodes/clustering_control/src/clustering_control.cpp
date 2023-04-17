@@ -2,19 +2,6 @@
 
 agent hrlAgent;
 
-//Setup the State handler
-// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-MatrixXd swarm_comp(2,2);
-
-// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-MatrixXd index_encodings(2,2);
-
-// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-int numberOfHRLStates = 24;
-
-MatrixXd hrl_state(numberOfHRLStates, 1);
-MatrixXd raw_hrl_state(32,1);
-
 int main(int argc, char **argv) {
     //read in command line arguments
     //TODO: this block is hideous, clean it up
@@ -41,13 +28,16 @@ int main(int argc, char **argv) {
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
     swarm_comp << 1, 2, 3, 4;
-    index_encodings << 1, 4, 12, 16;
+    index_encodings << 0, 4, 12, 16;
     std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
 
     std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
 
     int max_count = 8;
     int current_count = 0;
+
+    int myIndex = getHRLIndex(hrlAgent.getSysid(), swarm_comp, index_encodings);
+    bool arrived = false;
 
     //Setup ROS
     ros::init(argc, argv, "clustering_control");
@@ -66,10 +56,27 @@ int main(int argc, char **argv) {
 
     //main loop
     while (ros::ok()) {
+
         //////////// BEGIN HRL PERIODIC CALCULATIONS ////////////
-        if (current_count == max_count) {
-                std::cout << raw_hrl_state << std::endl;
-                //
+        if (current_count == max_count) { //hacky way to set the HRL rate without disturbing the clustering control update rate
+
+            //Check for arrival condition
+            if (arrived == false) {
+
+                //1. Collect all the agent states
+                hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
+
+                HRLxCurrent = system_matricies.T*hrl_state; //CRITICAL: transform into new coordinate system
+
+                //2. Propogate HRL states until we find a rec >6 m away from current location
+                bool met_dist_req = false;
+                while ( (!met_dist_req) && (arrived == false) ) {
+                    
+                }
+
+
+            }
+
             current_count = 0;
         } else {
             current_count++;
@@ -247,35 +254,16 @@ void GPS_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
 }
 
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
-//Just save it
+    swarm_comms::agentPos tempMsg;
+    int raw_hrl_index;
+
     int numberOfAgents = msg->agents.size();
     for (int i = 0; i < numberOfAgents; i++) {
-        raw_hrl_state( int(msg->agents[i].id) * 2, 1) = msg->agents[i].x;
-        raw_hrl_state( int(msg->agents[i].id) * 2 + 1, 1) = msg->agents[i].y;
+        tempMsg = msg->agents[i]; //For some reason I can't pull the ID without first assigning it to temporary message
+        raw_hrl_index = (double(tempMsg.id) - 1) * 2;
+        
+        raw_hrl_state( raw_hrl_index, 0) = msg->agents[i].x;
+        raw_hrl_state( raw_hrl_index + 1, 0) = msg->agents[i].y;
     }
-
-    // //First cycle through the "swarm_comp" matrix and find the matching state
-    // int numberOfclusters = swarm_comp.rows();
-    // int maxAgentsPerCluster = swarm_comp.cols();
-    // int numberOfAgentsInMsg = msg->agents.size();
-
-    // for (int i = 0; i < numberOfclusters; i++) {
-    //     for (int j = 0; j < maxAgentsPerCluster; j++) {
-    //         //For each agent in each cluster, we need to find the corresponding agent
-    //         //in the allAgents... Message
-    //         int working_agent = swarm_comp(i,j);
-    //         if (working_agent > 0) { //this is a check to make sure there is actually an agent here
-    //             for(int k = 0; k < numberOfAgentsInMsg; k++) {
-    //                 if (working_agent == msg->agents[k].id) {
-    //                 //If the id in the message at the kth index matches the working id,
-    //                 //then update the hrl_vector
-    //                 hrl_state( index_encodings(i,j) , 1) = msg->agents[k].x;
-    //                 hrl_state( index_encodings(i,j)+1,1) = msg->agents[k].y; 
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    // }
 
 }

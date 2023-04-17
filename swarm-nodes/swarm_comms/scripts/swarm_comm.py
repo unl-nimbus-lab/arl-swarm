@@ -178,8 +178,8 @@ class TheRadio(object):
         id_num, px, py, pz, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
 
         #For simulation purposes, we exit out here if the data is our own
-        if (id_num == int(self.sys_id)):
-            return None
+        #if (id_num == int(self.sys_id)):
+        #    return None
 
         remote_agent_message = (id_num, data, time_received)
 

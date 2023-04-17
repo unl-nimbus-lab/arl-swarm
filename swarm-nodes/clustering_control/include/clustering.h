@@ -98,6 +98,22 @@ double distanceThreshold = 0.0;
 double GLOBAL_POSITION_X;
 double GLOBAL_POSITION_Y;
 
+//New globals for HRL planner
+//Setup the State handler
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
+MatrixXd swarm_comp(2,2);
+
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
+MatrixXd index_encodings(2,2);
+
+// THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
+int numberOfHRLStates = 24;
+
+MatrixXd hrl_state(numberOfHRLStates, 1);
+MatrixXd raw_hrl_state(50,1);
+
+MatrixXd HRLxCurrent(numberOfHRLStates,1);
+
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);
 void handleCommand(int *cluster, int *command);
@@ -108,6 +124,8 @@ void acknowledge(int agentID,int* command);
 void parseCommandUnitTest();
 int updateTrajectoryTarget(int previousIndex);
 void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
+void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state);
+int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 
 
 //agent class:
@@ -698,6 +716,36 @@ int read_integer_from_json_file(const string &filename, const string &key) {
     } else {
         cerr << "Error: Key not found or not an integer" << endl;
         exit(EXIT_FAILURE);
+    }
+}
+
+void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state) {
+    int numberOfClusters = swarm_comp.rows();
+    int maxAgents = swarm_comp.cols();
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 0; j < maxAgents; j++) {
+            if (swarm_comp(i,j) > 0) {
+                int raw_state_index = (swarm_comp(i,j) - 1) * 2;
+                hrl_state( index_encodings(i,j)    , 0) = raw_state(raw_state_index    , 0);
+                hrl_state( index_encodings(i,j) + 1, 0) = raw_state(raw_state_index + 1, 0);
+            }
+        }
+    }
+    //std::cout << hrl_state << std::endl;
+}
+
+int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings) {
+    int numberOfClusters = swarm_comp.rows();
+    int maxAgents = swarm_comp.cols();
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 0; j < maxAgents; j++) {
+            if (swarm_comp(i,j) == sysID) {
+                std::cout << "My Index is: " << index_encodings(i,j);
+                return(index_encodings(i,j));
+            }
+        }
     }
 }
 
