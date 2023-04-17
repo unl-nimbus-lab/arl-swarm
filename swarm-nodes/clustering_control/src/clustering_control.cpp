@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     swarm_comp << 1, 2, 3, 4, 5, 6, 7, 8;
     index_encodings << 0, 4, 8, 12, 24, 28, 32, 36;
-    targets_rel << 125, 138, 5, 180, 80, 5;
+    targets_rel << 24, 87, 5, 70, 58, 5;
     std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
 
     std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
@@ -73,7 +73,6 @@ int main(int argc, char **argv) {
 
                     HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
                     HRLxCurrent = HRLx0;
-                    ROS_WARN("STEP 1 COMPLETE");
                     //2. Propogate HRL states until we find a rec >6 m away from current location
                     bool met_dist_req = false;
                     while ( (!met_dist_req) && (arrived == false) ) {
@@ -121,7 +120,6 @@ int main(int argc, char **argv) {
                         }
 
                     } //end while
-                    ROS_WARN("STEP 2 COMPLETE");
                     //3. Propogate each agent (not going to do anyting as per instructions)
 
                     //4. Check to see if we've arrived at the final waypoint
@@ -139,7 +137,6 @@ int main(int argc, char **argv) {
                             arrived = false;
                         }
                     }
-                    ROS_WARN("STEP 4 COMPLETE");
                 }
                 hrlAgent.setPositionTarget();
                 current_count = 0;
