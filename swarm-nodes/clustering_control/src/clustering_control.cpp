@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
                     HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
                     //HRLxCurrent = HRLx0;
-
+                    ROS_WARN("STEP 1 COMPLETE");
                     //2. Propogate HRL states until we find a rec >6 m away from current location
                     bool met_dist_req = false;
                     //while ( (!met_dist_req) && (arrived == false) ) {
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
                         }
 
-
+                    ROS_WARN("STEP 2 COMPLETE");
                     //} //end while
                     //3. Propogate each agent (not going to do anyting as per instructions)
 
@@ -134,13 +134,13 @@ int main(int argc, char **argv) {
                             arrived = false;
                         }
                     }
+                    ROS_WARN("STEP 4 COMPLETE");
                 }
                 hrlAgent.setPositionTarget();
                 current_count = 0;
             } else {
                 current_count++;
             }
-
             //////////// END HRL PERIODIC CALCULATIONS ////////////
         }
 
