@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
                         double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
                         if (converge < convergent_dist) {//Check for convergence
                             met_dist_req = true;
-                            ROS_WARN("Met Dist Requirement");
+                            ROS_WARN("Met Dist Requirement from converge check");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
                             //ROS: UPDATE THE POS MESSAGE
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
                         double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
                         if (abs(dist) > waypoint_dist_req) {
                             met_dist_req = true;
-                            ROS_WARN("Met Dist Requirement");
+                            ROS_WARN("Met Dist Requirement from waypoint dist requirement");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
                             //ROS: UPDATE THE POS MESSAGE
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
