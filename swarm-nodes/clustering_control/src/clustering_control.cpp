@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_2_2_best.json";
+    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_4_4_best.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -67,26 +67,24 @@ int main(int argc, char **argv) {
                 hrlStateUpdate(swarm_comp, index_encodings, raw_hrl_state);
                 HRLx0 = hrl_state;
 
-                std::cout << "HRLx0" << HRLx0 << std::endl;
-
                 HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
                 //HRLxCurrent = HRLx0;
 
                 //2. Propogate HRL states until we find a rec >6 m away from current location
                 bool met_dist_req = false;
                 //while ( (!met_dist_req) && (arrived == false) ) {
-                    //HRLxCurrentLast = HRLxCurrent;
+                    HRLxCurrentLast = HRLxCurrent;
                     //compute input for planner
-                    //U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
+                    U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
 
                     //propogate HRL states
-                    //HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
+                    HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
 
                     //check to see if HRL is converging, in which case we're near the target
                     //un-transform
-                    // tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
-                    // tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
-                    // tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
+                    tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
+                    tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
+                    tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
                     //extract the relevant states
 
 
