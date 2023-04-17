@@ -84,8 +84,8 @@ int main(int argc, char **argv) {
                         //propogate HRL states
                         HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
 
-                        debugMsg.data.resize(U.size());
-                        memcpy(&debugMsg.data[0], U.data(), U.size() * sizeof(double));
+                        debugMsg.data.resize(HRLxCurrent.size());
+                        memcpy(&debugMsg.data[0], HRLxCurrent.data(), HRLxCurrent.size() * sizeof(double));
                         debug_pub.publish(debugMsg);
 
                         //check to see if HRL is converging, in which case we're near the target
