@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
                     tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
                     double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
-                    if (converge < convergent_dis) {
+                    if (converge < convergent_dist) {
                         met_dist_req = true;
                         //Agent refs thing?
                     }
