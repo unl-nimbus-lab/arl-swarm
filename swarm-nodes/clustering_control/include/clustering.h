@@ -125,7 +125,12 @@ MatrixXd tempX0(numberOfHRLStates,1);
 MatrixXd tempXCurrent(numberOfHRLStates,1);
 MatrixXd tempXCurrentLast(numberOfHRLStates,1);
 
+MatrixXd tempX0Agent(2,1);
+MatrixXd tempXCurrentAgent(2,1);
+MatrixXd tempXCurrentLastAgent(2,1);
+
 double hrl_sampling_time = 0.2; //s
+double convergent_dist = 0.1; //m
 
 //Function prototypes:
 void parseCommand(std::string message, int *cluster, int *command);

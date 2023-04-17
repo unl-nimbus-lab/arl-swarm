@@ -86,7 +86,18 @@ int main(int argc, char **argv) {
                     tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
                     tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
                     //extract the relevant states
+                    tempX0Agent(0,0) = tempX0(myIndex    , 0);
+                    tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
+                    tempXCurrentAgent(0,0) = tempXCurrent(myIndex    , 0);
+                    tempXCurrentAgent(1,0) = tempXCurrent(myIndex + 1, 0);
+                    tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
+                    tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
+                    double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
+                    if (converge < convergent_dis) {
+                        met_dist_req = true;
+                        //Agent refs thing?
+                    }
 
                 //}
 
