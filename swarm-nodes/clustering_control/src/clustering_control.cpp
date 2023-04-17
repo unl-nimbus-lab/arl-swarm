@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
                             ROS_WARN("Met Dist Requirement from waypoint dist requirement");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
                             //ROS: UPDATE THE POS MESSAGE
-                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(0,1), 0);
+                            hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
 
                     ROS_WARN("STEP 2 COMPLETE");
