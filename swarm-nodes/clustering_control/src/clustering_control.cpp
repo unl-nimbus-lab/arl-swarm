@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
                     debug_pub.publish(debugMsg);
 
                     HRLx0 = system_matricies.T*HRLx0; //CRITICAL: transfrom into new coordinate system
-                    //HRLxCurrent = HRLx0;
+                    HRLxCurrent = HRLx0;
                     ROS_WARN("STEP 1 COMPLETE");
                     //2. Propogate HRL states until we find a rec >6 m away from current location
                     bool met_dist_req = false;
