@@ -348,6 +348,11 @@ class TheRadio(object):
 
             #configure string position info
             radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
+            
+            #store our own data here by calling self.store_remote_agent_data() and using radio_str
+            time_received = self.millis()
+            self.store_remote_agent_data(radio_str, time_received)
+            
             #print(f"The length of radio_str is: {len(radio_str)}")
             if (self.simming == False):
                 #broadcast on radio if not simming
