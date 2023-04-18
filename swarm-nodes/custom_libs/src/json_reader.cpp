@@ -27,6 +27,7 @@ Sys json_reader::readJSON(std::string path_to_json)
 	auto DTA_json = j["DTA"];
 	auto DTB_json = j["DTB"];
 	auto aug_state_json = j["aug_state"];
+	auto state_idxs_C_json = j["state_idxs_C"];
 
 	//Get the dimensions of each of the json arrays
 	int p_rows = p_json.size();
@@ -51,6 +52,8 @@ Sys json_reader::readJSON(std::string path_to_json)
 	int DTB_cols = DTB_json[0].size();
 	int aug_state_rows = aug_state_json.size();
 	int aug_state_cols = aug_state_json[0].size();
+	int state_idxs_C_rows = state_idxs_C_json.size();
+	int state_idxs_C_cols = state_idxs_C_json[0].size();
 
 	//Declare the system matrcies
 	MatrixXd p(p_rows,p_cols);
@@ -64,6 +67,7 @@ Sys json_reader::readJSON(std::string path_to_json)
 	MatrixXd DTA(DTA_rows,DTA_cols);
 	MatrixXd DTB(DTB_rows,DTB_cols);
 	MatrixXd aug_state(aug_state_rows,aug_state_cols);
+	MatrixXd state_idxs_C(state_idxs_C_rows,state_idxs_C_cols);
 
 	// assign the p matrix from the json file
 	for (auto& el : p_json.items())
@@ -208,7 +212,21 @@ Sys json_reader::readJSON(std::string path_to_json)
 	std::cout << "======" << std::endl;
 	std::cout << aug_state << std::endl;
 
-	struct Sys s = {num_clusters,p,T,TA,TB,ZD,KL,Ka,DKL,DTA,DTB,aug_state} ;
+	// assign the c indicies matrix from the json file
+	for (auto& el : state_idxs_C_json.items())
+	{
+			int i = 0 ;
+			for (auto& subel : el.value()){
+					state_idxs_C(stoi(el.key()),i) = subel ;
+					i++ ;
+			}
+	}
+	std::cout << "state_idxs_C Matrix" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << state_idxs_C << std::endl;
+
+
+	struct Sys s = {num_clusters,p,T,TA,TB,ZD,KL,Ka,DKL,DTA,DTB,aug_state,state_idxs_C} ;
 
 	return s ;
 }

@@ -30,6 +30,7 @@ struct Sys {
 	MatrixXd DTA;
 	MatrixXd DTB;
 	MatrixXd aug_state;
+	MatrixXd state_idxs_C;
 
 } ;
 
