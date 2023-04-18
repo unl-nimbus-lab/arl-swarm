@@ -61,6 +61,8 @@ int main(int argc, char **argv) {
     MatrixXd tmpTarget_rel(1,2);
     MatrixXd tmpDist(2,1);
 
+    MatrixXd T_INV = (system_matricies.T).inverse();
+
     swarm_comp << 1, 2, 3, 4, 5, 6, 7, 8;
     index_encodings << 0, 4, 8, 12, 24, 28, 32, 36;
     targets_rel << 24, 87, 5, 70, 58, 5;
@@ -122,9 +124,9 @@ int main(int argc, char **argv) {
 
                         //check to see if HRL is converging, in which case we're near the target
                         //un-transform
-                        tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
-                        tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
-                        tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
+                        tempX0 = T_INV * HRLx0;
+                        tempXCurrent = T_INV * HRLxCurrent;
+                        tempXCurrentLast = T_INV * HRLxCurrentLast;
                         //extract the relevant states from each tempX... matrix 
                         tempX0Agent(0,0) = tempX0(myIndex    , 0); 
                         tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
