@@ -27,12 +27,43 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
+    //Begin Matrix Shennanigins
+
+    //New Variables for HRL planner
+    // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
+    MatrixXd swarm_comp(2,4); //Each cluster is a row
+
+    // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
+    MatrixXd index_encodings(2,4);
+
+    int numberOfHRLStates = system_matricies.DTA.rows();
+    int numberOfHRLAgents = system_matricies.p.sum();
+
+    hrl_state.resize(numberOfHRLStates, 1); //The HRL State, formatted according to swarmComp.m
+    raw_hrl_state.resize(numberOfHRLAgents*2,1);
+
+    MatrixXd HRLxCurrent(numberOfHRLStates,1);
+    MatrixXd HRLxCurrentLast(numberOfHRLStates,1);
+    MatrixXd HRLx0(numberOfHRLStates,1);
+
+    MatrixXd U(system_matricies.DTB.cols(),1);
+    MatrixXd tempX0(numberOfHRLStates,1);
+    MatrixXd tempXCurrent(numberOfHRLStates,1);
+    MatrixXd tempXCurrentLast(numberOfHRLStates,1);
+
+    MatrixXd tempX0Agent(2,1);
+    MatrixXd tempXCurrentAgent(2,1);
+    MatrixXd tempXCurrentLastAgent(2,1);
+    MatrixXd agent_refs(2,1);
+
+    MatrixXd targets_rel(2,3);
+    MatrixXd tmpXCurrentAgent(1,2);
+    MatrixXd tmpTarget_rel(1,2);
+    MatrixXd tmpDist(2,1);
+
     swarm_comp << 1, 2, 3, 4, 5, 6, 7, 8;
     index_encodings << 0, 4, 8, 12, 24, 28, 32, 36;
     targets_rel << 24, 87, 5, 70, 58, 5;
-    std::cout << "Swarm Composition" << std::endl << "========" <<  std::endl << swarm_comp << std::endl;
-
-    std::cout << "hrl_state" << std::endl << "========" <<  std::endl << hrl_state << std::endl;
 
     int max_count = 8;
     int current_count = 0;
@@ -83,30 +114,31 @@ int main(int argc, char **argv) {
                         //propogate HRL states
                         HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
 
-                        debugMsg.data.resize(HRLxCurrent.size());
-                        memcpy(&debugMsg.data[0], HRLxCurrent.data(), HRLxCurrent.size() * sizeof(double));
-                        debug_pub.publish(debugMsg);
+                        // ////////// USE THIS BLOCK TO DEBUG STATE VECTORS //////////
+                        // debugMsg.data.resize(HRLxCurrent.size());
+                        // memcpy(&debugMsg.data[0], HRLxCurrent.data(), HRLxCurrent.size() * sizeof(double));
+                        // debug_pub.publish(debugMsg);
+                        // ////////// USE THIS BLOCK TO DEBUG STATE VECTORS //////////
 
                         //check to see if HRL is converging, in which case we're near the target
                         //un-transform
                         tempX0 = ((system_matricies.T).inverse() ) * HRLx0;
                         tempXCurrent = ((system_matricies.T).inverse() ) * HRLxCurrent;
                         tempXCurrentLast = ((system_matricies.T).inverse() ) * HRLxCurrentLast;
-                        //extract the relevant states
-                        tempX0Agent(0,0) = tempX0(myIndex    , 0); //The tempX...Agent variables are used bcause I can't do matlab matrix magic here
+                        //extract the relevant states from each tempX... matrix 
+                        tempX0Agent(0,0) = tempX0(myIndex    , 0); 
                         tempX0Agent(1,0) = tempX0(myIndex + 1, 0);
-
                         tempXCurrentAgent(0,0) = tempXCurrent(myIndex    , 0);
                         tempXCurrentAgent(1,0) = tempXCurrent(myIndex + 1, 0);
                         tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
                         tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
-                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm(); //Dr. Bradley used the matlab norm function here, which is the Euclidean Norm
+                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm();
                         if (converge < convergent_dist) {//Check for convergence
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from converge check");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
-                            //ROS: UPDATE THE POS MESSAGE
+                            //ROS: update the position target class variable
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
                         //Otherwise, compute the distance away from initial state
@@ -115,7 +147,7 @@ int main(int argc, char **argv) {
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from waypoint dist requirement");
                             agent_refs = tempXCurrentAgent; //I don't think this is necessary
-                            //ROS: UPDATE THE POS MESSAGE
+                            //ROS: update the position target class variable
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
 
@@ -138,8 +170,8 @@ int main(int argc, char **argv) {
                         }
                     }
                 }
-                hrlAgent.setPositionTarget();
-                current_count = 0;
+                hrlAgent.setPositionTarget(); //Update the position target ROS Message
+                current_count = 0; //Reset the "HRL counter"
             } else {
                 current_count++;
             }
