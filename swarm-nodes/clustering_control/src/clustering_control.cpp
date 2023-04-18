@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
     targets_rel << 125, 138, 5, 171, 76, 5, 187, 11, 5 ;// << TODO: Un-hardcode this
 
-    int max_count = 8;
+    int max_count = 2;
     int current_count = 0;
 
     int myIndex = getHRLIndex(hrlAgent.getSysid(), swarm_comp, index_encodings);
