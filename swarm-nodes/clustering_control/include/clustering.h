@@ -329,7 +329,7 @@ void agent::setPositionTarget() {
         case HRL_NAVIGATE:
             tempx = CLUSTER_LOCAL_TARGET.X;
             tempy = CLUSTER_LOCAL_TARGET.Y;
-            tempz = CLUSTER_LOCAL_TARGET.Z;
+            tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
             setAgentLocalTarget(tempx,tempy,tempz);
             
             //Update the pos_msg based on agent local target and global origin
