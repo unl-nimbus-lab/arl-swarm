@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
     MatrixXd swarm_comp(2,2);//<< TODO Un-hardcode this one
     swarm_comp << 5, 7, 11, 13; // << TODO: Un-hardcode this and make sure this is the correct size
-    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this
+
 
     MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-
+    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this
 
     int max_count = 2;
     int current_count = 0;
