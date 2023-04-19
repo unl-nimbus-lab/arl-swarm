@@ -32,6 +32,8 @@ int main(int argc, char **argv) {
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
     MatrixXd swarm_comp(2,2);//<< TODO Un-hardcode this one
+    swarm_comp << 1, 2, 3, 4; // << TODO: Un-hardcode this and make sure this is the correct size
+    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this
 
     MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
@@ -39,7 +41,7 @@ int main(int argc, char **argv) {
     int numberOfHRLAgents = system_matricies.p.sum();    //The number of Agents is equal to the sum of the elements in the p vector
 
     hrl_state.resize(numberOfHRLStates, 1); //The HRL State, formatted according to swarmComp.m
-    raw_hrl_state.resize(numberOfHRLAgents*2,1);
+    raw_hrl_state.resize(swarm_comp.maxCoeff()*2,1);
 
     MatrixXd HRLxCurrent(numberOfHRLStates,1);
     MatrixXd HRLxCurrentLast(numberOfHRLStates,1);
@@ -62,8 +64,7 @@ int main(int argc, char **argv) {
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-    swarm_comp << 1, 2, 3, 4; // << TODO: Un-hardcode this and make sure this is the correct size
-    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this
+
 
     int max_count = 2;
     int current_count = 0;
