@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_3_2_3_best.json";
+    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_2_2_best.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-    MatrixXd swarm_comp(3,3); //Each cluster is a row
+    MatrixXd swarm_comp(2,2);//<< TODO Un-hardcode this one
 
     MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
@@ -55,15 +55,15 @@ int main(int argc, char **argv) {
     MatrixXd tempXCurrentLastAgent(2,1);
     MatrixXd agent_refs(2,1);
 
-    MatrixXd targets_rel(3,3); //<< TODO: Un-hardcode this one
+    MatrixXd targets_rel(2,3); //<< TODO: Un-hardcode this one
     MatrixXd tmpXCurrentAgent(1,2);
     MatrixXd tmpTarget_rel(1,2);
     MatrixXd tmpDist(2,1);
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-    swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
-    targets_rel << 125, 138, 5, 171, 76, 5, 187, 11, 5 ;// << TODO: Un-hardcode this
+    swarm_comp << 1, 2, 3, 4; // << TODO: Un-hardcode this and make sure this is the correct size
+    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this
 
     int max_count = 2;
     int current_count = 0;
