@@ -143,7 +143,7 @@ class TheRadio(object):
             idx+= 2
 
             #vz
-            while (data[idx] != 'i'):
+            while (idx < len(data)):
                 temp_str += data[idx]
                 idx += 1
             vz = float(temp_str)
