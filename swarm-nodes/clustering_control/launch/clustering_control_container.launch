@@ -47,6 +47,6 @@
     </node>
 
 	<node pkg="rosbag" name="record" type="record" 
-	    args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global" />
+	    args="-o /home/rosbags/ /mavros/debug_value/debug_vector /mavros/debug_value/named_value_float /mavros/debug_value/named_value_int /mavros/debug_value/send /mavros/global_position/swarm /mavros/setpoint_position/global /agent_pos" />
 
 </launch>

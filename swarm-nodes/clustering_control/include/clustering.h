@@ -139,7 +139,7 @@ MatrixXd raw_hrl_state(100,1);
 
 double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
-double waypoint_dist_req = 6.0; // meters
+double waypoint_dist_req = 10.0; // meters
 double final_dist_req = 4.0; // meters
 
 std_msgs::Float64MultiArray debugMsg;
@@ -329,7 +329,7 @@ void agent::setPositionTarget() {
         case HRL_NAVIGATE:
             tempx = CLUSTER_LOCAL_TARGET.X;
             tempy = CLUSTER_LOCAL_TARGET.Y;
-            tempz = CLUSTER_LOCAL_TARGET.Z;
+            tempz = CLUSTER_LOCAL_TARGET.Z + CLUSTER_OFFSETS.Z;
             setAgentLocalTarget(tempx,tempy,tempz);
             
             //Update the pos_msg based on agent local target and global origin
