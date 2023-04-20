@@ -151,26 +151,26 @@ class TheRadio(object):
             idx+= 2
 
             #ix
-            while (data[idx] != 'i'):
-                temp_str += data[idx]
-                idx += 1
-            ix = float(temp_str)
-            temp_str = ''
-            idx += 2
+            #while (data[idx] != 'i'):
+            #    temp_str += data[idx]
+            #    idx += 1
+            ix = 0.0 $float(temp_str)
+            #temp_str = ''
+            #idx += 2
 
             #iy
-            while (data[idx] != 'i'):
-                temp_str += data[idx]
-                idx+= 1
-            iy = float(temp_str)
-            temp_str = ''
-            idx += 2
+            #while (data[idx] != 'i'):
+            #    temp_str += data[idx]
+            #    idx+= 1
+            iy = 0.0 $float(temp_str)
+            #temp_str = ''
+            #idx += 2
 
             #iz
-            while(idx < len(data)):
-                temp_str += data[idx]
-                idx += 1
-            iz = float(temp_str)
+            #while(idx < len(data)):
+            #    temp_str += data[idx]
+            #    idx += 1
+            iz = 0.0 # float(temp_str)
 
             return id_num, px, py, pz, vx, vy, vz, ix, iy, iz
 
@@ -264,7 +264,7 @@ class TheRadio(object):
                 a.id = agent.node_id
                 a.x = agent.x
                 a.y = agent.y
-                a.z = agent.z
+                a.z = 0.0 #agent.z --AP setting to zero for bandwidth
                 a.vx = agent.vx
                 a.vy = agent.vy
                 a.vz = agent.vz
@@ -347,7 +347,7 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz+'ix'+self.ix+'iy'+self.iy+'iz'+self.iz
+            radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz
             #print(f"The length of radio_str is: {len(radio_str)}")
             if (self.simming == False):
                 #broadcast on radio if not simming
