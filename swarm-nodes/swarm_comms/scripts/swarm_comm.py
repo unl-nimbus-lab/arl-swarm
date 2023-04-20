@@ -122,7 +122,7 @@ class TheRadio(object):
             while (data[idx] !='v'):
                 temp_str += data[idx]
                 idx += 1
-            pz = float(temp_str)
+            pz = 0.0 #float(temp_str)
             temp_str = ''
             idx+=2
 
@@ -237,7 +237,7 @@ class TheRadio(object):
         if (data.header.frame_id == self.sys_id):
             self.x = str(round(data.point.x,2))
             self.y = str(round(data.point.y,2))
-            self.z = str(round(data.point.z,2))
+            self.z = '0.0' #str(round(data.point.z,2))
 
     
     def vel_callback(self, data):
