@@ -352,8 +352,9 @@ class TheRadio(object):
             #store our own data here by calling self.store_remote_agent_data() and using radio_str
             time_received = self.millis()
             self.store_remote_agent_data(radio_str, time_received)
-            
-            #print(f"The length of radio_str is: {len(radio_str)}")
+
+            print("Sending: " + radio_str)
+            print(f"The length of radio_str is: {len(radio_str)}")
             if (self.simming == False):
                 #broadcast on radio if not simming
                 try:
