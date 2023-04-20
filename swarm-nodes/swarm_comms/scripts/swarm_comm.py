@@ -162,7 +162,7 @@ class TheRadio(object):
             #while (data[idx] != 'i'):
             #    temp_str += data[idx]
             #    idx+= 1
-            iy = 0.0 $float(temp_str)
+            iy = 0.0 #float(temp_str)
             #temp_str = ''
             #idx += 2
 
