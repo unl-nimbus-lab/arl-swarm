@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
     MatrixXd swarm_comp(2,4);//<< TODO Un-hardcode this one
-    swarm_comp << 5, 7, 11, 13, 1, 2, 3, 4; // << TODO: Un-hardcode this and make sure this is the correct size
+    swarm_comp << 5, 7, 11, 13, 1, 2, 3, 6; // << TODO: Un-hardcode this and make sure this is the correct size
 
 
     MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
