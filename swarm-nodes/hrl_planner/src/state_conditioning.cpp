@@ -43,13 +43,14 @@ geometry_msgs::PointStamped agent_pos;
 int SYSID_THISMAV;
 std::string string_id;
 
-//global initialized variables
-double RMF_ORIGIN_LAT = 40.8467784;
-double RMF_ORIGIN_LON = -96.4719180;
-
-
+//global initialized variables, default to RMF
+double ORIGIN_LAT = 40.8467784;
+double ORIGIN_LON = -96.4719180;
 
 int main(int argc, char **argv) {
+
+    ORIGIN_LAT = std::stod(argv[7]);
+    ORIGIN_LON = std::stod(argv[8]);
 
     SYSID_THISMAV = atoi(argv[1]);
     std::cout << "my sysid is: " << SYSID_THISMAV << std::endl;
@@ -68,15 +69,15 @@ void position_update_callback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
     string_id = std::to_string(msg->system_id);
     
     //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
-    double x_sign = sign(latitude - RMF_ORIGIN_LAT);
-    double y_sign = sign(longitude - RMF_ORIGIN_LON);
+    double x_sign = sign(latitude - ORIGIN_LAT);
+    double y_sign = sign(longitude - ORIGIN_LON);
 
     //Calculate the x position, hold the longitude constant
-    agent_global_x = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,latitude,RMF_ORIGIN_LON);
+    agent_global_x = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,latitude,ORIGIN_LON);
     agent_global_x = x_sign * agent_global_x;
     
     //Calculate the y position, hold the latitude constant
-    agent_global_y = convObject.gps_to_meters(RMF_ORIGIN_LAT,RMF_ORIGIN_LON,RMF_ORIGIN_LAT,longitude);
+    agent_global_y = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,ORIGIN_LAT,longitude);
     agent_global_y = y_sign * agent_global_y;
 
     agent_pos.point.x = agent_global_x;
