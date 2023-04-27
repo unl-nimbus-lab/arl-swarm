@@ -65,6 +65,7 @@
 #define SET_CLUSTER_OFFSETZ 14
 #define SET_BRAKE 15
 #define UPDATE_TARGET_REL 16
+#define UPDATE_TARGET_GBL 17
 
 //Agent Commands
 
@@ -131,6 +132,8 @@ int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 int getHRLCluster(int sysID, MatrixXd swarm_comp);
 MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates);
 void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster);
+void updateTargetGbl(MatrixXd &TargetsRel, int newLat, int newLon, int myCluster, double ORIGIN_LAT, double ORIGIN_LON);
+double sign(double input);
 
 
 //agent class:
@@ -190,6 +193,8 @@ class agent {
         void setCircleTicks(int ticks);
         void setClusterOffsetZ (double altitude);
         void setAgentGlobalTarget(double lat, double lon, double alt);
+        double getAgentGlobalLat();
+        double getAgentGlobalLon();
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -781,6 +786,14 @@ int getHRLCluster(int sysID, MatrixXd swarm_comp) {
             }
         }
     }
+}
+
+double agent::getAgentGlobalLat() {
+    return GLOBAL_ORIGIN.LAT;
+}
+
+double agent::getAgentGlobalLon() {
+    return GLOBAL_ORIGIN.LON;
 }
 
 

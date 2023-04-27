@@ -307,8 +307,12 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             break;
                         case SET_CLUSTER_GLOBAL_POSITION:
+                            if (hrlAgent.getFlightMode() == HRL_NAVIGATE) {
+
+                            } else {
                             hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
+                            }
                             break;
                         case SET_FTL_SYSID:
                             //Chose which sysid the cluster will follow
@@ -330,7 +334,11 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             //change the relative target
                             updateTargetRel(targets_rel,HRLReference.data[0],HRLReference.data[1],hrlAgent.getClusterid());
                             aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
-
+                            break;
+                        case UPDATE_TARGET_GBL:
+                            updateTargetGbl(targets_rel,HRLReference.data[0],HRLReference.data[1],hrlAgent.getClusterid(),hrlAgent.getAgentGlobalLat(), hrlAgent.getAgentGlobalLon());
+                            aug_state = buildAugState(targets_rel,index_encodings, numberOfHRLStates);
+                            break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
@@ -427,4 +435,31 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
 void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster) {
     TargetsRel(myCluster-1,0) = newX;
     TargetsRel(myCluster-1,1) = newY;
+}
+
+void updateTargetGbl(MatrixXd &TargetsRel, int newLat, int newLon, int myCluster, double ORIGIN_LAT, double ORIGIN_LON) {
+    
+    //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
+    double x_sign = sign(newLat - ORIGIN_LAT);
+    double y_sign = sign(newLon - ORIGIN_LON);
+
+    //Calculate the x position, hold the longitude constant
+    double tempx = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,newLat,ORIGIN_LON);
+    tempx = x_sign * tempx;
+    
+    //Calculate the y position, hold the latitude constant
+    double tempy = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,ORIGIN_LAT,newLon);
+    tempy = y_sign * tempy;
+
+    TargetsRel(myCluster-1,0) = tempx;
+    TargetsRel(myCluster-1,1) = tempy;
+}
+
+double sign(double input) {
+    //Deterine the sign of a double
+    if (input < 0) {
+        return -1.0;
+    } else {
+        return 1.0;
+    }
 }
