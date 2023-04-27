@@ -64,6 +64,7 @@
 #define SET_CIRCLE_RATE 13
 #define SET_CLUSTER_OFFSETZ 14
 #define SET_BRAKE 15
+#define UPDATE_TARGET_REL 16
 
 //Agent Commands
 
@@ -103,6 +104,10 @@ double GLOBAL_POSITION_Y;
 // //New globals for HRL planner
 MatrixXd hrl_state(100, 1);
 MatrixXd raw_hrl_state(100,1);
+MatrixXd targets_rel(3,3); //<< TODO: Un-hardcode this one (2 clusters)
+MatrixXd aug_state;
+MatrixXd index_encodings;
+int numberOfHRLStates;
 
 double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
@@ -125,6 +130,7 @@ void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_
 int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 int getHRLCluster(int sysID, MatrixXd swarm_comp);
 MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates);
+void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster);
 
 
 //agent class:

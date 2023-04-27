@@ -34,9 +34,9 @@ int main(int argc, char **argv) {
     swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
 
 
-    MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
+    index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
-    int numberOfHRLStates = system_matricies.DTA.rows(); //The number of HRL states is equal to the number of rows in the DTA matrix
+    numberOfHRLStates = system_matricies.DTA.rows(); //The number of HRL states is equal to the number of rows in the DTA matrix
     int numberOfHRLAgents = system_matricies.p.sum();    //The number of Agents is equal to the sum of the elements in the p vector
 
     hrl_state.resize(numberOfHRLStates, 1); //The HRL State, formatted according to swarmComp.m
@@ -56,7 +56,6 @@ int main(int argc, char **argv) {
     MatrixXd tempXCurrentLastAgent(2,1);
     MatrixXd agent_refs(2,1);
 
-    MatrixXd targets_rel(3,3); //<< TODO: Un-hardcode this one (2 clusters)
     MatrixXd tmpXCurrentAgent(1,2);
     MatrixXd tmpTarget_rel(1,2);
     MatrixXd tmpDist(2,1);
@@ -65,7 +64,7 @@ int main(int argc, char **argv) {
 
     targets_rel << 125, 138, 5, 171, 76, 5, -50, -50, 5;// << TODO: Un-hardcode this
 
-    MatrixXd aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
+    aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
 
     int max_count = 2;
     int current_count = 0;
@@ -327,6 +326,11 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             //Change the Circle Rate
                             hrlAgent.setCircleTicks(HRLReference.data[0]);
                             break;
+                        case UPDATE_TARGET_REL:
+                            //change the relative target
+                            updateTargetRel(targets_rel,HRLReference.data[0],HRLReference.data[1],hrlAgent.getClusterid());
+                            aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
+
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
@@ -418,4 +422,9 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
 
     return aug_state;
 
+}
+
+void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster) {
+    TargetsRel(myCluster-1,0) = newX;
+    TargetsRel(myCluster-1,1) = newY;
 }
