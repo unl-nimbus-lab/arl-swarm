@@ -15,7 +15,9 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = "/home/catkin_ws/src/clustering_control/src/HRL_Sys_3_2_3.json";
+    std::string filename = argv[14];
+    std::cout << "FILE: " << filename << std::endl;
+    //std::string filename = "/home/catkin_ws/src/clustering_control/src/HRL_Sys_2_2.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -30,11 +32,11 @@ int main(int argc, char **argv) {
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
 
-    MatrixXd swarm_comp(3,3);//<< TODO Un-hardcode this one
-    swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
-
-
     index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
+
+    MatrixXd swarm_comp = composeSwarm(index_encodings);
+    // MatrixXd swarm_comp(3,3);//<< TODO Un-hardcode this one
+    // swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
 
     numberOfHRLStates = system_matricies.DTA.rows(); //The number of HRL states is equal to the number of rows in the DTA matrix
     int numberOfHRLAgents = system_matricies.p.sum();    //The number of Agents is equal to the sum of the elements in the p vector
@@ -62,7 +64,8 @@ int main(int argc, char **argv) {
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-    targets_rel << 125, 138, 5, 171, 76, 5, -50, -50, 5;// << TODO: Un-hardcode this
+    targets_rel = generateDefaultTargetsRel(index_encodings.rows());
+    //targets_rel << 125, 138, 5, 171, 76, 5, -50, -50, 5;// << TODO: Un-hardcode this
 
     aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
 
@@ -307,12 +310,8 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             break;
                         case SET_CLUSTER_GLOBAL_POSITION:
-                            if (hrlAgent.getFlightMode() == HRL_NAVIGATE) {
-
-                            } else {
                             hrlAgent.setClusterGlobalTarget(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
                             hrlAgent.setPositionTarget();
-                            }
                             break;
                         case SET_FTL_SYSID:
                             //Chose which sysid the cluster will follow
@@ -462,4 +461,45 @@ double sign(double input) {
     } else {
         return 1.0;
     }
+}
+
+MatrixXd composeSwarm(MatrixXd index_encodings) {
+    int numberOfClusters = index_encodings.rows();
+    int numberOfAgents = index_encodings.cols();
+
+    MatrixXd swarm_comp(numberOfClusters,numberOfAgents);
+    int agentCount = 1;
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 0; j < numberOfAgents; j++) {
+            if (index_encodings(i,j) > -1) {
+                swarm_comp(i,j) = agentCount++;
+            } else {
+                swarm_comp(i,j) = -1;
+            }
+        }
+    }
+    std::cout << "Swarm comp: " << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << swarm_comp << std::endl;
+    return swarm_comp;
+}
+
+MatrixXd generateDefaultTargetsRel(int numberOfClusters) {
+    //This function generates a default HRL Relative Target
+    MatrixXd targets_rel(numberOfClusters,3); //Always this size
+    for (int i = 0; i < numberOfClusters; i++) {
+        double tempx = 150.0 * cos(PI / numberOfClusters * i);
+        double tempy = 150.0 * sin(PI / numberOfClusters * i);
+
+        targets_rel(i,0) = tempx;
+        targets_rel(i,1) = tempy;
+        targets_rel(i,2) = 5.0; //this does nothing :)
+    }
+
+    std::cout << "Default Rel Target" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << targets_rel << std::endl;
+
+    return targets_rel;
 }

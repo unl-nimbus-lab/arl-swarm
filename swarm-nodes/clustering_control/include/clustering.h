@@ -105,7 +105,7 @@ double GLOBAL_POSITION_Y;
 // //New globals for HRL planner
 MatrixXd hrl_state(100, 1);
 MatrixXd raw_hrl_state(100,1);
-MatrixXd targets_rel(3,3); //<< TODO: Un-hardcode this one (2 clusters)
+MatrixXd targets_rel; //<< TODO: Un-hardcode this one (2 clusters)
 MatrixXd aug_state;
 MatrixXd index_encodings;
 int numberOfHRLStates;
@@ -134,6 +134,8 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
 void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster);
 void updateTargetGbl(MatrixXd &TargetsRel, int newLat, int newLon, int myCluster, double ORIGIN_LAT, double ORIGIN_LON);
 double sign(double input);
+MatrixXd composeSwarm(MatrixXd index_encodings);
+MatrixXd generateDefaultTargetsRel(int numberOfClusters);
 
 
 //agent class:
