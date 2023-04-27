@@ -157,6 +157,7 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state);
 int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 int getHRLCluster(int sysID, MatrixXd swarm_comp);
+Sys loadSystemMatricies(std::string pathToJson);
 
 
 //agent class:
@@ -807,6 +808,10 @@ int getHRLCluster(int sysID, MatrixXd swarm_comp) {
             }
         }
     }
+}
+
+Sys loadSystemMatricies(std::string pathToJson) {
+
 }
 
 #endif
