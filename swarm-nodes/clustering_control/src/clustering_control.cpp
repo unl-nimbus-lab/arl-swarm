@@ -333,6 +333,29 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                     };
                 }
                 break;
+
+            case 'S': //Swarm-level command
+                switch(*command) {
+                    case CHANGE_FLIGHT_MODE:
+                        //Change HRL_FLIGHTMODE to payload value
+                        hrlAgent.setFlightMode(HRLReference.data[0]);
+                        hrlAgent.setPositionTarget();
+                        break;
+                    case START_CLUSTER_GUIDED:
+                        //Start publishing to mavros topics
+                        hrlAgent.setPublish(true);
+                        break;  
+                    case STOP_CLUSTER_GUIDED:
+                        //Stop all publishing to the mavros topics
+                        hrlAgent.setPublish(false);
+                        break;
+                    case SET_HOME_POSITION:
+                        //Update the cluster's global origin
+                        hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                        break;
+                    default:
+                        printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
+                }
             default:
                 printf("INVALID COMMAND ID, SPECIFIY [S]WARM, [C]LUSTER, OR [A]GENT IN THE DUBG STRING\n");
             break;
