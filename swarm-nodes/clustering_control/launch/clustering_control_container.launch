@@ -42,7 +42,7 @@
         	<arg name="system_ID" value="$(arg system_ID)"/>
    	 </include>
 
-	<node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" args="$(arg system_ID)">
+	<node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" args="$(arg system_ID) $(arg homeLat) $(arg homeLon)">
 
     </node>
 

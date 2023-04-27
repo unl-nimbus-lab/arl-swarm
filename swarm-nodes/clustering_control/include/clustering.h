@@ -101,41 +101,8 @@ double GLOBAL_POSITION_X;
 double GLOBAL_POSITION_Y;
 
 // //New globals for HRL planner
-// //Setup the State handler
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-
-// MatrixXd swarm_comp(2,4); //Each cluster is a row, for example:
-// /*
-// 1 2 3 4
-// 5 6 7 8
-// */
-
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-// MatrixXd index_encodings(2,4);
-
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-// int numberOfHRLStates = 48;
-
 MatrixXd hrl_state(100, 1);
 MatrixXd raw_hrl_state(100,1);
-
-// MatrixXd HRLxCurrent(numberOfHRLStates,1);
-// MatrixXd HRLxCurrentLast(numberOfHRLStates,1);
-// MatrixXd HRLx0(numberOfHRLStates,1);
-// MatrixXd U(16,1);
-// MatrixXd tempX0(numberOfHRLStates,1);
-// MatrixXd tempXCurrent(numberOfHRLStates,1);
-// MatrixXd tempXCurrentLast(numberOfHRLStates,1);
-
-// MatrixXd tempX0Agent(2,1);
-// MatrixXd tempXCurrentAgent(2,1);
-// MatrixXd tempXCurrentLastAgent(2,1);
-// MatrixXd agent_refs(2,1);
-
-// MatrixXd targets_rel(2,3);
-// MatrixXd tmpXCurrentAgent(1,2);
-// MatrixXd tmpTarget_rel(1,2);
-// MatrixXd tmpDist(2,1);
 
 double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
@@ -157,7 +124,7 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state);
 int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 int getHRLCluster(int sysID, MatrixXd swarm_comp);
-Sys loadSystemMatricies(std::string pathToJson);
+MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates);
 
 
 //agent class:
@@ -810,8 +777,5 @@ int getHRLCluster(int sysID, MatrixXd swarm_comp) {
     }
 }
 
-Sys loadSystemMatricies(std::string pathToJson) {
-
-}
 
 #endif

@@ -49,8 +49,8 @@ double ORIGIN_LON = -96.4719180;
 
 int main(int argc, char **argv) {
 
-    ORIGIN_LAT = std::stod(argv[7]);
-    ORIGIN_LON = std::stod(argv[8]);
+    ORIGIN_LAT = std::stod(argv[2]);
+    ORIGIN_LON = std::stod(argv[3]);
 
     SYSID_THISMAV = atoi(argv[1]);
     std::cout << "my sysid is: " << SYSID_THISMAV << std::endl;

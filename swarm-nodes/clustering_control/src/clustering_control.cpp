@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_4_4_best.json";
+    std::string filename = "/home/catkin_ws/src/clustering_control/src/HRL_Sys_3_2_3.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -27,12 +27,11 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
-    //Begin Matrix Shennanigins
-
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-    MatrixXd swarm_comp(2,4);//<< TODO Un-hardcode this one
-    swarm_comp << 5, 7, 11, 13, 1, 2, 3, 6; // << TODO: Un-hardcode this and make sure this is the correct size
+
+    MatrixXd swarm_comp(3,3);//<< TODO Un-hardcode this one
+    swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
 
 
     MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
@@ -57,14 +56,16 @@ int main(int argc, char **argv) {
     MatrixXd tempXCurrentLastAgent(2,1);
     MatrixXd agent_refs(2,1);
 
-    MatrixXd targets_rel(2,3); //<< TODO: Un-hardcode this one (2 clusters)
+    MatrixXd targets_rel(3,3); //<< TODO: Un-hardcode this one (2 clusters)
     MatrixXd tmpXCurrentAgent(1,2);
     MatrixXd tmpTarget_rel(1,2);
     MatrixXd tmpDist(2,1);
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this 
+    targets_rel << 125, 138, 5, 171, 76, 5, -50, -50, 5;// << TODO: Un-hardcode this
+
+    MatrixXd aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
 
     int max_count = 2;
     int current_count = 0;
@@ -110,10 +111,10 @@ int main(int argc, char **argv) {
                     while ( (!met_dist_req) && (arrived == false) ) {
                         HRLxCurrentLast = HRLxCurrent;
                         //compute input for planner
-                        U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
+                        U = -1*system_matricies.KL*(HRLxCurrent - aug_state);
 
                         //propogate HRL states
-                        HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
+                        HRLxCurrent = system_matricies.DTA*(HRLxCurrent - aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + aug_state;
 
                         // ////////// USE THIS BLOCK TO DEBUG STATE VECTORS //////////
                         // debugMsg.data.resize(HRLxCurrent.size());
@@ -360,5 +361,38 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
         raw_hrl_state( raw_hrl_index, 0) = msg->agents[i].x;
         raw_hrl_state( raw_hrl_index + 1, 0) = msg->agents[i].y;
     }
+
+}
+
+MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates) {
+    //This function will return the correct "aug_state" vector given a set of relative targets
+    int numberOfRelativeTargets = targets_rel.rows();
+    int maxNumberOfAgents = index_encodings.cols();
+
+    MatrixXd aug_state(numberOfHRLStates,1);
+
+    //Go through each of the rows in the index_encodings matrix and find the last index in each row
+    for (int i = 0; i < numberOfRelativeTargets; i++) {
+        for (int j = 0; j < maxNumberOfAgents; j++) {
+            if (index_encodings(i,j) == -1) {
+
+                //If the index encoding is a -1, we have gone one too far
+                aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
+                break;
+            }
+            else if (j == (maxNumberOfAgents - 1) ) {
+                //This is the "end" of the index encoding matrix
+                aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
+                break; 
+            }
+        }
+    }
+	std::cout << "aug_state Vector" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << aug_state << std::endl;
+
+    return aug_state;
 
 }

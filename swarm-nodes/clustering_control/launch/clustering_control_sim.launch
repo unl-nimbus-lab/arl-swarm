@@ -65,7 +65,7 @@
             <arg name="system_ID" value="$(arg system_ID)"/>
         </include>
 
-        <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" output="screen" args="$(arg system_ID)">
+        <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" output="screen" args="$(arg system_ID) $(arg homeLat) $(arg homeLon)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
 
