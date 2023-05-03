@@ -412,27 +412,27 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
 
     //Go through each of the rows in the index_encodings matrix and find the last index in each row
     for (int i = 0; i < numberOfRelativeTargets; i++) {
-         // find number of agents in this cluster
-         int idx = system_matricies.p(0,i) - 1;
-         // Number of agent in this cluster indicates which agent to pick out
-         aug_state( idx  ,0 ) = targets_rel(i,0);
-         aug_state( idx+1,0 ) = targets_rel(i,1);
+         // // find number of agents in this cluster
+         // int idx = system_matricies.p(0,i) - 1;
+         // // Number of agent in this cluster indicates which agent to pick out
+         // aug_state( idx  ,0 ) = targets_rel(i,0);
+         // aug_state( idx+1,0 ) = targets_rel(i,1);
 
-        // for (int j = 0; j < maxNumberOfAgents; j++) {
-        //     if (index_encodings(i,j) == -1) {
+        for (int j = 0; j < maxNumberOfAgents; j++) {
+            if (index_encodings(i,j) == -1) {
 
-        //         //If the index encoding is a -1, we have gone one too far
-        //         aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
-        //         aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
-        //         break;
-        //     }
-        //     else if (j == (maxNumberOfAgents - 1) ) {
-        //         //This is the "end" of the index encoding matrix
-        //         aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
-        //         aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
-        //         break; 
-        //     }
-        // }
+                //If the index encoding is a -1, we have gone one too far
+                aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
+                break;
+            }
+            else if (j == (maxNumberOfAgents - 1) ) {
+                //This is the "end" of the index encoding matrix
+                aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
+                break; 
+            }
+        }
     }
 	std::cout << "aug_state Vector" << std::endl;
 	std::cout << "======" << std::endl;
