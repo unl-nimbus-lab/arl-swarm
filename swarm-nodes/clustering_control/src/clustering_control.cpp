@@ -408,7 +408,7 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
     int numberOfRelativeTargets = targets_rel.rows();
     int maxNumberOfAgents = index_encodings.cols();
 
-    MatrixXd aug_state(numberOfHRLStates,1);
+    MatrixXd aug_state = MatrixXd::Zero(numberOfHRLStates,1);
 
     //Go through each of the rows in the index_encodings matrix and find the last index in each row
     for (int i = 0; i < numberOfRelativeTargets; i++) {
