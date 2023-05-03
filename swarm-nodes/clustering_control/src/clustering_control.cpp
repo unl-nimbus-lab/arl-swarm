@@ -72,8 +72,13 @@ int main(int argc, char **argv) {
     int max_count = 2;
     int current_count = 0;
 
+    // This is the index into the HRL vector for this particular agent
+    // 0-based
     int myIndex = getHRLIndex(hrlAgent.getSysid(), swarm_comp, index_encodings);
-    int myCluster = getHRLCluster(hrlAgent.getSysid(), swarm_comp);
+    // This is the cluster this particular drone is in
+    // 1-based
+    int myCluster = hrlAgent.getClusterid();
+         //int myCluster = getHRLCluster(hrlAgent.getSysid(), swarm_comp);
     bool arrived = false;
 
     //Setup ROS
@@ -137,7 +142,7 @@ int main(int argc, char **argv) {
                         tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
                         tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
-                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm();
+                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).norm();
                         if (converge < convergent_dist) {//Check for convergence
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from converge check");
@@ -146,7 +151,7 @@ int main(int argc, char **argv) {
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
                         //Otherwise, compute the distance away from initial state
-                        double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
+                        double dist = (tempXCurrentAgent - tempX0Agent).norm();
                         if (abs(dist) > waypoint_dist_req) {
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from waypoint dist requirement");
@@ -162,10 +167,10 @@ int main(int argc, char **argv) {
                     if (arrived == false) {
                         tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
                         tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
-                        tmpTarget_rel(0,0) = targets_rel(myCluster, 0);
-                        tmpTarget_rel(0,1) = targets_rel(myCluster, 1);
+                        tmpTarget_rel(0,0) = targets_rel(myCluster-1, 0);
+                        tmpTarget_rel(0,1) = targets_rel(myCluster-1, 1);
 
-                        double dist = (tmpTarget_rel - tmpXCurrentAgent).squaredNorm();
+                        double dist = (tmpTarget_rel - tmpXCurrentAgent).norm();
                         if (abs(dist) <= final_dist_req) {
                             ROS_WARN("Arrived");
                             arrived = true;
@@ -407,21 +412,27 @@ MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numbe
 
     //Go through each of the rows in the index_encodings matrix and find the last index in each row
     for (int i = 0; i < numberOfRelativeTargets; i++) {
-        for (int j = 0; j < maxNumberOfAgents; j++) {
-            if (index_encodings(i,j) == -1) {
+         // find number of agents in this cluster
+         int idx = system_matricies.p(0,i) - 1;
+         // Number of agent in this cluster indicates which agent to pick out
+         aug_state( idx  ,0 ) = targets_rel(i,0);
+         aug_state( idx+1,0 ) = targets_rel(i,1);
 
-                //If the index encoding is a -1, we have gone one too far
-                aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
-                aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
-                break;
-            }
-            else if (j == (maxNumberOfAgents - 1) ) {
-                //This is the "end" of the index encoding matrix
-                aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
-                aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
-                break; 
-            }
-        }
+        // for (int j = 0; j < maxNumberOfAgents; j++) {
+        //     if (index_encodings(i,j) == -1) {
+
+        //         //If the index encoding is a -1, we have gone one too far
+        //         aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
+        //         aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
+        //         break;
+        //     }
+        //     else if (j == (maxNumberOfAgents - 1) ) {
+        //         //This is the "end" of the index encoding matrix
+        //         aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
+        //         aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
+        //         break; 
+        //     }
+        // }
     }
 	std::cout << "aug_state Vector" << std::endl;
 	std::cout << "======" << std::endl;
