@@ -16,7 +16,7 @@
 	<arg name="swarm_comp" default="" />
 
 
-    <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon) $(arg swarm_comp)"/> 
+    <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon) $(arg swarm_comp)" respawn="true"/> 
 	
 	<arg name="fcu_url" default=""/>
 	<arg name="gcs_url" default="" />
