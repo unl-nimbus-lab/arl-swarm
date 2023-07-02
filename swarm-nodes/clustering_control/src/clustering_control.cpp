@@ -15,7 +15,9 @@ int main(int argc, char **argv) {
     hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
     hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
     hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = "/home/catkin_ws/src/clustering_control/src/sys_mats_4_4_best.json";
+    std::string filename = argv[14];
+    std::cout << "FILE: " << filename << std::endl;
+    //std::string filename = "/home/catkin_ws/src/clustering_control/src/HRL_Sys_2_2.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -27,17 +29,16 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
-    //Begin Matrix Shennanigins
-
     //New Variables for HRL planner
     // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-    MatrixXd swarm_comp(2,4);//<< TODO Un-hardcode this one
-    swarm_comp << 5, 7, 11, 13, 1, 2, 3, 6; // << TODO: Un-hardcode this and make sure this is the correct size
 
+    index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
-    MatrixXd index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
+    MatrixXd swarm_comp = composeSwarm(index_encodings);
+    // MatrixXd swarm_comp(3,3);//<< TODO Un-hardcode this one
+    // swarm_comp << 1, 2, 3, 4, 5, -1, 6, 7, 8; // << TODO: Un-hardcode this and make sure this is the correct size
 
-    int numberOfHRLStates = system_matricies.DTA.rows(); //The number of HRL states is equal to the number of rows in the DTA matrix
+    numberOfHRLStates = system_matricies.DTA.rows(); //The number of HRL states is equal to the number of rows in the DTA matrix
     int numberOfHRLAgents = system_matricies.p.sum();    //The number of Agents is equal to the sum of the elements in the p vector
 
     hrl_state.resize(numberOfHRLStates, 1); //The HRL State, formatted according to swarmComp.m
@@ -57,20 +58,27 @@ int main(int argc, char **argv) {
     MatrixXd tempXCurrentLastAgent(2,1);
     MatrixXd agent_refs(2,1);
 
-    MatrixXd targets_rel(2,3); //<< TODO: Un-hardcode this one (2 clusters)
     MatrixXd tmpXCurrentAgent(1,2);
     MatrixXd tmpTarget_rel(1,2);
     MatrixXd tmpDist(2,1);
 
     MatrixXd T_INV = (system_matricies.T).inverse();
 
-    targets_rel << 125, 138, 5, 171, 76, 5;// << TODO: Un-hardcode this 
+    targets_rel = generateDefaultTargetsRel(index_encodings.rows());
+    //targets_rel << 125, 138, 5, 171, 76, 5, -50, -50, 5;// << TODO: Un-hardcode this
+
+    aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
 
     int max_count = 2;
     int current_count = 0;
 
+    // This is the index into the HRL vector for this particular agent
+    // 0-based
     int myIndex = getHRLIndex(hrlAgent.getSysid(), swarm_comp, index_encodings);
-    int myCluster = getHRLCluster(hrlAgent.getSysid(), swarm_comp);
+    // This is the cluster this particular drone is in
+    // 1-based
+    int myCluster = hrlAgent.getClusterid();
+         //int myCluster = getHRLCluster(hrlAgent.getSysid(), swarm_comp);
     bool arrived = false;
 
     //Setup ROS
@@ -110,10 +118,10 @@ int main(int argc, char **argv) {
                     while ( (!met_dist_req) && (arrived == false) ) {
                         HRLxCurrentLast = HRLxCurrent;
                         //compute input for planner
-                        U = -1*system_matricies.KL*(HRLxCurrent - system_matricies.aug_state);
+                        U = -1*system_matricies.KL*(HRLxCurrent - aug_state);
 
                         //propogate HRL states
-                        HRLxCurrent = system_matricies.DTA*(HRLxCurrent - system_matricies.aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + system_matricies.aug_state;
+                        HRLxCurrent = system_matricies.DTA*(HRLxCurrent - aug_state) + system_matricies.DTB*U - system_matricies.ZD*hrl_sampling_time + aug_state;
 
                         // ////////// USE THIS BLOCK TO DEBUG STATE VECTORS //////////
                         // debugMsg.data.resize(HRLxCurrent.size());
@@ -134,7 +142,7 @@ int main(int argc, char **argv) {
                         tempXCurrentLastAgent(0,0) = tempXCurrentLast(myIndex    , 0);
                         tempXCurrentLastAgent(1,0) = tempXCurrentLast(myIndex + 1, 0);
 
-                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).squaredNorm();
+                        double converge = (tempXCurrentAgent - tempXCurrentLastAgent).norm();
                         if (converge < convergent_dist) {//Check for convergence
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from converge check");
@@ -143,7 +151,7 @@ int main(int argc, char **argv) {
                             hrlAgent.setClusterLocalTarget(agent_refs(0,0), agent_refs(1,0), 0);
                         }
                         //Otherwise, compute the distance away from initial state
-                        double dist = (tempXCurrentAgent - tempX0Agent).squaredNorm();
+                        double dist = (tempXCurrentAgent - tempX0Agent).norm();
                         if (abs(dist) > waypoint_dist_req) {
                             met_dist_req = true;
                             ROS_WARN("Met Dist Requirement from waypoint dist requirement");
@@ -159,10 +167,10 @@ int main(int argc, char **argv) {
                     if (arrived == false) {
                         tmpXCurrentAgent(0,0) = hrl_state(myIndex     ,0);
                         tmpXCurrentAgent(0,1) = hrl_state(myIndex + 1 ,0);
-                        tmpTarget_rel(0,0) = targets_rel(myCluster, 0);
-                        tmpTarget_rel(0,1) = targets_rel(myCluster, 1);
+                        tmpTarget_rel(0,0) = targets_rel(myCluster-1, 0);
+                        tmpTarget_rel(0,1) = targets_rel(myCluster-1, 1);
 
-                        double dist = (tmpTarget_rel - tmpXCurrentAgent).squaredNorm();
+                        double dist = (tmpTarget_rel - tmpXCurrentAgent).norm();
                         if (abs(dist) <= final_dist_req) {
                             ROS_WARN("Arrived");
                             arrived = true;
@@ -326,12 +334,44 @@ void HRLReference_cb(const mavros_msgs::DebugValue::ConstPtr& msg) {
                             //Change the Circle Rate
                             hrlAgent.setCircleTicks(HRLReference.data[0]);
                             break;
+                        case UPDATE_TARGET_REL:
+                            //change the relative target
+                            updateTargetRel(targets_rel,HRLReference.data[0],HRLReference.data[1],hrlAgent.getClusterid());
+                            aug_state = buildAugState(targets_rel, index_encodings, numberOfHRLStates);
+                            break;
+                        case UPDATE_TARGET_GBL:
+                            updateTargetGbl(targets_rel,HRLReference.data[0],HRLReference.data[1],hrlAgent.getClusterid(),hrlAgent.getAgentGlobalLat(), hrlAgent.getAgentGlobalLon());
+                            aug_state = buildAugState(targets_rel,index_encodings, numberOfHRLStates);
+                            break;
                         default:
                             printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
                             break;
                     };
                 }
                 break;
+
+            case 'S': //Swarm-level command
+                switch(*command) {
+                    case CHANGE_FLIGHT_MODE:
+                        //Change HRL_FLIGHTMODE to payload value
+                        hrlAgent.setFlightMode(HRLReference.data[0]);
+                        hrlAgent.setPositionTarget();
+                        break;
+                    case START_CLUSTER_GUIDED:
+                        //Start publishing to mavros topics
+                        hrlAgent.setPublish(true);
+                        break;  
+                    case STOP_CLUSTER_GUIDED:
+                        //Stop all publishing to the mavros topics
+                        hrlAgent.setPublish(false);
+                        break;
+                    case SET_HOME_POSITION:
+                        //Update the cluster's global origin
+                        hrlAgent.setHome(HRLReference.data[0],HRLReference.data[1],HRLReference.data[2]);
+                        break;
+                    default:
+                        printf("INVALID COMMAND NUMBER, COMMAND IGNORED\n");
+                }
             default:
                 printf("INVALID COMMAND ID, SPECIFIY [S]WARM, [C]LUSTER, OR [A]GENT IN THE DUBG STRING\n");
             break;
@@ -361,4 +401,116 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg) {
         raw_hrl_state( raw_hrl_index + 1, 0) = msg->agents[i].y;
     }
 
+}
+
+MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates) {
+    //This function will return the correct "aug_state" vector given a set of relative targets
+    int numberOfRelativeTargets = targets_rel.rows();
+    int maxNumberOfAgents = index_encodings.cols();
+
+    MatrixXd aug_state = MatrixXd::Zero(numberOfHRLStates,1);
+
+    //Go through each of the rows in the index_encodings matrix and find the last index in each row
+    for (int i = 0; i < numberOfRelativeTargets; i++) {
+         // // find number of agents in this cluster
+         // int idx = system_matricies.p(0,i) - 1;
+         // // Number of agent in this cluster indicates which agent to pick out
+         // aug_state( idx  ,0 ) = targets_rel(i,0);
+         // aug_state( idx+1,0 ) = targets_rel(i,1);
+
+        for (int j = 0; j < maxNumberOfAgents; j++) {
+            if (index_encodings(i,j) == -1) {
+
+                //If the index encoding is a -1, we have gone one too far
+                aug_state( index_encodings(i,j-1)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j-1) + 1 ,0) = targets_rel(i,1);
+                break;
+            }
+            else if (j == (maxNumberOfAgents - 1) ) {
+                //This is the "end" of the index encoding matrix
+                aug_state( index_encodings(i,j)     ,0) = targets_rel(i,0);
+                aug_state( index_encodings(i,j) + 1 ,0) = targets_rel(i,1);
+                break; 
+            }
+        }
+    }
+	std::cout << "aug_state Vector" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << aug_state << std::endl;
+
+    return aug_state;
+
+}
+
+void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster) {
+    TargetsRel(myCluster-1,0) = newX;
+    TargetsRel(myCluster-1,1) = newY;
+}
+
+void updateTargetGbl(MatrixXd &TargetsRel, int newLat, int newLon, int myCluster, double ORIGIN_LAT, double ORIGIN_LON) {
+    
+    //Assumption: we are in the northern hemisphere, this will affect the sign of the local frame
+    double x_sign = sign(newLat - ORIGIN_LAT);
+    double y_sign = sign(newLon - ORIGIN_LON);
+
+    //Calculate the x position, hold the longitude constant
+    double tempx = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,newLat,ORIGIN_LON);
+    tempx = x_sign * tempx;
+    
+    //Calculate the y position, hold the latitude constant
+    double tempy = convObject.gps_to_meters(ORIGIN_LAT,ORIGIN_LON,ORIGIN_LAT,newLon);
+    tempy = y_sign * tempy;
+
+    TargetsRel(myCluster-1,0) = tempx;
+    TargetsRel(myCluster-1,1) = tempy;
+}
+
+double sign(double input) {
+    //Deterine the sign of a double
+    if (input < 0) {
+        return -1.0;
+    } else {
+        return 1.0;
+    }
+}
+
+MatrixXd composeSwarm(MatrixXd index_encodings) {
+    int numberOfClusters = index_encodings.rows();
+    int numberOfAgents = index_encodings.cols();
+
+    MatrixXd swarm_comp(numberOfClusters,numberOfAgents);
+    int agentCount = 1;
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 0; j < numberOfAgents; j++) {
+            if (index_encodings(i,j) > -1) {
+                swarm_comp(i,j) = agentCount++;
+            } else {
+                swarm_comp(i,j) = -1;
+            }
+        }
+    }
+    std::cout << "Swarm comp: " << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << swarm_comp << std::endl;
+    return swarm_comp;
+}
+
+MatrixXd generateDefaultTargetsRel(int numberOfClusters) {
+    //This function generates a default HRL Relative Target
+    MatrixXd targets_rel(numberOfClusters,3); //Always this size
+    for (int i = 0; i < numberOfClusters; i++) {
+        double tempx = 150.0 * cos(PI / numberOfClusters * i);
+        double tempy = 150.0 * sin(PI / numberOfClusters * i);
+
+        targets_rel(i,0) = tempx;
+        targets_rel(i,1) = tempy;
+        targets_rel(i,2) = 5.0; //this does nothing :)
+    }
+
+    std::cout << "Default Rel Target" << std::endl;
+	std::cout << "======" << std::endl;
+	std::cout << targets_rel << std::endl;
+
+    return targets_rel;
 }

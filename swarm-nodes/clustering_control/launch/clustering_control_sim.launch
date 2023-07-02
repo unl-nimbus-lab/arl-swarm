@@ -13,9 +13,10 @@
 	<arg name="rally1Lon" default="" />
 	<arg name="rally2Lat" default="" />
 	<arg name="rally2Lon" default="" />
+    <arg name="swarm_comp" default="" />
 
     <group ns="agent_$(arg system_ID)">
-        <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon))"> 
+        <node pkg="clustering_control" name="clustering_control" type="clustering_control" output="screen" args="$(arg system_ID) $(arg clusterID) $(arg clusterPosition) $(arg clusterSize) $(arg clusterRadius) $(arg agentAlt) $(arg homeLat) $(arg homeLon) $(arg homeAlt) $(arg rally1Lat) $(arg rally1Lon) $(arg rally2Lat) $(arg rally2Lon) $(arg swarm_comp)"> 
 
             <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/>
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
@@ -65,7 +66,7 @@
             <arg name="system_ID" value="$(arg system_ID)"/>
         </include>
 
-        <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" output="screen" args="$(arg system_ID)">
+        <node pkg="hrl_planner" name="state_conditioning" type="state_conditioning" output="screen" args="$(arg system_ID) $(arg homeLat) $(arg homeLon)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
 

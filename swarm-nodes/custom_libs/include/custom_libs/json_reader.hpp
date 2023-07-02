@@ -29,9 +29,7 @@ struct Sys {
 	MatrixXd DKL;
 	MatrixXd DTA;
 	MatrixXd DTB;
-	MatrixXd aug_state;
 	MatrixXd state_idxs_C;
-
 } ;
 
 class json_reader{

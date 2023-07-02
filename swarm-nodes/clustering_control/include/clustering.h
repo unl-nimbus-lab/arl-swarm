@@ -64,6 +64,8 @@
 #define SET_CIRCLE_RATE 13
 #define SET_CLUSTER_OFFSETZ 14
 #define SET_BRAKE 15
+#define UPDATE_TARGET_REL 16
+#define UPDATE_TARGET_GBL 17
 
 //Agent Commands
 
@@ -101,41 +103,12 @@ double GLOBAL_POSITION_X;
 double GLOBAL_POSITION_Y;
 
 // //New globals for HRL planner
-// //Setup the State handler
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-
-// MatrixXd swarm_comp(2,4); //Each cluster is a row, for example:
-// /*
-// 1 2 3 4
-// 5 6 7 8
-// */
-
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-// MatrixXd index_encodings(2,4);
-
-// // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB
-// int numberOfHRLStates = 48;
-
 MatrixXd hrl_state(100, 1);
 MatrixXd raw_hrl_state(100,1);
-
-// MatrixXd HRLxCurrent(numberOfHRLStates,1);
-// MatrixXd HRLxCurrentLast(numberOfHRLStates,1);
-// MatrixXd HRLx0(numberOfHRLStates,1);
-// MatrixXd U(16,1);
-// MatrixXd tempX0(numberOfHRLStates,1);
-// MatrixXd tempXCurrent(numberOfHRLStates,1);
-// MatrixXd tempXCurrentLast(numberOfHRLStates,1);
-
-// MatrixXd tempX0Agent(2,1);
-// MatrixXd tempXCurrentAgent(2,1);
-// MatrixXd tempXCurrentLastAgent(2,1);
-// MatrixXd agent_refs(2,1);
-
-// MatrixXd targets_rel(2,3);
-// MatrixXd tmpXCurrentAgent(1,2);
-// MatrixXd tmpTarget_rel(1,2);
-// MatrixXd tmpDist(2,1);
+MatrixXd targets_rel; //<< TODO: Un-hardcode this one (2 clusters)
+MatrixXd aug_state;
+MatrixXd index_encodings;
+int numberOfHRLStates;
 
 double hrl_sampling_time = 0.2; //s
 double convergent_dist = 0.1; //m
@@ -157,6 +130,12 @@ void stateUpdate_cb(const swarm_comms::allAgentsPosStamped::ConstPtr& msg);
 void hrlStateUpdate(MatrixXd swarm_comp, MatrixXd index_encodings, MatrixXd raw_state);
 int getHRLIndex(int sysID, MatrixXd swarm_comp, MatrixXd index_encodings);
 int getHRLCluster(int sysID, MatrixXd swarm_comp);
+MatrixXd buildAugState(MatrixXd targets_rel, MatrixXd index_encodings, int numberOfHRLStates);
+void updateTargetRel(MatrixXd &TargetsRel, int newX, int newY, int myCluster);
+void updateTargetGbl(MatrixXd &TargetsRel, int newLat, int newLon, int myCluster, double ORIGIN_LAT, double ORIGIN_LON);
+double sign(double input);
+MatrixXd composeSwarm(MatrixXd index_encodings);
+MatrixXd generateDefaultTargetsRel(int numberOfClusters);
 
 
 //agent class:
@@ -216,6 +195,8 @@ class agent {
         void setCircleTicks(int ticks);
         void setClusterOffsetZ (double altitude);
         void setAgentGlobalTarget(double lat, double lon, double alt);
+        double getAgentGlobalLat();
+        double getAgentGlobalLon();
         geographic_msgs::GeoPoseStamped pos_msg;
         bool FTL_ENABLE = false;    //O-k to begin ftl
         bool CIRCLE_FLAG = false;   //Enables/Disables circling
@@ -808,5 +789,14 @@ int getHRLCluster(int sysID, MatrixXd swarm_comp) {
         }
     }
 }
+
+double agent::getAgentGlobalLat() {
+    return GLOBAL_ORIGIN.LAT;
+}
+
+double agent::getAgentGlobalLon() {
+    return GLOBAL_ORIGIN.LON;
+}
+
 
 #endif
