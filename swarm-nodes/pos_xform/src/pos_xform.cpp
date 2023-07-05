@@ -12,11 +12,12 @@ transform it to a cartesian frame */
 geo_converter converter;
 
 double sign(double input) {
-    //Returns the direction of a double
+    //Returns the sign of a double
     return (input < 0.0) ? -1.0 : 1.0;
 }
 
 class agentState {
+    //Class to maintain agent state
     public:
         int SYSID_THISMAV = 1;
         double ORIGIN_LAT = 0.0;
@@ -51,7 +52,18 @@ int main(int argc, char **argv) {
     ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 1, &agentState::gps_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy", 1, true);
 
-    //ROS convert the position here here
+    geometry_msgs::PointStamped agentPosition;
+
+    //Publish the position here
+    while( ros::ok() ) {
+        agentPosition.point.x = thisAgent.X_POS;
+        agentPosition.point.y = thisAgent.Y_POS;
+        agentPosition.header.stamp = ros::Time::now();
+
+        ros::Duration(0.5).sleep();
+        ros::spinOnce();
+    }
+
     return 0;
 }
 
