@@ -24,6 +24,7 @@ class agentState {
         double ORIGIN_LON = 0.0;
         double X_POS= 0.0;
         double Y_POS = 0.0;
+        double Z_POS = 0.0;
 
         void gps_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
             //Callback to update the X/Y_POS data in the state class
@@ -34,6 +35,7 @@ class agentState {
 
             Y_POS = ySign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, ORIGIN_LAT, msg->longitude);
             X_POS = xSign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, msg->latitude, ORIGIN_LON);
+            Z_POS = msg->altitude;
         }
 };
 
@@ -54,11 +56,14 @@ int main(int argc, char **argv) {
 
     geometry_msgs::PointStamped agentPosition;
 
-    //Publish the position here
+    //Publish the xy position
     while( ros::ok() ) {
         agentPosition.point.x = thisAgent.X_POS;
         agentPosition.point.y = thisAgent.Y_POS;
+        agentPosition.point.z = thisAgent.Z_POS;
         agentPosition.header.stamp = ros::Time::now();
+
+        pos_publisher.publish(agentPosition);
 
         ros::Duration(0.5).sleep();
         ros::spinOnce();
@@ -66,4 +71,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
