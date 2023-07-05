@@ -1,0 +1,32 @@
+version: '3.2'
+
+services:
+  swarm_devel:
+    image: swarm_devel
+    #image: clusteringsw:latest
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    container_name: swarm_development
+    network_mode: "host"
+    volumes:
+    #   - type: bind
+    #     source: ../../swarm-nodes/clustering_control/
+    #     target: /home/catkin_ws/src/clustering_control
+      # - type: "bind"
+      #   source: "../../swarm-nodes/mavros"
+      #   target: "/home/catkin_ws/src/mavros"
+      - type: "bind"
+        source: "../../swarm-nodes/pos_xform/"
+        target: "/home/catkin_ws/src/pos_xform"
+      - type: "bind"
+        source: "../../swarm-nodes/verifier/"
+        target: "/home/catkin_ws/src/verifier"
+      # - type: "bind"
+      #   source: "../../swarm-nodes/swarm_comms"
+      #   target: "/home/catkin_ws/src/swarm_comms"
+      - type: "bind"
+        source: "../../swarm-nodes/custom_libs"
+        target: "/home/catkin_ws/src/custon_libs"
+      - type: "bind"
+        source: "../../swarm-nodes/flight_controls"
+        target: "/home/catkin_ws/src/flight_controls"
