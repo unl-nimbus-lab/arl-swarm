@@ -38,16 +38,29 @@ from scp import SCPClient
 ######################################################
 # Change these global vars as needed
 ######################################################
-to_stdout = 0 # 0 for printing to file and upload to each agent (assumes agents are on and connected on network)
+to_stdout = 1 # 0 for printing to file and upload to each agent (assumes agents are on and connected on network)
 # parameters for where to put the .env file on the agents
 path_to_env = "arl-swarm/docker/drone"
 ag_username = "ubuntu"
 
 # globals
-PORT = "/dev/ttyUSB0"
+# PORT = "/dev/ttyUSB0"
+# BAUD = "921600"
+# COMP_ID = "1" # always 1
+# # Roger Memorial Farm
+# HOME_LAT = "40.8467784" # absolute
+# HOME_LON = "-96.4719180"
+# HOME_ALT = "400"  # (m)
+# RALLY1LAT = "0" # relative (m)
+# RALLY1LON = "30" # relative (m)
+# RALLY2LAT = "30" # relative (m)
+# RALLY2LON = "0" # relative (m)
+
+# globals
+PORT = "/dev/ttyFMU"
+PORT2= "/dev/ttyXBEE"
 BAUD = "921600"
 COMP_ID = "1" # always 1
-# Roger Memorial Farm
 HOME_LAT = "40.8467784" # absolute
 HOME_LON = "-96.4719180"
 HOME_ALT = "400"  # (m)
@@ -55,6 +68,7 @@ RALLY1LAT = "0" # relative (m)
 RALLY1LON = "30" # relative (m)
 RALLY2LAT = "30" # relative (m)
 RALLY2LON = "0" # relative (m)
+PATH= '"/home/catkin_ws/src/clustering_control/src/HRL_Sys_4_4'
 
 # changed below according to input, but not on a per cluster basis
 CLUSTER_RADIUS = "10" # (m)
@@ -84,7 +98,7 @@ class Agent:
     def print(self):
         print("PORT="+PORT)
         print("BAUD="+BAUD)
-        print("PORT2=/dev/ttyUSB1")
+        print("PORT2="+PORT2)
         print("SYS_ID="+str(self.sys_id))
         print("COMP_ID=1") # always 1
         print("CLUSTER_ID="+str(self.cluster_ID)) # which cluster it is
@@ -99,6 +113,7 @@ class Agent:
         print("RALLY1LON="+RALLY1LON)
         print("RALLY2LAT="+RALLY2LAT) # relative
         print("RALLY2LON="+RALLY2LON)
+        print('SWARM_COMP='+PATH+'.json"')
 
 ######################################################
 # Main code

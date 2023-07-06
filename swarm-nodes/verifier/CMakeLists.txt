@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(verifier)
 
+
+
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -40,3 +42,4 @@ include_directories(
 ## Declare a C++ executable
 add_executable(verifier src/verifier.cpp)
 target_link_libraries(verifier ${catkin_LIBRARIES})
+set_property(TARGET verifier PROPERTY CXX_STANDARD 20)
