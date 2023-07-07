@@ -11,8 +11,8 @@ find_package(catkin REQUIRED
 	roscpp
 	std_msgs
 #	tf2_eigen
-  	mavros
-#	message_generation
+  mavros
+  message_generation
 )
 #find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -68,9 +68,10 @@ find_package(Eigen3 REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-# )
+ add_message_files(
+   FILES
+   FullState.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -87,10 +88,11 @@ find_package(Eigen3 REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs 
+   geometry_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -124,7 +126,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES custom_libs
-#  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 #  CATKIN_DEPENDS Eigen3 roscpp
 #  DEPENDS Eigen

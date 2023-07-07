@@ -7,6 +7,7 @@
 #include <tuple>
 
 class safetyChecker {
+    public:
     /* Real-time reachability analysis for collision prevention.
 
     This implementation is inspired by the following source:

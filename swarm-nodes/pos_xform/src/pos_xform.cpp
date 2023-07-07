@@ -5,6 +5,7 @@
 #include "mavros_msgs/SwarmGPS.h"
 #include <string>
 #include <cstring>
+#include "custom_libs/FullState.h"
 
 /* This node will subscribe to the LAT/LON position of an agent and 
 transform it to a cartesian frame */
