@@ -26,6 +26,12 @@ class agentState {
         double X_POS= 0.0;
         double Y_POS = 0.0;
         double Z_POS = 0.0;
+        double X_VEL = 0.0;
+        double Y_VEL = 0.0;
+        double Z_VEL = 0.0;
+        double X_ACC = 0.0;
+        double Y_ACC = 0.0;
+        double Z_ACC = 0.0;
 
         void gps_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
             //Callback to update the X/Y_POS data in the state class
@@ -33,10 +39,11 @@ class agentState {
             double ySign = sign(msg->longitude - ORIGIN_LON);
 
             SYSID_THISMAV = msg->system_id;
-
-            Y_POS = ySign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, ORIGIN_LAT, msg->longitude);
+            
             X_POS = xSign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, msg->latitude, ORIGIN_LON);
+            Y_POS = ySign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, ORIGIN_LAT, msg->longitude);
             Z_POS = msg->altitude;
+
         }
 };
 
@@ -55,18 +62,35 @@ int main(int argc, char **argv) {
     ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 1, &agentState::gps_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy", 1, true);
 
-    geometry_msgs::PointStamped agentPosition;
+    custom_libs::FullState stateMsg;
+
+    float rate = 0.5;
 
     //Publish the xy position
     while( ros::ok() ) {
-        agentPosition.point.x = thisAgent.X_POS;
-        agentPosition.point.y = thisAgent.Y_POS;
-        agentPosition.point.z = thisAgent.Z_POS;
-        agentPosition.header.stamp = ros::Time::now();
+        double oldXPos = thisAgent.X_POS;
+        double oldYPos = thisAgent.Y_POS;
+        double oldZPos = thisAgent.Z_POS;
+        double oldXVel = thisAgent.X_VEL;
+        double oldYVel = thisAgent.Y_VEL;
+        double oldZVel = thisAgent.Z_VEL;
 
-        pos_publisher.publish(agentPosition);
+        thisAgent.X_VEL = (thisAgent.X_POS - oldXPos)/rate;
+        thisAgent.Y_VEL = (thisAgent.Y_POS - oldYPos)/rate;
+        thisAgent.Z_VEL = (thisAgent.Z_POS - oldZPos)/rate;
+        thisAgent.X_ACC = (thisAgent.X_VEL - oldXVel)/rate;
+        thisAgent.Y_ACC = (thisAgent.Y_VEL - oldYVel)/rate;
+        thisAgent.Z_ACC = (thisAgent.Z_VEL - oldZVel)/rate;
 
-        ros::Duration(0.5).sleep();
+        stateMsg.position.x = thisAgent.X_POS;
+        stateMsg.position.y = thisAgent.Y_POS;
+        stateMsg.position.z = thisAgent.Z_POS;
+
+        stateMsg.header.stamp = ros::Time::now();
+
+        pos_publisher.publish(stateMsg);
+
+        ros::Duration(rate).sleep();
         ros::spinOnce();
     }
 
