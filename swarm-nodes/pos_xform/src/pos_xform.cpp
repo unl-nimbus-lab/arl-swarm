@@ -32,17 +32,44 @@ class agentState {
         double X_ACC = 0.0;
         double Y_ACC = 0.0;
         double Z_ACC = 0.0;
+        int lastSec = 0;
+        int lastNsec = 0;
+
 
         void gps_cb(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
             //Callback to update the X/Y_POS data in the state class
-            double xSign = sign(msg->latitude - ORIGIN_LAT);
-            double ySign = sign(msg->longitude - ORIGIN_LON);
-
-            SYSID_THISMAV = msg->system_id;
             
-            X_POS = xSign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, msg->latitude, ORIGIN_LON);
-            Y_POS = ySign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, ORIGIN_LAT, msg->longitude);
-            Z_POS = msg->altitude;
+            if (msg->system_id == SYSID_THISMAV) {
+
+                double oldXPos = X_POS;
+                double oldYPos = Y_POS;
+                double oldZPos = Z_POS;
+                double oldXVel = X_VEL;
+                double oldYVel = Y_VEL;
+                double oldZVel = Z_VEL;
+                float rate = (msg->header.stamp.sec - lastSec);
+                std::cout << "rate: " << rate << std::endl;
+
+
+                double xSign = sign(msg->latitude - ORIGIN_LAT);
+                double ySign = sign(msg->longitude - ORIGIN_LON);
+
+                SYSID_THISMAV = msg->system_id;
+                
+                X_POS = xSign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, msg->latitude, ORIGIN_LON);
+                Y_POS = ySign * converter.gps_to_meters(ORIGIN_LAT, ORIGIN_LON, ORIGIN_LAT, msg->longitude);
+                Z_POS = msg->altitude;
+
+                X_VEL = (X_POS - oldXPos)/rate;
+                Y_VEL = (Y_POS - oldYPos)/rate;
+                Z_VEL = (Z_POS - oldZPos)/rate;
+                X_ACC = (X_VEL - oldXVel)/rate;
+                Y_ACC = (Y_VEL - oldYVel)/rate;
+                Z_ACC = (Z_VEL - oldZVel)/rate;
+
+                lastSec = msg->header.stamp.sec;
+                lastNsec = msg->header.stamp.nsec;
+            }
 
         }
 };
@@ -60,37 +87,29 @@ int main(int argc, char **argv) {
 
     //Setup Publishers and subscribers
     ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 1, &agentState::gps_cb, &thisAgent);
-    ros::Publisher pos_publisher = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy", 1, true);
+    ros::Publisher pos_publisher = nh.advertise<custom_libs::FullState>("/agent_position_xy", 1, true);
 
     custom_libs::FullState stateMsg;
-
-    float rate = 0.5;
+    stateMsg.id = thisAgent.SYSID_THISMAV;
 
     //Publish the xy position
     while( ros::ok() ) {
-        double oldXPos = thisAgent.X_POS;
-        double oldYPos = thisAgent.Y_POS;
-        double oldZPos = thisAgent.Z_POS;
-        double oldXVel = thisAgent.X_VEL;
-        double oldYVel = thisAgent.Y_VEL;
-        double oldZVel = thisAgent.Z_VEL;
-
-        thisAgent.X_VEL = (thisAgent.X_POS - oldXPos)/rate;
-        thisAgent.Y_VEL = (thisAgent.Y_POS - oldYPos)/rate;
-        thisAgent.Z_VEL = (thisAgent.Z_POS - oldZPos)/rate;
-        thisAgent.X_ACC = (thisAgent.X_VEL - oldXVel)/rate;
-        thisAgent.Y_ACC = (thisAgent.Y_VEL - oldYVel)/rate;
-        thisAgent.Z_ACC = (thisAgent.Z_VEL - oldZVel)/rate;
 
         stateMsg.position.x = thisAgent.X_POS;
         stateMsg.position.y = thisAgent.Y_POS;
         stateMsg.position.z = thisAgent.Z_POS;
+        stateMsg.velocity.x = thisAgent.X_VEL;
+        stateMsg.velocity.y = thisAgent.Y_VEL;
+        stateMsg.velocity.z = thisAgent.Z_VEL;
+        stateMsg.acceleration.x = thisAgent.X_ACC;
+        stateMsg.acceleration.y = thisAgent.Y_ACC;
+        stateMsg.acceleration.z = thisAgent.Z_ACC;
 
         stateMsg.header.stamp = ros::Time::now();
 
         pos_publisher.publish(stateMsg);
 
-        ros::Duration(rate).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
 
