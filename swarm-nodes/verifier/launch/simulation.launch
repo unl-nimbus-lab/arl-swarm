@@ -13,6 +13,7 @@
             <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
             <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
             <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
+            <remap from="/mavros/local_position/velocity_local" to="/agent_1/mavros/local_position/velocity_local" />
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
 
         </node>
