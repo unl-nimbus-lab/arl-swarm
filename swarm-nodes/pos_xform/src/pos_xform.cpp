@@ -48,7 +48,10 @@ class agentState {
                 double oldYVel = Y_VEL;
                 double oldZVel = Z_VEL;
                 float rate = (msg->header.stamp.sec - lastSec);
-                std::cout << "rate: " << rate << std::endl;
+                float rate2 = (msg->header.stamp.nsec - lastNsec);
+                rate2 = rate2 * 0.0000000001;
+                rate = rate + rate2;
+                //std::cout << "rate: " << rate << std::endl;
 
 
                 double xSign = sign(msg->latitude - ORIGIN_LAT);
