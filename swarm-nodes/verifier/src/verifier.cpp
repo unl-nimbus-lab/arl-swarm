@@ -2,6 +2,7 @@
 #include "ros/ros.h"
 #include "safetyChecker.h"
 #include "geometry_msgs/PointStamped.h"
+#include "custom_libs/FullState.h"
 #include "custom_libs/geo_converter.hpp"
 #include "mavros_msgs/SwarmGPS.h"
 #include <string>
@@ -55,10 +56,17 @@ class agent {
 
             return {std::get<0>(reachableState), std::get<1>(reachableState)};
         }
-        void state_update_cb( const geometry_msgs::PointStamped::ConstPtr& msg ) {
-            x = msg->point.x;
-            y = msg->point.y;
-            z = msg->point.z;
+
+        void state_update_cb( const custom_libs::FullState::ConstPtr& msg ) {
+            x = msg->position.x;
+            y = msg->position.y;
+            z = msg->position.z;
+            vx = msg->velocity.x;
+            vy = msg->velocity.y;
+            vz = msg->velocity.z;
+            ax = msg->acceleration.x;
+            ay = msg->acceleration.y;
+            az = msg->acceleration.z;
         }
 
 };

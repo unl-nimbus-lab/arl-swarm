@@ -35,11 +35,21 @@ class agentState {
         double Z_ACC = 0.0;
         int lastSec = 0;
         int lastNsec = 0;
+        float rate = 0.25;
 
         void velocity_cb(const geometry_msgs::TwistStamped::ConstPtr& msg) {
+
+            double oX_VEL = X_VEL;
+            double oY_VEL = Y_VEL;
+            double oZ_VEL = Z_VEL;
+
             X_VEL = msg->twist.linear.y; //X and Y are not a typo, my frames are just that way
             Y_VEL = msg->twist.linear.x;
             Z_VEL = msg->twist.linear.z;
+
+            X_ACC = (X_VEL - oX_VEL)/rate;
+            Y_ACC = (Y_VEL - oY_VEL)/rate;
+            Z_ACC = (Z_VEL - oZ_VEL)/rate;
         }
 
 
@@ -88,6 +98,9 @@ int main(int argc, char **argv) {
         stateMsg.velocity.x = thisAgent.X_VEL;
         stateMsg.velocity.y = thisAgent.Y_VEL;
         stateMsg.velocity.z = thisAgent.Z_VEL;
+        stateMsg.acceleration.x = thisAgent.X_ACC;
+        stateMsg.acceleration.y = thisAgent.Y_ACC;
+        stateMsg.acceleration.z = thisAgent.Z_ACC;
 
         stateMsg.header.stamp = ros::Time::now();
 
