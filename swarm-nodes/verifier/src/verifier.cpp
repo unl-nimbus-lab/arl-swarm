@@ -25,7 +25,11 @@ class agent {
         float ay = 0.0;
         float az = 0.0;
         float timeStamp = 0.0;
+        ros::Time time_begin = ros::Time::now();
+
+
         std::tuple<hyperRectangle, float> myReachableState;
+
         std::tuple<hyperRectangle, float> computeRechableSet(
                 float positionError, 
                 float velocityError, 
@@ -33,8 +37,8 @@ class agent {
                 float initialStepSize,
                 float reachTimeout) {
 
-            interval posErrorX(-positionError, positionError);
-            interval posErrorY(-positionError, positionError);
+            interval posErrorX(x - positionError, x + positionError);
+            interval posErrorY(y - positionError, y - positionError);
             interval posErrorZ(z - positionError, z + positionError);
             interval velErrorX(vx - velocityError, vx + velocityError);
             interval velErrorY(vy - velocityError, vy + velocityError);
@@ -52,9 +56,9 @@ class agent {
             hyperRectangle rect(rectIntervals);
             float acceleration[] = {ax, ay, az};
 
-            std::tuple<hyperRectangle, float> reachableState = verifier.faceLiftingIterativeImprovement(rect, timeStamp, acceleration, reachTime, initialStepSize, reachTimeout);
+            myReachableState = verifier.faceLiftingIterativeImprovement(rect, timeStamp, acceleration, reachTime, initialStepSize, reachTimeout);
 
-            return {std::get<0>(reachableState), std::get<1>(reachableState)};
+            return {std::get<0>(myReachableState), std::get<1>(myReachableState)};
         }
 
         void state_update_cb( const custom_libs::FullState::ConstPtr& msg ) {
@@ -68,7 +72,6 @@ class agent {
             ay = msg->acceleration.y;
             az = msg->acceleration.z;
         }
-
 };
 
 
@@ -84,13 +87,24 @@ int main(int argc, char **argv) {
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
     //ros::Publisher pos_publisher = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy", 1, true);
 
+    //Time Things
+    ros::Time time_begin = ros::Time::now();
+    ros::Time time_end = ros::Time::now();
+    ros::Duration duration = time_end - time_begin;
+
     //Publish the xy position
     while( ros::ok() ) {
-        //Calculate my reachable space and send it
-        
+    //     //Calculate my reachable space and send it
+
+    float reachTime = duration.toSec() * 1000;
+
+    thisAgent.computeRechableSet(1.5 ,0.5 ,2.0, 0.5, 0.001);
+
+    std::get<0>(thisAgent.myReachableState).disp();
+    std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
 
 
-        ros::Duration(0.2).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
 

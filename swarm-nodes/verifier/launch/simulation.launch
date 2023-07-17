@@ -1,12 +1,12 @@
 <launch>
 
 	<arg name="system_ID" default="1" />
-	<arg name="homeLon" default="-96.0" />
-	<arg name="homeLat" default="40.0" />
+	<arg name="homeLon" default="-96.4710998" />
+	<arg name="homeLat" default="40.8459997" />
 
     <group ns="agent_$(arg system_ID)">
 
-        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID) $(arg homeLon) $(arg homeLat)"> 
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID) $(arg homeLat) $(arg homeLon)"> 
 
             <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID)/mavros/global_position/swarm"/>
@@ -16,6 +16,10 @@
             <remap from="/mavros/local_position/velocity_local" to="/agent_1/mavros/local_position/velocity_local" />
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
 
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID)/agent_position_xy"/>
         </node>
 
 
