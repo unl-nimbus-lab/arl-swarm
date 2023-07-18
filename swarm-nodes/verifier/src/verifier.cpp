@@ -27,7 +27,6 @@ class agent {
         float timeStamp = 0.0;
         ros::Time time_begin = ros::Time::now();
 
-
         std::tuple<hyperRectangle, float> myReachableState;
 
         std::tuple<hyperRectangle, float> computeRechableSet(

@@ -204,7 +204,7 @@ class safetyChecker {
 
     std::tuple<hyperRectangle, float> faceLiftingIterativeImprovement( 
         hyperRectangle rect, 
-        int startTime, 
+        float startTime, 
         float acceleration[3], 
         float reachTime, 
         float initialStepSize = 0.01, 
@@ -216,18 +216,12 @@ class safetyChecker {
         hyperRectangle hull = rect;
         float endTime = startTime;
 
-        std::time_t startT = std::time(0);
+        auto start = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
 
-        auto now = std::chrono::system_clock::now();
-        // Convert the time point to time_t
-        std::time_t time = std::chrono::system_clock::to_time_t(now);
-        // Convert time_t to a floating-point number representing seconds since the epoch
-        double start = static_cast<double>(time);
-        double newNow = start;
-
-
-        while ( (newNow - start) < timeOut) {
+        while ( (duration / 1000.0) < timeOut) {
             if (stepSize < minStepSize) {
                 std::cout << "Breaking" << std::endl;
                 break;
@@ -244,14 +238,12 @@ class safetyChecker {
                 endTime = startTime + 1000 * reachTimeAdvance;
 
                 reachTimeRemaining -= std::get<1>(result);
-                //std::cout << "reachTimeRemaining: " << reachTimeRemaining << std::endl;
             }
 
             stepSize = stepSize / 2.0;
 
-            now = std::chrono::system_clock::now();
-            time = std::chrono::system_clock::to_time_t(now);
-            newNow = static_cast<double>(time);
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
         }
 
