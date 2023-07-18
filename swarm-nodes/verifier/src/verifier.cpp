@@ -8,8 +8,7 @@
 #include <string>
 #include <cstring>
 
-/* This node will subscribe to the LAT/LON position of an agent and 
-transform it to a cartesian frame */
+/* This node will subscribe to the agent's xy position topic and calculate it's reachable space */
 
 safetyChecker verifier;
 
@@ -91,7 +90,6 @@ int main(int argc, char **argv) {
     ros::Time time_end = ros::Time::now();
     ros::Duration duration = time_end - time_begin;
 
-    //Publish the xy position
     while( ros::ok() ) {
     //     //Calculate my reachable space and send it
 
@@ -101,8 +99,8 @@ int main(int argc, char **argv) {
 
         thisAgent.computeRechableSet(1.5 ,0.5 ,2.0, 0.5, 0.01);
 
-        std::get<0>(thisAgent.myReachableState).disp();
-        std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
+        //std::get<0>(thisAgent.myReachableState).disp();
+        //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
 
 
         ros::Duration(0.5).sleep();

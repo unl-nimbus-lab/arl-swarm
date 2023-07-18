@@ -223,7 +223,6 @@ class safetyChecker {
 
         while ( (duration / 1000.0) < timeOut) {
             if (stepSize < minStepSize) {
-                std::cout << "Breaking" << std::endl;
                 break;
             }
             float reachTimeRemaining = reachTime;
