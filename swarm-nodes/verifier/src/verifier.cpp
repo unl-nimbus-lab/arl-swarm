@@ -96,12 +96,14 @@ int main(int argc, char **argv) {
     while( ros::ok() ) {
     //     //Calculate my reachable space and send it
 
-    float reachTime = duration.toSec() * 1000;
+        duration = ros::Time::now() - time_begin;
+        float reachTime = duration.toSec() * 1000;
+        thisAgent.timeStamp = reachTime;
 
-    thisAgent.computeRechableSet(1.5 ,0.5 ,2.0, 0.5, 0.001);
+        thisAgent.computeRechableSet(1.5 ,0.5 ,2.0, 0.5, 0.01);
 
-    std::get<0>(thisAgent.myReachableState).disp();
-    std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
+        std::get<0>(thisAgent.myReachableState).disp();
+        std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
 
 
         ros::Duration(0.5).sleep();

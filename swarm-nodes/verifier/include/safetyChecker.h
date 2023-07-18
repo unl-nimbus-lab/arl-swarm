@@ -5,6 +5,7 @@
 #include "./interval.h"
 #include <ctime>
 #include <tuple>
+#include <chrono>
 
 class safetyChecker {
     public:
@@ -97,7 +98,7 @@ class safetyChecker {
         memset(derivatives, 0, sizeof(derivatives));
 
         bool recompute = true;
-        float minNeighborCrossTime = 100000;
+        float minNeighborCrossTime;
 
         while (recompute) {
             recompute = false;
@@ -154,6 +155,7 @@ class safetyChecker {
                     }
 
                     if (derivative != 0) {
+                        //std::cout << prevNeighborhoodWidth << " " << derivative << std::endl;
                         float crossTime = prevNeighborhoodWidth / derivative;
 
                         if (crossTime < minNeighborCrossTime ) {
@@ -179,10 +181,13 @@ class safetyChecker {
         //Make a copy of the rectangle to revent accidental modifications to the original
         hyperRectangle rekt = rect;
 
+        //rect.disp();
+
         //Perform the face lift
         for (int dim = 0; dim < rect.dimensions; dim++) {
             float tempMin = rekt.intervals[dim].min;
             rekt.intervals[dim].min = ( tempMin + derivatives[2 * dim] * timeToElapse);
+            //std::cout << derivatives[2* dim] << " " << timeToElapse << std::endl;
             float tempMax = rekt.intervals[dim].max;
             rekt.intervals[dim].max = ( tempMax + derivatives[2 * dim + 1] * timeToElapse);
         }
@@ -190,6 +195,9 @@ class safetyChecker {
         if (bloatedRect.contains(rect) == false) {
             std::cout << "Lifted rectangle is outside of teh bloated rectangle" << std::endl;
         }
+
+        //rekt.disp();
+        //std::cout << std::endl;
 
         return {rekt, timeToElapse};
     }
@@ -210,8 +218,18 @@ class safetyChecker {
 
         std::time_t startT = std::time(0);
 
-        while ( (std::time(0) - startT) < timeOut) {
+
+        auto now = std::chrono::system_clock::now();
+        // Convert the time point to time_t
+        std::time_t time = std::chrono::system_clock::to_time_t(now);
+        // Convert time_t to a floating-point number representing seconds since the epoch
+        double start = static_cast<double>(time);
+        double newNow = start;
+
+
+        while ( (newNow - start) < timeOut) {
             if (stepSize < minStepSize) {
+                std::cout << "Breaking" << std::endl;
                 break;
             }
             float reachTimeRemaining = reachTime;
@@ -226,9 +244,15 @@ class safetyChecker {
                 endTime = startTime + 1000 * reachTimeAdvance;
 
                 reachTimeRemaining -= std::get<1>(result);
+                //std::cout << "reachTimeRemaining: " << reachTimeRemaining << std::endl;
             }
 
             stepSize = stepSize / 2.0;
+
+            now = std::chrono::system_clock::now();
+            time = std::chrono::system_clock::to_time_t(now);
+            newNow = static_cast<double>(time);
+
         }
 
         return {hull, endTime}; 
