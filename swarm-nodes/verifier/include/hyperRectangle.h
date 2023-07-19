@@ -6,7 +6,7 @@
 #include "./interval.h"
 #include <vector>
 #include <algorithm>
-//#include <nlohmann/json.hpp>
+#include "json.hpp"
 
 
     class hyperRectangle {

@@ -5,6 +5,7 @@
 #include "custom_libs/FullState.h"
 #include "custom_libs/geo_converter.hpp"
 #include "mavros_msgs/SwarmGPS.h"
+#include "verifier_comms/hyperRectangle.h"
 #include <string>
 #include <cstring>
 
@@ -14,6 +15,7 @@ safetyChecker verifier;
 
 class agent {
     public:
+        int SYSID_THISMAV = 0;
         float x = 0.0;
         float y = 0.0;
         float z = 0.0;
@@ -24,7 +26,6 @@ class agent {
         float ay = 0.0;
         float az = 0.0;
         float timeStamp = 0.0;
-        ros::Time time_begin = ros::Time::now();
 
         std::tuple<hyperRectangle, float> myReachableState;
 
@@ -70,25 +71,60 @@ class agent {
             ay = msg->acceleration.y;
             az = msg->acceleration.z;
         }
+
+        void intersection_cb( const verifier_comms::hyperRectangle::ConstPtr& msg ) {
+            if (msg->id == SYSID_THISMAV) {
+
+                interval x(msg->x.min, msg->x.max);
+                interval y(msg->y.min, msg->y.max);
+                interval z(msg->z.min, msg->z.max);
+                interval vx(msg->vx.min,msg->vx.max);
+                interval vy(msg->vy.min,msg->vy.max);
+                interval vz(msg->vz.min,msg->vz.max);
+
+                std::vector<interval> rectIntervals;
+
+                rectIntervals.push_back(x);
+                rectIntervals.push_back(y);
+                rectIntervals.push_back(z);
+                rectIntervals.push_back(vx);
+                rectIntervals.push_back(vy);
+                rectIntervals.push_back(vz);
+
+                hyperRectangle receivedState(rectIntervals);
+
+                auto intersects = std::get<0>(myReachableState).intersects(receivedState);
+
+                if (intersects) {
+                    std::cout << "oppo" << std::endl;
+                }
+            }
+        }
 };
 
 
 int main(int argc, char **argv) {
 
+    agent thisAgent;
+
+    thisAgent.SYSID_THISMAV = atoi(argv[1]);
+
     //Initialize ROS
     ros::init(argc, argv, "verifier.cpp");
     ros::NodeHandle nh;
 
-    agent thisAgent;
-
     //Setup Publishers and subscribers
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
-    //ros::Publisher pos_publisher = nh.advertise<geometry_msgs::PointStamped>("/agent_position_xy", 1, true);
+    ros::Subscriber res_subscriber = nh.subscribe("/reachable_state", 10, &agent::intersection_cb, &thisAgent);
+    ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
 
     //Time Things
     ros::Time time_begin = ros::Time::now();
     ros::Time time_end = ros::Time::now();
     ros::Duration duration = time_end - time_begin;
+
+    verifier_comms::hyperRectangle rsMessage;
+    rsMessage.id = thisAgent.SYSID_THISMAV;
 
     while( ros::ok() ) {
     //     //Calculate my reachable space and send it
@@ -101,6 +137,28 @@ int main(int argc, char **argv) {
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
+
+        rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
+        rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
+
+        rsMessage.y.min = get<0>(thisAgent.myReachableState).intervals[1].min;
+        rsMessage.y.max = get<0>(thisAgent.myReachableState).intervals[1].max;
+
+        rsMessage.z.min = get<0>(thisAgent.myReachableState).intervals[2].min;
+        rsMessage.z.max = get<0>(thisAgent.myReachableState).intervals[2].max;
+
+        rsMessage.vx.min = get<0>(thisAgent.myReachableState).intervals[3].min;
+        rsMessage.vx.max = get<0>(thisAgent.myReachableState).intervals[3].max;
+
+        rsMessage.vy.min = get<0>(thisAgent.myReachableState).intervals[4].min;
+        rsMessage.vy.max = get<0>(thisAgent.myReachableState).intervals[4].max;
+
+        rsMessage.vz.min = get<0>(thisAgent.myReachableState).intervals[5].min;
+        rsMessage.vz.max = get<0>(thisAgent.myReachableState).intervals[5].max;
+
+        rsMessage.header.stamp = ros::Time::now();
+
+        pos_publisher.publish(rsMessage);
 
 
         ros::Duration(0.5).sleep();
