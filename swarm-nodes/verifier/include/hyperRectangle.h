@@ -120,14 +120,14 @@
                 faces = rect.faces;
             }
 
-            // void toJson(nlohmann::json& j, int& i) {
-            //     j[i]["Dimension"] = dimensions;
-            //     for (int dim = 0; dim < dimensions; dim++) {
-            //         j[i]["Intervals"][dim] =
-            //             {intervals[dim].min, intervals[dim].max};
-            //     }
-            //     i++;
-            // }
+            void toJson(nlohmann::json& j, int& i) {
+                j[i]["Dimension"] = dimensions;
+                for (int dim = 0; dim < dimensions; dim++) {
+                    j[i]["Intervals"][dim] =
+                        {intervals[dim].min, intervals[dim].max};
+                }
+                i++;
+            }
 
             std::vector<interval> intervals;
             int dimensions;

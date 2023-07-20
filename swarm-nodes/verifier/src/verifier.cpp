@@ -6,12 +6,15 @@
 #include "custom_libs/geo_converter.hpp"
 #include "mavros_msgs/SwarmGPS.h"
 #include "verifier_comms/hyperRectangle.h"
+#include "mavros_msgs/SetMode.h"
 #include <string>
 #include <cstring>
+#include <fstream>
 
 /* This node will subscribe to the agent's xy position topic and calculate it's reachable space */
 
 safetyChecker verifier;
+ros::ServiceClient set_mode;
 
 class agent {
     public:
@@ -26,6 +29,8 @@ class agent {
         float ay = 0.0;
         float az = 0.0;
         float timeStamp = 0.0;
+        nlohmann::json j;
+        int jsonTrack = 1;
 
         std::tuple<hyperRectangle, float> myReachableState;
 
@@ -37,7 +42,7 @@ class agent {
                 float reachTimeout) {
 
             interval posErrorX(x - positionError, x + positionError);
-            interval posErrorY(y - positionError, y - positionError);
+            interval posErrorY(y - positionError, y + positionError);
             interval posErrorZ(z - positionError, z + positionError);
             interval velErrorX(vx - velocityError, vx + velocityError);
             interval velErrorY(vy - velocityError, vy + velocityError);
@@ -56,6 +61,7 @@ class agent {
             float acceleration[] = {ax, ay, az};
 
             myReachableState = verifier.faceLiftingIterativeImprovement(rect, timeStamp, acceleration, reachTime, initialStepSize, reachTimeout);
+            //std::get<0>(myReachableState).toJson(j,jsonTrack);
 
             return {std::get<0>(myReachableState), std::get<1>(myReachableState)};
         }
@@ -73,7 +79,7 @@ class agent {
         }
 
         void intersection_cb( const verifier_comms::hyperRectangle::ConstPtr& msg ) {
-            if (msg->id == SYSID_THISMAV) {
+            if (msg->id != SYSID_THISMAV) {
 
                 interval x(msg->x.min, msg->x.max);
                 interval y(msg->y.min, msg->y.max);
@@ -96,7 +102,11 @@ class agent {
                 auto intersects = std::get<0>(myReachableState).intersects(receivedState);
 
                 if (intersects) {
-                    std::cout << "oppo" << std::endl;
+                    std::cout << "Detected Collision with agent " << msg->id << std::endl;
+                    mavros_msgs::SetMode mode_msg;
+                    mode_msg.request.custom_mode = "BRAKE";
+                    set_mode.call(mode_msg);
+                    
                 }
             }
         }
@@ -108,6 +118,7 @@ int main(int argc, char **argv) {
     agent thisAgent;
 
     thisAgent.SYSID_THISMAV = atoi(argv[1]);
+    thisAgent.j[0]["Rectangles"] = 0;
 
     //Initialize ROS
     ros::init(argc, argv, "verifier.cpp");
@@ -117,6 +128,7 @@ int main(int argc, char **argv) {
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
     ros::Subscriber res_subscriber = nh.subscribe("/reachable_state", 10, &agent::intersection_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
+    set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
     //Time Things
     ros::Time time_begin = ros::Time::now();
@@ -133,10 +145,21 @@ int main(int argc, char **argv) {
         float reachTime = duration.toSec() * 1000;
         thisAgent.timeStamp = reachTime;
 
-        thisAgent.computeRechableSet(1.5 ,0.5 ,2.0, 0.5, 0.01);
+        thisAgent.computeRechableSet(3.0 ,0.5 ,2.0, 5.0, 0.005);
 
         //std::get<0>(thisAgent.myReachableState).disp();
-        //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;
+        //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
+
+        std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
+        thisAgent.jsonTrack++;
+
+        thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+        std::ofstream outputFile("/home/person.json");
+        if(outputFile.is_open() ) {
+            outputFile << thisAgent.j.dump(4);
+            outputFile.close();
+            std::cout << "JSONFILE SAVED" << std::endl;
+        }
 
         rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
         rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
@@ -161,7 +184,7 @@ int main(int argc, char **argv) {
         pos_publisher.publish(rsMessage);
 
 
-        ros::Duration(0.5).sleep();
+        ros::Duration(0.2).sleep();
         ros::spinOnce();
     }
 
