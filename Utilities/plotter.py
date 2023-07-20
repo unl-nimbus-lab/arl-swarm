@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-with open('/home/grant/cdperson.json') as file:
+with open('/home/grant/json_things/person.json') as file:
     j = json.load(file)
 
 numberOfRects = j[0]["Rectangles"]
@@ -57,9 +57,9 @@ for rect in range(1,numberOfRects + 1):
 
 
 # Set plot limits and labels
-ax.set_xlim([0, 10])
-ax.set_ylim([0, 10])
-ax.set_zlim([0, 10])
+ax.set_xlim([-100, 100])
+ax.set_ylim([-100, 100])
+ax.set_zlim([300, 400])
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')

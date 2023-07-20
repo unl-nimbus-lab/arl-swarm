@@ -151,15 +151,14 @@ int main(int argc, char **argv) {
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
-        thisAgent.jsonTrack++;
 
-        thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-        std::ofstream outputFile("/home/person.json");
-        if(outputFile.is_open() ) {
-            outputFile << thisAgent.j.dump(4);
-            outputFile.close();
-            std::cout << "JSONFILE SAVED" << std::endl;
-        }
+        // thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+        // std::ofstream outputFile("/home/json_things/person.json");
+        // if(outputFile.is_open() ) {
+        //     outputFile << thisAgent.j.dump(4);
+        //     outputFile.close();
+        //     std::cout << "JSONFILE SAVED" << std::endl;
+        // }
 
         rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
         rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
