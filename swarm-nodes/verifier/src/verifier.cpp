@@ -105,19 +105,35 @@ class agent {
                     std::cout << "Detected Collision with agent " << msg->id << std::endl;
                     mavros_msgs::SetMode mode_msg;
                     mode_msg.request.custom_mode = "BRAKE";
-                    set_mode.call(mode_msg);
-                    
+                    set_mode.call(mode_msg);     
                 }
             }
+        }
+
+        agent(int id) {
+            SYSID_THISMAV = id;
         }
 };
 
 
 int main(int argc, char **argv) {
 
-    agent thisAgent;
+    std::string plotFile;
+    bool plotBool = false;
 
-    thisAgent.SYSID_THISMAV = atoi(argv[1]);
+    // for (int i =  0; i < argc; i++ ) {
+    //     std::cout << "arg " << i << " is " << argv[i] << std::endl;
+    // }
+
+    if (argc > 5){
+        std::string plotFile = argv[2];
+        plotBool = true;
+        std::cout << "Plotting Enabled" << std::endl;
+        //std::cout << "saving to " << fullFile << std::endl;
+    }
+
+    agent thisAgent(atoi(argv[1]));
+
     thisAgent.j[0]["Rectangles"] = 0;
 
     //Initialize ROS
@@ -145,19 +161,21 @@ int main(int argc, char **argv) {
         float reachTime = duration.toSec() * 1000;
         thisAgent.timeStamp = reachTime;
 
-        thisAgent.computeRechableSet(3.0 ,0.5 ,2.0, 5.0, 0.005);
+        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 5.0, 0.005);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
-        // thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-        // std::ofstream outputFile("/home/json_things/person.json");
-        // if(outputFile.is_open() ) {
-        //     outputFile << thisAgent.j.dump(4);
-        //     outputFile.close();
-        //     std::cout << "JSONFILE SAVED" << std::endl;
+        // if (plotBool == true) {
+        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+        //     std::ofstream outputFile("/home/json_things/reachableStates.json");
+        //     if(outputFile.is_open() ) {
+        //         outputFile << thisAgent.j.dump(4);
+        //         outputFile.close();
+        //         std::cout << "JSONFILE SAVED" << std::endl;
+        //     }
         // }
 
         rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
