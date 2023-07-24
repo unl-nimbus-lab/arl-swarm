@@ -228,8 +228,12 @@ class safetyChecker {
             float reachTimeRemaining = reachTime;
             float reachTimeAdvance = 0.0;
 
+            std::cout << "Iterating" << std::endl;
+
             while (reachTimeRemaining > 0) {
                 auto result = singleFaceLift(rect, acceleration, stepSize, reachTimeRemaining);
+
+                rect = std::get<0>(result);
 
                 hull.convexHull(rect, true);
 
@@ -243,7 +247,6 @@ class safetyChecker {
 
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
         }
 
         return {hull, endTime}; 
