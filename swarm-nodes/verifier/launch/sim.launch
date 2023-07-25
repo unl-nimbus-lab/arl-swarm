@@ -1,0 +1,31 @@
+<launch>
+
+	<arg name="system_ID1" default="1" />
+    <arg name="system_ID2" default="2" />
+    <arg name="system_ID3" default="3" />
+    <arg name="system_ID4" default="4" />
+	<arg name="homeLon" default="-96.4710998" />
+	<arg name="homeLat" default="40.8459997" />
+    <arg name="file" default="rechableStates.json" />
+
+    <group ns="agent_$(arg system_ID1)">
+
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID1) $(arg homeLat) $(arg homeLon)"> 
+
+            <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID1)/mavros/global_position/swarm"/>
+            <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
+            <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
+            <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
+            <remap from="/mavros/local_position/velocity_local" to="/agent_1/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID1)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID1)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID1)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_1/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+        </node>
+    </group>
+</launch>

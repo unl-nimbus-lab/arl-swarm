@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 
     //Setup Publishers and subscribers
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
-    ros::Subscriber res_subscriber = nh.subscribe("/reachable_state", 10, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res_subscriber = nh.subscribe("/reachable_state", 100, &agent::intersection_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
@@ -161,22 +161,30 @@ int main(int argc, char **argv) {
         float reachTime = duration.toSec() * 1000;
         thisAgent.timeStamp = reachTime;
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 5.0, 0.005);
+        /*Because I forget compute reachable set arguments:
+        1) Postition Error
+        2) Velocity Error
+        3) Reach time
+        4) Initial Step Size
+        5) Reach timeout
+        */
+
+        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 0.05, 0.01);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
-        // if (plotBool == true) {
-        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-        //     std::ofstream outputFile("/home/json_things/reachableStates.json");
-        //     if(outputFile.is_open() ) {
-        //         outputFile << thisAgent.j.dump(4);
-        //         outputFile.close();
-        //         std::cout << "JSONFILE SAVED" << std::endl;
-        //     }
-        // }
+        if (plotBool == true) {
+            thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+            std::ofstream outputFile("/home/json_things/reachableStates.json");
+            if(outputFile.is_open() ) {
+                outputFile << thisAgent.j.dump(4);
+                outputFile.close();
+                std::cout << "JSONFILE SAVED" << std::endl;
+            }
+        }
 
         rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
         rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
@@ -201,7 +209,7 @@ int main(int argc, char **argv) {
         pos_publisher.publish(rsMessage);
 
 
-        ros::Duration(0.2).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
 

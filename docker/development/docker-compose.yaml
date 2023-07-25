@@ -36,3 +36,6 @@ services:
       - type: "bind"
         source: "../../../json_things"
         target: "/home/json_things"
+      - type: "bind"
+        source: "../../swarm-nodes/fake_agents"
+        target: "/home/catkin_ws/src/fake_agents"
