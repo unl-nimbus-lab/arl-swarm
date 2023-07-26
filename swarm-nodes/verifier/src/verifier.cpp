@@ -79,7 +79,8 @@ class agent {
         }
 
         void intersection_cb( const verifier_comms::hyperRectangle::ConstPtr& msg ) {
-            if (msg->id != SYSID_THISMAV) {
+            int inId = msg->id;
+            if (inId != SYSID_THISMAV) {
 
                 interval x(msg->x.min, msg->x.max);
                 interval y(msg->y.min, msg->y.max);
@@ -102,7 +103,7 @@ class agent {
                 auto intersects = std::get<0>(myReachableState).intersects(receivedState);
 
                 if (intersects) {
-                    std::cout << "Detected Collision with agent " << msg->id << std::endl;
+                    std::cout << "Detected Collision with agent: " << inId << std::endl;
                     mavros_msgs::SetMode mode_msg;
                     mode_msg.request.custom_mode = "BRAKE";
                     set_mode.call(mode_msg);     
@@ -121,11 +122,11 @@ int main(int argc, char **argv) {
     std::string plotFile;
     bool plotBool = false;
 
-    // for (int i =  0; i < argc; i++ ) {
-    //     std::cout << "arg " << i << " is " << argv[i] << std::endl;
-    // }
+    for (int i =  0; i < argc; i++ ) {
+        std::cout << "arg " << i << " is " << argv[i] << std::endl;
+    }
 
-    if (argc > 5){
+    if (argc > 6){
         std::string plotFile = argv[2];
         plotBool = true;
         std::cout << "Plotting Enabled" << std::endl;
@@ -142,7 +143,12 @@ int main(int argc, char **argv) {
 
     //Setup Publishers and subscribers
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
-    ros::Subscriber res_subscriber = nh.subscribe("/reachable_state", 100, &agent::intersection_cb, &thisAgent);
+
+    ros::Subscriber res1_subscriber = nh.subscribe("/agent_1/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res2_subscriber = nh.subscribe("/agent_2/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res3_subscriber = nh.subscribe("/agent_3/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res4_subscriber = nh.subscribe("/agent_4/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
@@ -169,7 +175,7 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 0.05, 0.01);
+        thisAgent.computeRechableSet(5.0 ,0.5 ,1.0, 0.05, 0.01);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'

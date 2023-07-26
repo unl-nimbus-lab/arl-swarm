@@ -14,8 +14,28 @@
 
 int main(int argc, char **argv) {
 
-    int thisAgent = 3;
+    int thisAgent = std::stoi(argv[1]);
+    int bounds = std::stoi(argv[2]);
+    std::string direction = argv[3];
 
+    float xoff = 0;
+    float yoff = 0;
+
+    if (direction == "E") {
+        xoff = 0;
+        yoff = 50;
+    } else if (direction == "W") {
+        xoff = 0;
+        yoff = -50;
+    } else if (direction == "N") {
+        xoff = 50;
+        yoff = 0;
+    } else if (direction == "S") {
+        xoff = -50;
+        yoff = 0;
+    } else {
+        std::cout << "Did not provide a valid direction" << std::endl;
+    }
 
     //Initialize ROS
     ros::init(argc, argv, "fakeAgent");
@@ -29,11 +49,11 @@ int main(int argc, char **argv) {
 
     while( ros::ok() ) {
 
-        rsMessage.x.min = -20;
-        rsMessage.x.max = 20;
+        rsMessage.x.min = -1 * bounds + xoff;
+        rsMessage.x.max = bounds + xoff;
 
-        rsMessage.y.min = -20;
-        rsMessage.y.max = 20;
+        rsMessage.y.min = -1 * bounds + yoff;
+        rsMessage.y.max = bounds + yoff;
 
         rsMessage.z.min = 300;
         rsMessage.z.max = 400;

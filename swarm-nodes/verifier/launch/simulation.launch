@@ -25,7 +25,7 @@
         <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID1)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID1)/agent_position_xy"/>
             <remap from="/mavros/set_mode" to="/agent_1/mavros/set_mode" />
-            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+            <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/>
         </node>
     </group>
 
@@ -46,7 +46,7 @@
         <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID2)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID2)/agent_position_xy"/>
             <remap from="/mavros/set_mode" to="/agent_2/mavros/set_mode" />
-            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+            <remap from="/reachable_state" to="/agent_$(arg system_ID2)/reachable_state"/>
         </node>
     </group>
 
@@ -67,7 +67,7 @@
         <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID3)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID3)/agent_position_xy"/>
             <remap from="/mavros/set_mode" to="/agent_3/mavros/set_mode" />
-            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+            <remap from="/reachable_state" to="/agent_$(arg system_ID3)/reachable_state"/>
         </node>
     </group>
 
@@ -88,7 +88,7 @@
         <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID4)">
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID4)/agent_position_xy"/>
             <remap from="/mavros/set_mode" to="/agent_4/mavros/set_mode" />
-            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+            <remap from="/reachable_state" to="/agent_$(arg system_ID4)/reachable_state"/>
         </node>
     </group>
 

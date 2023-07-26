@@ -98,7 +98,7 @@
             bool intersects(hyperRectangle rect) {
                 /* Check if this rectangle intersects another rectangle */
 
-                for(int dim = 0; dim < dimensions; dim++) {
+                for(int dim = 0; dim < 3; dim++) {
                     if (rect.intervals[dim].min > intervals[dim].max || rect.intervals[dim].max < intervals[dim].min ) {
                         return false;
                     }
