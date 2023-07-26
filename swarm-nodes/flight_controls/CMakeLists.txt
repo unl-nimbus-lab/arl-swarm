@@ -40,3 +40,5 @@ include_directories(
 ## Declare a C++ executable
 add_executable(flight_controls src/flight_controls.cpp)
 target_link_libraries(flight_controls ${catkin_LIBRARIES})
+add_executable(flight_ram src/flight_ram.cpp)
+target_link_libraries(flight_ram ${catkin_LIBRARIES})

@@ -14,6 +14,7 @@
 
             <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID1)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID1)/mavros/global_position/swarm_vel"/>
             <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
             <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
             <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
@@ -35,6 +36,7 @@
 
             <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID2)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID2)/mavros/global_position/swarm_vel"/>
             <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
             <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
             <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
@@ -54,11 +56,8 @@
 
         <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID3) $(arg homeLat) $(arg homeLon)"> 
 
-            <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID3)/mavros/global_position/swarm"/>
-            <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
-            <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
-            <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID3)/mavros/global_position/swarm_vel"/>
             <remap from="/mavros/local_position/velocity_local" to="/agent_3/mavros/local_position/velocity_local" />
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID3)/agent_position_xy"/>
 
@@ -75,11 +74,8 @@
 
         <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID4) $(arg homeLat) $(arg homeLon)"> 
 
-            <!-- <remap from="/mavros/debug_value/debug_vector" to="/agent_$(arg system_ID)/mavros/debug_value/debug_vector"/> -->
             <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID4)/mavros/global_position/swarm"/>
-            <!-- <remap from="/mavros/debug_value/send" to="/agent_$(arg system_ID)/mavros/debug_value/send"/> -->
-            <!-- <remap from="/mavros/setpoint_position/global" to="/agent_$(arg system_ID)/mavros/setpoint_position/global"/> -->
-            <!-- <remap from="/mavros/set_mode" to="/agent_$(arg system_ID)/mavros/set_mode"/> -->
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID4)/mavros/global_position/swarm_vel"/>
             <remap from="/mavros/local_position/velocity_local" to="/agent_4/mavros/local_position/velocity_local" />
             <remap from="/agent_position_xy" to="/agent_$(arg system_ID4)/agent_position_xy"/>
 

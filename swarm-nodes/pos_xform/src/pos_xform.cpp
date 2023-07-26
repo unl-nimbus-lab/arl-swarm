@@ -4,6 +4,7 @@
 #include "geometry_msgs/TwistStamped.h"
 #include "custom_libs/geo_converter.hpp"
 #include "mavros_msgs/SwarmGPS.h"
+#include "mavros_msgs/SwarmVel.h"
 #include <string>
 #include <cstring>
 #include "custom_libs/FullState.h"
@@ -37,15 +38,15 @@ class agentState {
         int lastNsec = 0;
         float rate = 0.25;
 
-        void velocity_cb(const geometry_msgs::TwistStamped::ConstPtr& msg) {
+        void velocity_cb(const mavros_msgs::SwarmVel::ConstPtr& msg) {
 
             double oX_VEL = X_VEL;
             double oY_VEL = Y_VEL;
             double oZ_VEL = Z_VEL;
 
-            X_VEL = msg->twist.linear.y; //X and Y are not a typo, my frames are just that way
-            Y_VEL = msg->twist.linear.x;
-            Z_VEL = msg->twist.linear.z;
+            X_VEL = msg->x; //X and Y are not a typo, my frames are just that way
+            Y_VEL = msg->y;
+            Z_VEL = -1.0 * msg->z;
 
             X_ACC = (X_VEL - oX_VEL)/rate;
             Y_ACC = (Y_VEL - oY_VEL)/rate;
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 
     //Setup Publishers and subscribers
     ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 1, &agentState::gps_cb, &thisAgent);
-    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/local_position/velocity_local", 1, &agentState::velocity_cb, &thisAgent);
+    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/global_position/swarm_vel", 1, &agentState::velocity_cb, &thisAgent);
 
     ros::Publisher pos_publisher = nh.advertise<custom_libs::FullState>("/agent_position_xy", 1, true);
 
@@ -106,7 +107,7 @@ int main(int argc, char **argv) {
 
         pos_publisher.publish(stateMsg);
 
-        ros::Duration(0.5).sleep();
+        ros::Duration(0.2).sleep();
         ros::spinOnce();
     }
 

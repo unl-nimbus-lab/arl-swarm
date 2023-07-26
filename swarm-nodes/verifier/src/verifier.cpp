@@ -175,22 +175,22 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,1.0, 0.05, 0.01);
+        thisAgent.computeRechableSet(5.0 ,0.5 ,1.0, 0.05, 0.005);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
-        if (plotBool == true) {
-            thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-            std::ofstream outputFile("/home/json_things/reachableStates.json");
-            if(outputFile.is_open() ) {
-                outputFile << thisAgent.j.dump(4);
-                outputFile.close();
-                std::cout << "JSONFILE SAVED" << std::endl;
-            }
-        }
+        // if (plotBool == true) {
+        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+        //     std::ofstream outputFile("/home/json_things/reachableStates.json");
+        //     if(outputFile.is_open() ) {
+        //         outputFile << thisAgent.j.dump(4);
+        //         outputFile.close();
+        //         std::cout << "JSONFILE SAVED" << std::endl;
+        //     }
+        // }
 
         rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
         rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
