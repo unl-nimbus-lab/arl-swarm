@@ -292,6 +292,10 @@ class TheRadio(object):
                 self.simming = True
         print(f"Simming is set to {self.simming}.")
 
+        if (len(sys.argv) > 3):
+            numberOfAgents = sys.argv[3]
+        print(f"Connecting to {numberOfAgents} simulated agents")
+
         #initialize the actual radio hardware if not simming
         if (self.simming == False):
             radio_port = '/dev/ttyXBEE'
@@ -387,5 +391,3 @@ class TheRadio(object):
 if __name__ == '__main__':
     r = TheRadio()
     r.main_loop()
-
-
