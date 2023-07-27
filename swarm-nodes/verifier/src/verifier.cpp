@@ -148,6 +148,10 @@ int main(int argc, char **argv) {
     ros::Subscriber res2_subscriber = nh.subscribe("/agent_2/reachable_state", 1, &agent::intersection_cb, &thisAgent);
     ros::Subscriber res3_subscriber = nh.subscribe("/agent_3/reachable_state", 1, &agent::intersection_cb, &thisAgent);
     ros::Subscriber res4_subscriber = nh.subscribe("/agent_4/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res5_subscriber = nh.subscribe("/agent_5/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res6_subscriber = nh.subscribe("/agent_6/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res7_subscriber = nh.subscribe("/agent_7/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    ros::Subscriber res8_subscriber = nh.subscribe("/agent_8/reachable_state", 1, &agent::intersection_cb, &thisAgent);
 
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -175,7 +179,7 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 0.05, 0.005);
+        thisAgent.computeRechableSet(5.0 ,0.5 ,3.0, 0.05, 0.005);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'

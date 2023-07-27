@@ -83,8 +83,8 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     //Setup Publishers and subscribers
-    ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 5, &agentState::gps_cb, &thisAgent);
-    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/global_position/swarm_vel", 5, &agentState::velocity_cb, &thisAgent);
+    ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 10, &agentState::gps_cb, &thisAgent);
+    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/global_position/swarm_vel", 10, &agentState::velocity_cb, &thisAgent);
 
     ros::Publisher pos_publisher = nh.advertise<custom_libs::FullState>("/agent_position_xy", 1, true);
 
