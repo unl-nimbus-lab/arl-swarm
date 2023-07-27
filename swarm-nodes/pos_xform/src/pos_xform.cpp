@@ -39,18 +39,19 @@ class agentState {
         float rate = 0.25;
 
         void velocity_cb(const mavros_msgs::SwarmVel::ConstPtr& msg) {
+            if(msg->system_id == SYSID_THISMAV) {
+                double oX_VEL = X_VEL;
+                double oY_VEL = Y_VEL;
+                double oZ_VEL = Z_VEL;
 
-            double oX_VEL = X_VEL;
-            double oY_VEL = Y_VEL;
-            double oZ_VEL = Z_VEL;
+                X_VEL = msg->x; //X and Y are not a typo, my frames are just that way
+                Y_VEL = msg->y;
+                Z_VEL = -1.0 * msg->z;
 
-            X_VEL = msg->x; //X and Y are not a typo, my frames are just that way
-            Y_VEL = msg->y;
-            Z_VEL = -1.0 * msg->z;
-
-            X_ACC = (X_VEL - oX_VEL)/rate;
-            Y_ACC = (Y_VEL - oY_VEL)/rate;
-            Z_ACC = (Z_VEL - oZ_VEL)/rate;
+                X_ACC = (X_VEL - oX_VEL)/rate;
+                Y_ACC = (Y_VEL - oY_VEL)/rate;
+                Z_ACC = (Z_VEL - oZ_VEL)/rate;
+            }
         }
 
 
@@ -82,8 +83,8 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     //Setup Publishers and subscribers
-    ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 1, &agentState::gps_cb, &thisAgent);
-    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/global_position/swarm_vel", 1, &agentState::velocity_cb, &thisAgent);
+    ros::Subscriber gps_subscriber = nh.subscribe("/mavros/global_position/swarm", 5, &agentState::gps_cb, &thisAgent);
+    ros::Subscriber vel_subscriber = nh.subscribe("/mavros/global_position/swarm_vel", 5, &agentState::velocity_cb, &thisAgent);
 
     ros::Publisher pos_publisher = nh.advertise<custom_libs::FullState>("/agent_position_xy", 1, true);
 

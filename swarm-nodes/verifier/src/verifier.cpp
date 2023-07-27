@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,1.0, 0.05, 0.005);
+        thisAgent.computeRechableSet(5.0 ,0.5 ,2.0, 0.05, 0.005);
 
         //std::get<0>(thisAgent.myReachableState).disp();
         //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
