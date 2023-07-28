@@ -39,3 +39,6 @@ services:
       - type: "bind"
         source: "../../swarm-nodes/fake_agents"
         target: "/home/catkin_ws/src/fake_agents"
+      - type: "bind"
+        source: "../../swarm-nodes/swarm_comms"
+        target: "/home/catkin_ws/src/swarm_comms"

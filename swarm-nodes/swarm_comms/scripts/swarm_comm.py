@@ -12,6 +12,7 @@ from geometry_msgs.msg import PointStamped
 from swarm_comms.msg import allAgentsPosStamped
 from swarm_comms.msg import agentPos
 from mavros_msgs.msg import SwarmGPS
+from verifier_comms.msg import hyperRectangle
 #Jack's agent class here:
 from agent import Agent
 
@@ -239,6 +240,9 @@ class TheRadio(object):
             self.y = str(round(data.point.y,2))
             self.z = '0.0' #str(round(data.point.z,2))
 
+    def rs_callback(self, data):
+        print("oop")
+
     
     def vel_callback(self, data):
         self.vx = '0.0' # str(data.twist.linear.x)
@@ -284,7 +288,7 @@ class TheRadio(object):
         
         # grab the system id as the first command line arg
         if (len(sys.argv) > 1):
-            self.sys_id = sys.argv[1]
+            self.sys_id = int(sys.argv[1])
             print(f"Setting sys_id to {self.sys_id}.")
 
         if (len(sys.argv) > 2):
@@ -293,7 +297,7 @@ class TheRadio(object):
         print(f"Simming is set to {self.simming}.")
 
         if (len(sys.argv) > 3):
-            numberOfAgents = sys.argv[3]
+            numberOfAgents = int(sys.argv[3])
         print(f"Connecting to {numberOfAgents} simulated agents")
 
         #initialize the actual radio hardware if not simming
@@ -301,19 +305,11 @@ class TheRadio(object):
             radio_port = '/dev/ttyXBEE'
             radio_baud = 57600
 
-        #self.position_pub = rospy.Publisher('position_info', String, queue_size=10)
-        self.agent_pos_pub = rospy.Publisher('agent_pos', allAgentsPosStamped, queue_size = 10)
-
-        rospy.Subscriber("agent_position_xy", PointStamped, self.gps_callback)
-        print("Subscribing to mavros/local_position/velocity_local for velocity information.")
-        rospy.Subscriber("mavros/local_position/velocity_local", TwistStamped, self.vel_callback)
-
-        if (self.simming==True):
-            print(f"Setting up sim publisher/subscriber for agent {self.sys_id} ...")
-            self.radio_pub = rospy.Publisher('/radio_traffic', String, queue_size = 10)
-            print("Publishing to radio_traffic.")
-            rospy.Subscriber("/radio_traffic", String, self.radio_callback)
-            print("Subscribed to radio_traffic.")
+        if (self.simming == True):
+            rs_pub = rospy.Publisher(f"/agent_{self.sys_id}_reachable_state", hyperRectangle, queue_size = 10)
+            for i in range(1,numberOfAgents+1):
+                if( i != self.sys_id):
+                    rospy.Subscriber(f"agent_{i}_reachable_state", hyperRectangle, self.rs_callback)
 
         if (self.simming == False):
             self.radio = XBeeDevice(radio_port, radio_baud)
@@ -351,11 +347,12 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz
+            #radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz
             
             #store our own data here by calling self.store_remote_agent_data() and using radio_str
-            time_received = self.millis()
-            self.store_remote_agent_data(radio_str, time_received)
+            
+            #time_received = self.millis()
+            #self.store_remote_agent_data(radio_str, time_received)
 
             #print("Sending: " + radio_str)
             #print(f"The length of radio_str is: {len(radio_str)}")
@@ -368,23 +365,24 @@ class TheRadio(object):
                 #print(radio_str)
             else:
                 #publish to topic
-                s = String()
-                s.data = radio_str;
-                self.radio_pub.publish(s)
+                #s = String()
+                #s.data = radio_str;
+                #self.radio_pub.publish(s)
+                print("simming biotch")
 
             #debug print
             #print(radio_str)
 
             #check to see if more than 5 seconds have passed on any one
             #agent's update.  If so, remove that agent from the list
-            x = 0
-            for agent in self.agent_list:
-                if (self.millis() - agent.last_received > 5000):
-                    print("Update delay > 5 seconds. Removing Agent " +str(agent.node_id) + ".")
-                    #remove the agent from the list
-                    self.agent_list.remove(agent)        
-                    #remove node from list
-                    self.node_list.remove(agent.node_id)
+            # x = 0
+            # for agent in self.agent_list:
+            #     if (self.millis() - agent.last_received > 5000):
+            #         print("Update delay > 5 seconds. Removing Agent " +str(agent.node_id) + ".")
+            #         #remove the agent from the list
+            #         self.agent_list.remove(agent)        
+            #         #remove node from list
+            #         self.node_list.remove(agent.node_id)
 
             r.sleep()
 

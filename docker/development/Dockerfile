@@ -87,6 +87,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-noetic-control-toolbox \
     && rm -rf /var/lib/apt/lists/*
 
+COPY Utilities/xbee-python-master /home/xbee-python-master
+RUN pip3 install /home/xbee-python-master
+
 # Install MAVROS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-lxml \
