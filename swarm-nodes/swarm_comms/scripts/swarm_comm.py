@@ -19,22 +19,6 @@ from agent import Agent
 class TheRadio(object):
     '''Class to get xbee data and publish to ros topic'''
 
-    #class vars to transmit position data
-    x = '0.0'
-    y = '0.0'
-    z = '0.0'
-    sys_id = '0'
-    vx = '0.0'
-    vy = '0.0'
-    vz = '0.0'
-    ix = '0.0'
-    iy = '0.0'
-    iz = '0.0'
-    agent_list = []
-    node_list = []
-    simming = False
-
-
     def millis(self):
         return round(time.time() * 1000)
 
@@ -241,7 +225,7 @@ class TheRadio(object):
             self.z = '0.0' #str(round(data.point.z,2))
 
     def rs_callback(self, data):
-        print("oop")
+        self.rs_pub.publish(data)
 
     
     def vel_callback(self, data):
@@ -283,6 +267,9 @@ class TheRadio(object):
             
             self.agent_pos_pub.publish(allAgents)
 
+    def mystate_callback(self, data):
+        self.rs_pub.publish(data)
+
     def __init__(self):
         rospy.init_node('mesh_radio')
         
@@ -298,7 +285,7 @@ class TheRadio(object):
 
         if (len(sys.argv) > 3):
             numberOfAgents = int(sys.argv[3])
-        print(f"Connecting to {numberOfAgents} simulated agents")
+            print(f"Connecting to {numberOfAgents} simulated agents")
 
         #initialize the actual radio hardware if not simming
         if (self.simming == False):
@@ -307,14 +294,14 @@ class TheRadio(object):
         
         #Setup simming publishers and subscribers
         if (self.simming == True):
-            rs_pub = rospy.Publisher(f"/agent_{self.sys_id}_reachable_state", hyperRectangle, queue_size = 10)
+            self.rs_pub = rospy.Publisher(f"/agent_{self.sys_id}_reachable_state", hyperRectangle, queue_size = 10)
             for i in range(1,numberOfAgents+1):
                 if( i != self.sys_id):
                     rospy.Subscriber(f"agent_{i}_reachable_state", hyperRectangle, self.rs_callback)
 
         #Publishers and subscribers regarless of simming
-        received_pub = rospy.Publsiher("/recived_pub", hyperRectangle, queue_size = 10)
-        rospy.Subscriber("/my_state", hyperRectangle, self.handle_mystate)
+        self.received_pub = rospy.Publisher("/received_state", hyperRectangle, queue_size = 10)
+        rospy.Subscriber("/my_reach_state", hyperRectangle, self.mystate_callback)
 
         if (self.simming == False):
             self.radio = XBeeDevice(radio_port, radio_baud)
@@ -361,19 +348,24 @@ class TheRadio(object):
 
             #print("Sending: " + radio_str)
             #print(f"The length of radio_str is: {len(radio_str)}")
-            if (self.simming == False):
-                #broadcast on radio if not simming
-                try:
-                    self.radio.send_data_broadcast(radio_str)
-                except TransmitException:
-                    print("Data block too long.")
-                #print(radio_str)
-            else:
-                #publish to topic
-                #s = String()
-                #s.data = radio_str;
-                #self.radio_pub.publish(s)
-                print("simming biotch")
+
+            ########################################################################3
+            # if (self.simming == False):
+            #     #broadcast on radio if not simming
+            #     try:
+            #         self.radio.send_data_broadcast(radio_str)
+            #     except TransmitException:
+            #         print("Data block too long.")
+            #     #print(radio_str)
+            # else:
+            #     #publish to topic
+            #     #s = String()
+            #     #s.data = radio_str;
+            #     #self.radio_pub.publish(s)
+            #     print("simming biotch")
+
+            rospy.spin()
+            ########################################################################
 
             #debug print
             #print(radio_str)
@@ -389,7 +381,7 @@ class TheRadio(object):
             #         #remove node from list
             #         self.node_list.remove(agent.node_id)
 
-            r.sleep()
+            # r.sleep()
 
 if __name__ == '__main__':
     r = TheRadio()

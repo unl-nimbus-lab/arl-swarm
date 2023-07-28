@@ -144,16 +144,17 @@ int main(int argc, char **argv) {
     //Setup Publishers and subscribers
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
 
-    ros::Subscriber res1_subscriber = nh.subscribe("/agent_1/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res2_subscriber = nh.subscribe("/agent_2/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res3_subscriber = nh.subscribe("/agent_3/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res4_subscriber = nh.subscribe("/agent_4/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res5_subscriber = nh.subscribe("/agent_5/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res6_subscriber = nh.subscribe("/agent_6/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res7_subscriber = nh.subscribe("/agent_7/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    ros::Subscriber res8_subscriber = nh.subscribe("/agent_8/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res1_subscriber = nh.subscribe("/agent_1/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res2_subscriber = nh.subscribe("/agent_2/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res3_subscriber = nh.subscribe("/agent_3/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res4_subscriber = nh.subscribe("/agent_4/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res5_subscriber = nh.subscribe("/agent_5/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res6_subscriber = nh.subscribe("/agent_6/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res7_subscriber = nh.subscribe("/agent_7/reachable_state", 1, &agent::intersection_cb, &thisAgent);
+    // ros::Subscriber res8_subscriber = nh.subscribe("/agent_8/reachable_state", 1, &agent::intersection_cb, &thisAgent);
 
-    ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
+    ros::Subscriber rs_subscriber = nh.subscribe("/received_state")
+    ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
     //Time Things
