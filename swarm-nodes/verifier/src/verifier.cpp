@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
     // ros::Subscriber res7_subscriber = nh.subscribe("/agent_7/reachable_state", 1, &agent::intersection_cb, &thisAgent);
     // ros::Subscriber res8_subscriber = nh.subscribe("/agent_8/reachable_state", 1, &agent::intersection_cb, &thisAgent);
 
-    ros::Subscriber rs_subscriber = nh.subscribe("/received_state")
+    ros::Subscriber rs_subscriber = nh.subscribe("/received_state", 10, &agent::intersection_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
@@ -172,7 +172,8 @@ int main(int argc, char **argv) {
         float reachTime = duration.toSec() * 1000;
         thisAgent.timeStamp = reachTime;
 
-        /*Because I forget compute reachable set arguments:
+        /*
+        Because I forget compute reachable set arguments:
         1) Postition Error
         2) Velocity Error
         3) Reach time

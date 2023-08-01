@@ -225,7 +225,7 @@ class TheRadio(object):
             self.z = '0.0' #str(round(data.point.z,2))
 
     def rs_callback(self, data):
-        self.rs_pub.publish(data)
+        self.received_pub.publish(data)
 
     
     def vel_callback(self, data):
@@ -271,7 +271,6 @@ class TheRadio(object):
         self.rs_pub.publish(data)
 
     def __init__(self):
-        rospy.init_node('mesh_radio')
         
         # grab the system id as the first command line arg
         if (len(sys.argv) > 1):
@@ -291,6 +290,8 @@ class TheRadio(object):
         if (self.simming == False):
             radio_port = '/dev/ttyXBEE'
             radio_baud = 57600
+
+        rospy.init_node(f"agent_{self.sys_id}_mesh_radio")
         
         #Setup simming publishers and subscribers
         if (self.simming == True):
@@ -300,8 +301,8 @@ class TheRadio(object):
                     rospy.Subscriber(f"agent_{i}_reachable_state", hyperRectangle, self.rs_callback)
 
         #Publishers and subscribers regarless of simming
-        self.received_pub = rospy.Publisher("/received_state", hyperRectangle, queue_size = 10)
-        rospy.Subscriber("/my_reach_state", hyperRectangle, self.mystate_callback)
+        self.received_pub = rospy.Publisher(f"/agent_{self.sys_id}/received_state", hyperRectangle, queue_size = 10)
+        rospy.Subscriber(f"/agent_{self.sys_id}/my_reach_state", hyperRectangle, self.mystate_callback)
 
         if (self.simming == False):
             self.radio = XBeeDevice(radio_port, radio_baud)
