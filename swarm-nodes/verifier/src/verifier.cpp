@@ -17,6 +17,8 @@ safetyChecker verifier;
 ros::ServiceClient set_mode;
 
 class agent {
+    /* Agent class holds all state data (both dynaimic and reachable)*/
+
     public:
         int SYSID_THISMAV = 0;
         float x = 0.0;
@@ -111,7 +113,25 @@ class agent {
             }
         }
 
+        void packRectangleMessage(hyperRectangle rect, verifier_comms::hyperRectangle &msg) {
+            /* Pack a hyperRectangle ROS message with data from hypreRectangle object*/
+            
+            msg.x.min = rect.intervals[0].min;
+            msg.x.max = rect.intervals[0].max;
+            msg.y.min = rect.intervals[1].min;
+            msg.y.max = rect.intervals[1].max;
+            msg.z.min = rect.intervals[2].min;
+            msg.z.max = rect.intervals[2].max;
+            msg.vx.min = rect.intervals[3].min;
+            msg.vx.max = rect.intervals[3].max;
+            msg.vy.min = rect.intervals[4].min;
+            msg.vy.max = rect.intervals[4].max;
+            msg.vz.min = rect.intervals[5].min;
+            msg.vz.max = rect.intervals[5].max;
+        }
+
         agent(int id) {
+            /* Constructor to set the system ID for the Agent*/
             SYSID_THISMAV = id;
         }
 };
@@ -143,18 +163,10 @@ int main(int argc, char **argv) {
 
     //Setup Publishers and subscribers
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
-
-    // ros::Subscriber res1_subscriber = nh.subscribe("/agent_1/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res2_subscriber = nh.subscribe("/agent_2/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res3_subscriber = nh.subscribe("/agent_3/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res4_subscriber = nh.subscribe("/agent_4/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res5_subscriber = nh.subscribe("/agent_5/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res6_subscriber = nh.subscribe("/agent_6/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res7_subscriber = nh.subscribe("/agent_7/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-    // ros::Subscriber res8_subscriber = nh.subscribe("/agent_8/reachable_state", 1, &agent::intersection_cb, &thisAgent);
-
     ros::Subscriber rs_subscriber = nh.subscribe("/received_state", 10, &agent::intersection_cb, &thisAgent);
+
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
+
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
     //Time Things
@@ -183,9 +195,6 @@ int main(int argc, char **argv) {
 
         thisAgent.computeRechableSet(5.0 ,0.5 ,3.0, 0.05, 0.005);
 
-        //std::get<0>(thisAgent.myReachableState).disp();
-        //std::cout << "my Reach Time is: " << std::get<1>(thisAgent.myReachableState) << std::endl;'
-
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
         // if (plotBool == true) {
@@ -198,23 +207,8 @@ int main(int argc, char **argv) {
         //     }
         // }
 
-        rsMessage.x.min = get<0>(thisAgent.myReachableState).intervals[0].min;
-        rsMessage.x.max = get<0>(thisAgent.myReachableState).intervals[0].max;
+        thisAgent.packRectangleMessage(std::get<0>(thisAgent.myReachableState), rsMessage);
 
-        rsMessage.y.min = get<0>(thisAgent.myReachableState).intervals[1].min;
-        rsMessage.y.max = get<0>(thisAgent.myReachableState).intervals[1].max;
-
-        rsMessage.z.min = get<0>(thisAgent.myReachableState).intervals[2].min;
-        rsMessage.z.max = get<0>(thisAgent.myReachableState).intervals[2].max;
-
-        rsMessage.vx.min = get<0>(thisAgent.myReachableState).intervals[3].min;
-        rsMessage.vx.max = get<0>(thisAgent.myReachableState).intervals[3].max;
-
-        rsMessage.vy.min = get<0>(thisAgent.myReachableState).intervals[4].min;
-        rsMessage.vy.max = get<0>(thisAgent.myReachableState).intervals[4].max;
-
-        rsMessage.vz.min = get<0>(thisAgent.myReachableState).intervals[5].min;
-        rsMessage.vz.max = get<0>(thisAgent.myReachableState).intervals[5].max;
 
         rsMessage.header.stamp = ros::Time::now();
 

@@ -15,6 +15,7 @@ from mavros_msgs.msg import SwarmGPS
 from verifier_comms.msg import hyperRectangle
 #Jack's agent class here:
 from agent import Agent
+from reachableState import 
 
 class TheRadio(object):
     '''Class to get xbee data and publish to ros topic'''
@@ -28,7 +29,7 @@ class TheRadio(object):
 
     #The data_rcvd_callback is triggered when serial data is received
     def data_rcvd_callback(self,xb_msg):
-        time_received = self.millis()
+        # time_received = self.millis()
         #print(xb_msg.data.decode('utf8')+'  at: '+ str(time_received))
         #address = xb_msg.remote_device.get_64bit_addr()
         #node_id = self.xnet.get_device_by_64(address).get_node_id()
@@ -44,31 +45,37 @@ class TheRadio(object):
         if (data[0] == 'C'):
             self.process_command(data[1])
         else:
-            #self.parse_remote_agent_location(data)
-            self.store_remote_agent_data(data, time_received)
+            id_num, xl, xh, yl, yh, zl, zh = self.parse_remote_agent_location(data)
+            #self.store_remote_agent_data(data, time_received)
             #now publish remote agent data to the agent_pos topic
-            allAgents = allAgentsPosStamped()
-            for agent in self.agent_list:
-                a = agentPos()
-                a.id = agent.node_id
-                a.x = agent.x
-                a.y = agent.y
-                a.z = agent.z
-                a.vx = agent.vx
-                a.vy = agent.vy
-                a.vz = agent.vz
-                a.ix = agent.ix
-                a.iy = agent.iy
-                a.iz = agent.iz
-                a.time_since_update = agent.time_between_locations
-                allAgents.agents.append(a)
+            remote_rs = hyperRectangle()
+            # for agent in self.agent_list:
+            #     a = agentPos()
+            #     a.id = agent.node_id
+            #     a.x = agent.x
+            #     a.y = agent.y
+            #     a.z = agent.z
+            #     a.vx = agent.vx
+            #     a.vy = agent.vy
+            #     a.vz = agent.vz
+            #     a.ix = agent.ix
+            #     a.iy = agent.iy
+            #     a.iz = agent.iz
+            #     a.time_since_update = agent.time_between_locations
+            #     allAgents.agents.append(a)
 
-            #add time to header
-            allAgents.header.stamp = rospy.Time.now()
+            remote_rs.x.min = xl
+            remote_rs.x.max = xh
+            remote_rs.y.min = yl
+            remote_rs.y.max = yh
+            remote_rs.z.min = zl
+            remote_rs.z.max = zh
+
+            # #add time to header
+            remote_rs.header.stamp = rospy.Time.now()
                         
-            #publish to topic
-            self.agent_pos_pub.publish(allAgents)
-
+            # #publish to topic
+            self.received_pub.publish(remote_rs)
 
     def parse_remote_agent_location(self,data):
 
@@ -86,125 +93,49 @@ class TheRadio(object):
             id_num = int(temp_str)
             temp_str = ''
 
-            #increment idx so we go past the 'x' in the 
             #received string
             idx += 2
+            while (data[idx] != 'x'):
+                temp_str += data[idx]
+                idx += 1
+            xl = float(temp_str)
+            temp_str = ''
+            idx+=1
+            
             while (data[idx] != 'y'):
                 temp_str += data[idx]
                 idx += 1
-            px = float(temp_str)
+            xh = float(temp_str)
             temp_str = ''
             idx+=1
             
+            while (data[idx] !='y'):
+                temp_str += data[idx]
+                idx += 1
+            yl = float(temp_str)
+            temp_str = ''
+            idx+=1
+
+            while (data[idx] !='z'):
+                temp_str += data[idx]
+                idx += 1
+            yh = float(temp_str)
+            temp_str = ''
+            idx+=1
+
             while (data[idx] != 'z'):
                 temp_str += data[idx]
                 idx += 1
-            py = float(temp_str)
+            zl = float(temp_str)
             temp_str = ''
-            idx+=1
-            
-            #alt
-            while (data[idx] !='v'):
-                temp_str += data[idx]
-                idx += 1
-            pz = 0.0 #float(temp_str)
-            temp_str = ''
-            idx+=2
+            idx+= 1
 
-            #vx
-            while (data[idx] !='v'):
-                temp_str += data[idx]
-                idx += 1
-            vx = float(temp_str)
-            temp_str = ''
-            idx+=2
-
-            #vy
-            while (data[idx] != 'v'):
-                temp_str += data[idx]
-                idx += 1
-            vy = float(temp_str)
-            temp_str = ''
-            idx+= 2
-
-            #vz
             while (idx < len(data)):
                 temp_str += data[idx]
                 idx += 1
-            vz = float(temp_str)
-            temp_str = ''
-            idx+= 2
+            zh = float(temp_str)
 
-            #ix
-            #while (data[idx] != 'i'):
-            #    temp_str += data[idx]
-            #    idx += 1
-            ix = 0.0 #float(temp_str)
-            #temp_str = ''
-            #idx += 2
-
-            #iy
-            #while (data[idx] != 'i'):
-            #    temp_str += data[idx]
-            #    idx+= 1
-            iy = 0.0 #float(temp_str)
-            #temp_str = ''
-            #idx += 2
-
-            #iz
-            #while(idx < len(data)):
-            #    temp_str += data[idx]
-            #    idx += 1
-            iz = 0.0 # float(temp_str)
-
-            return id_num, px, py, pz, vx, vy, vz, ix, iy, iz
-
-    def store_remote_agent_data(self, data, time_received):
-        id_num, px, py, pz, vx, vy, vz, ix, iy, iz = self.parse_remote_agent_location(data)
-
-        #For simulation purposes, we exit out here if the data is our own
-        #if (id_num == int(self.sys_id)):
-        #    return None
-
-        remote_agent_message = (id_num, data, time_received)
-
-        if (id_num not in self.node_list):
-            self.node_list.append(id_num)
-            new_agent = Agent(id_num, [remote_agent_message])
-            new_agent.x = px
-            new_agent.y = py
-            new_agent.z = pz
-            new_agent.vx = vx
-            new_agent.vy = vy
-            new_agent.vz = vz
-            new_agent.ix = ix
-            new_agent.iy = iy
-            new_agent.iz = iz
-            new_agent.last_received = time_received #new_agent.current_received
-            new_agent.current_received = time_received
-            new_agent.time_between_locations = new_agent.current_received - new_agent.last_received
-            self.agent_list.append(new_agent)
-            print("Adding Agent " + str(new_agent.node_id) + ".")
-        else:
-            self.update_agent_location(id_num, px, py, pz, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message)
-
-    def update_agent_location(self, id_num, px, py, pz, vx, vy, vz, ix, iy, iz, time_received, remote_agent_message):
-        for agent in self.agent_list:
-            if (id_num == agent.node_id):
-                agent.x = px
-                agent.y = py
-                agent.z = pz
-                agent.vx = vx
-                agent.vy = vy
-                agent.vz = vz
-                agent.ix = ix
-                agent.iy = iy
-                agent.iz = iz
-                agent.last_received = agent.current_received
-                agent.current_received = time_received
-                agent.time_between_locations = agent.current_received - agent.last_received
-                agent.responses.append(remote_agent_message)
-                break
+            return id_num, xl, xh, yl, yh, zl, zh
 
     #The net_modified_callback is triggered when the network is modified
     def net_modified_callback(self, event_type, reason, node):
@@ -217,58 +148,23 @@ class TheRadio(object):
 
         print("              Node: %s" % node)
 
-
-    def gps_callback(self, data):
-        if (data.header.frame_id == self.sys_id):
-            self.x = str(round(data.point.x,2))
-            self.y = str(round(data.point.y,2))
-            self.z = '0.0' #str(round(data.point.z,2))
-
     def rs_callback(self, data):
         self.received_pub.publish(data)
 
-    
-    def vel_callback(self, data):
-        self.vx = '0.0' # str(data.twist.linear.x)
-        self.vy = '0.0' #str(data.twist.linear.y)
-        self.vz = '0.0' #str(data.twist.linear.z)
-
-    def radio_callback(self, xb_msg):
-        #mimic the data_rcvd_callback for the radio here
-        time_received = self.millis()
-        #store the string from the topic 
-        data = xb_msg.data
-
-        #TEMPORARY DEBUG ONLY!!!
-        #print(self.sys_id + 'rcvd: ' + data)
-
-        if (data[0]=='C'):
-            self.process_command(data[1])
-        else:
-            self.store_remote_agent_data(data, time_received)
-            allAgents = allAgentsPosStamped()
-            for agent in self.agent_list:
-                a = agentPos()
-                a.id = agent.node_id
-                a.x = agent.x
-                a.y = agent.y
-                a.z = 0.0 #agent.z --AP setting to zero for bandwidth
-                a.vx = agent.vx
-                a.vy = agent.vy
-                a.vz = agent.vz
-                a.ix = agent.ix
-                a.iy = agent.iy
-                a.iz = agent.iz
-                a.time_since_update = agent.time_between_locations
-                allAgents.agents.append(a)
-
-            #add time to header
-            allAgents.header.stamp = rospy.Time.now()
-            
-            self.agent_pos_pub.publish(allAgents)
+    def update_rs(self, data):
+        self.my_rs.reachableState.xmin = data.x.min
+        self.my_rs.reachableState.xmax = data.x.max
+        self.my_rs.reachableState.ymin = data.y.min
+        self.my_rs.reachableState.ymax = data.y.max
+        self.my_rs.reachableState.zmin = data.z.min
+        self.my_rs.reachableState.zmax = data.z.max
 
     def mystate_callback(self, data):
-        self.rs_pub.publish(data)
+        if (self.simming):
+            self.rs_pub.publish(data)
+        else:
+            self.update_rs(data)
+
 
     def __init__(self):
         
@@ -288,8 +184,10 @@ class TheRadio(object):
 
         #initialize the actual radio hardware if not simming
         if (self.simming == False):
-            radio_port = '/dev/ttyXBEE'
+            radio_port = '/dev/ttyUSB0'
             radio_baud = 57600
+
+        self.my_rs = reachableState(self.sys_id)
 
         rospy.init_node(f"agent_{self.sys_id}_mesh_radio")
         
@@ -332,7 +230,7 @@ class TheRadio(object):
         print("Swarm Comms node is running.")
 
         #restrict transmission of pos to 10 Hz
-        r = rospy.Rate(10)
+        r = rospy.Rate(2)
 
         while not rospy.is_shutdown():
             #change this to publish the gps coords at 10Hz.
@@ -340,7 +238,7 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            #radio_str = 'a'+self.sys_id+':x'+self.x+'y'+self.y+'z'+self.z+'vx'+self.vx+'vy'+self.vy+'vz'+self.vz
+            radio_str = 'a'+self.sys_id+':x'+self.my_rs.xmin+'x'+self.my_rs.xmax+'y'+self.my_rs.ymin+'y'+self.my_rs.ymax+'z'+self.my_rs.zmin+'z'+self.my_rs.z_max
             
             #store our own data here by calling self.store_remote_agent_data() and using radio_str
             
@@ -351,13 +249,13 @@ class TheRadio(object):
             #print(f"The length of radio_str is: {len(radio_str)}")
 
             ########################################################################3
-            # if (self.simming == False):
-            #     #broadcast on radio if not simming
-            #     try:
-            #         self.radio.send_data_broadcast(radio_str)
-            #     except TransmitException:
-            #         print("Data block too long.")
-            #     #print(radio_str)
+            if (self.simming == False):
+                #broadcast on radio if not simming
+                try:
+                    self.radio.send_data_broadcast(radio_str)
+                except TransmitException:
+                    print("Data block too long.")
+                #print(radio_str)
             # else:
             #     #publish to topic
             #     #s = String()
@@ -382,7 +280,7 @@ class TheRadio(object):
             #         #remove node from list
             #         self.node_list.remove(agent.node_id)
 
-            # r.sleep()
+            r.sleep()
 
 if __name__ == '__main__':
     r = TheRadio()
