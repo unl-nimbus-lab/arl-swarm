@@ -60,7 +60,7 @@ RUN pip3 install /home/xbee-python-master
 COPY swarm-nodes/mavros /home/catkin_ws/src/mavros
 
 # Install MAVLink and configure workspace
-RUN rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
+RUN apt-get update && rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
     && wstool merge -t src /tmp/mavros.rosinstall \
     && wstool update -t src -j4 \
     && rosdep install --from-paths src --ignore-src -y
