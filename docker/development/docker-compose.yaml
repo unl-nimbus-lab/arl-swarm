@@ -8,6 +8,8 @@ services:
     tty: true        # docker run -t
     container_name: swarm_development
     network_mode: "host"
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
     volumes:
     #   - type: bind
     #     source: ../../swarm-nodes/clustering_control/

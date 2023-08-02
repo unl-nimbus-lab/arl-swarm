@@ -15,7 +15,7 @@ from mavros_msgs.msg import SwarmGPS
 from verifier_comms.msg import hyperRectangle
 #Jack's agent class here:
 from agent import Agent
-from reachableState import 
+from reachableState import reachableState
 
 class TheRadio(object):
     '''Class to get xbee data and publish to ros topic'''
@@ -176,6 +176,9 @@ class TheRadio(object):
         if (len(sys.argv) > 2):
             if (sys.argv[2] == 'sim'):
                 self.simming = True
+        else:
+            self.simming = False
+
         print(f"Simming is set to {self.simming}.")
 
         if (len(sys.argv) > 3):
