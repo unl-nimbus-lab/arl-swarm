@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     //Setup Publishers and subscribers
-    ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/reachable_state", 1, true);
+    ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/agent_1/my_reach_state", 1, true);
 
     verifier_comms::hyperRectangle rsMessage;
     rsMessage.id = thisAgent;

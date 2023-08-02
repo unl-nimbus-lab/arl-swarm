@@ -152,12 +152,12 @@ class TheRadio(object):
         self.received_pub.publish(data)
 
     def update_rs(self, data):
-        self.my_rs.reachableState.xmin = data.x.min
-        self.my_rs.reachableState.xmax = data.x.max
-        self.my_rs.reachableState.ymin = data.y.min
-        self.my_rs.reachableState.ymax = data.y.max
-        self.my_rs.reachableState.zmin = data.z.min
-        self.my_rs.reachableState.zmax = data.z.max
+        self.my_rs.xmin = data.x.min
+        self.my_rs.xmax = data.x.max
+        self.my_rs.ymin = data.y.min
+        self.my_rs.ymax = data.y.max
+        self.my_rs.zmin = data.z.min
+        self.my_rs.zmax = data.z.max
 
     def mystate_callback(self, data):
         if (self.simming):
@@ -241,7 +241,8 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+self.sys_id+':x'+self.my_rs.xmin+'x'+self.my_rs.xmax+'y'+self.my_rs.ymin+'y'+self.my_rs.ymax+'z'+self.my_rs.zmin+'z'+self.my_rs.z_max
+            radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)
+            #print(radio_str)
             
             #store our own data here by calling self.store_remote_agent_data() and using radio_str
             
@@ -265,8 +266,6 @@ class TheRadio(object):
             #     #s.data = radio_str;
             #     #self.radio_pub.publish(s)
             #     print("simming biotch")
-
-            rospy.spin()
             ########################################################################
 
             #debug print
