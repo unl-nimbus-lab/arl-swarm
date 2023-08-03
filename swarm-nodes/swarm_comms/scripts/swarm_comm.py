@@ -176,6 +176,8 @@ class TheRadio(object):
         if (len(sys.argv) > 2):
             if (sys.argv[2] == 'sim'):
                 self.simming = True
+            else:
+                self.simming = False
         else:
             self.simming = False
 
