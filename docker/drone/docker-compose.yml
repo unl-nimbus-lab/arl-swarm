@@ -1,20 +1,17 @@
 version: '3'
 
 services:
-  clustering:
-    image: grantphllps/arl_swarm_drone
+  anti_collision:
+    image: grantphllps/verifier
     #image: clustering:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: clustering
+    container_name: anti_collision
     network_mode: "host"
-    volumes:
-      - /home/ubuntu/rosbags:/home/rosbags
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}
     command: >
-      /bin/bash -c "/home/bag_manager.sh /home/rosbags 5 &&
-                    source /home/catkin_ws/devel/setup.bash &&
-                    roslaunch src/clustering_control/launch/clustering_control_container.launch system_ID:=${SYS_ID} clusterID:=${CLUSTER_ID} clusterPosition:=${CLUSTER_POSITION} clusterSize:=${CLUSTER_SIZE} clusterRadius:=${CLUSTER_RADIUS} agentAlt:=${AGENT_ALT} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} homeAlt:=${HOME_ALT} rally1Lat:=${RALLY1LAT} rally1Lon:=${RALLY1LON} rally2Lat:=${RALLY2LAT} rally2Lon:=${RALLY2LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=${COMP_ID} swarm_comp:=${SWARM_COMP}"
+      /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
+                    roslaunch src/verifier/launch/container.launch system_ID:=${SYS_ID} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} tgt_component:=1"
     restart: always
