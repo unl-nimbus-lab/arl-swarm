@@ -189,7 +189,7 @@ class TheRadio(object):
 
         #initialize the actual radio hardware if not simming
         if (self.simming == False):
-            radio_port = '/dev/ttyUSB0'
+            radio_port = '/dev/ttyXBEE'
             radio_baud = 57600
 
         self.my_rs = reachableState(self.sys_id)
