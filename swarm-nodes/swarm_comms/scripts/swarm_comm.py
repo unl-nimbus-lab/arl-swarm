@@ -183,7 +183,7 @@ class TheRadio(object):
 
         print(f"Simming is set to {self.simming}.")
 
-        if (len(sys.argv) > 3 and self.simming):
+        if (len(sys.argv) > 3 and self.simming == True):
             numberOfAgents = int(sys.argv[3])
             print(f"Connecting to {numberOfAgents} simulated agents")
 
