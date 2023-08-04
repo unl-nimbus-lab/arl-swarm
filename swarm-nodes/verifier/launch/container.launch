@@ -21,7 +21,7 @@
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
 	</include>
 
-	<!-- <arg name="system_ID" default="" />
+	<arg name="system_ID" default="" />
 	<arg name="homeLon" default="-96.4710998" />
 	<arg name="homeLat" default="40.8459997" />
 
@@ -35,6 +35,6 @@
 
     <node pkg="swarm_comms" name="swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID)">
 
-    </node> -->
+    </node>
 
 </launch>
