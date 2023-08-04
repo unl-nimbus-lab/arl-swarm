@@ -191,6 +191,8 @@ class TheRadio(object):
         if (self.simming == False):
             radio_port = '/dev/ttyXBEE'
             radio_baud = 57600
+            publish_str = "/received_state"
+            subscribe_str = "/my_reach_state"
 
         self.my_rs = reachableState(self.sys_id)
 
@@ -202,10 +204,13 @@ class TheRadio(object):
             for i in range(1,numberOfAgents+1):
                 if( i != self.sys_id):
                     rospy.Subscriber(f"agent_{i}_reachable_state", hyperRectangle, self.rs_callback)
+            publish_str = f"/agent_{self.sys_id}/received_state"
+            subscribe_str = f"/agent_{self.sys_id}/my_reach_state"
+
 
         #Publishers and subscribers regarless of simming
-        self.received_pub = rospy.Publisher(f"/agent_{self.sys_id}/received_state", hyperRectangle, queue_size = 10)
-        rospy.Subscriber(f"/agent_{self.sys_id}/my_reach_state", hyperRectangle, self.mystate_callback)
+        self.received_pub = rospy.Publisher(publish_str, hyperRectangle, queue_size = 10)
+        rospy.Subscriber(subscribe_str, hyperRectangle, self.mystate_callback)
 
         if (self.simming == False):
             self.radio = XBeeDevice(radio_port, radio_baud)
