@@ -152,12 +152,12 @@ class TheRadio(object):
         self.received_pub.publish(data)
 
     def update_rs(self, data):
-        self.my_rs.xmin = data.x.min
-        self.my_rs.xmax = data.x.max
-        self.my_rs.ymin = data.y.min
-        self.my_rs.ymax = data.y.max
-        self.my_rs.zmin = data.z.min
-        self.my_rs.zmax = data.z.max
+        self.my_rs.xmin = round(data.x.min, 2)
+        self.my_rs.xmax = round(data.x.max, 2)
+        self.my_rs.ymin = round(data.y.min, 2)
+        self.my_rs.ymax = round(data.y.max, 2)
+        self.my_rs.zmin = round(data.z.min, 2)
+        self.my_rs.zmax = round(data.z.max, 2)
 
     def mystate_callback(self, data):
         if (self.simming):
