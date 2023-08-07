@@ -8,6 +8,8 @@ services:
     tty: true        # docker run -t
     container_name: anti_collision
     network_mode: "host"
+    volumes:
+      - /home/ubuntu/jsonlogs:/home/jsonlogs
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}

@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
 	std::string tempString = argv[i];
         if (tempString == "plotting") {
-            plotFile = argv[i + 1];
+            plotFile = "/home/jsonlogs/myrs.json";
             plotBool = true;
             std::cout << "Plotting Enabled, ";
             std::cout << "saving to " << plotFile << std::endl;
@@ -207,15 +207,15 @@ int main(int argc, char **argv) {
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
-        // if (plotBool == true) {
-        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-        //     std::ofstream outputFile("/home/json_things/reachableStates.json");
-        //     if(outputFile.is_open() ) {
-        //         outputFile << thisAgent.j.dump(4);
-        //         outputFile.close();
-        //         std::cout << "JSONFILE SAVED" << std::endl;
-        //     }
-        // }
+        if (plotBool == true) {
+            thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+            std::ofstream outputFile(plotFile);
+            if(outputFile.is_open() ) {
+                outputFile << thisAgent.j.dump(4);
+                outputFile.close();
+                std::cout << "JSONFILE SAVED" << std::endl;
+            }
+        }
 
         thisAgent.packRectangleMessage(std::get<0>(thisAgent.myReachableState), rsMessage);
 
