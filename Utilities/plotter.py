@@ -4,15 +4,21 @@ import json
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-with open('/home/grant/myrs.json') as file:
+with open('/home/grant/a10r1/myrs.json') as file:
     j = json.load(file)
 
 numberOfRects = j[0]["Rectangles"]
 
+with open('/home/grant/a10r1/adrs.json') as file:
+    aj = json.load(file)
+
+aNumberOfRects = aj[0]["Rectangles"]
+
+
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-def plotRect(idx, jsonthing, axHandle):
+def plotRect(idx, jsonthing, axHandle, color):
     #Plot a rectangle from a particular index
 
     #Step 1) Get the intervals from the json file
@@ -35,25 +41,28 @@ def plotRect(idx, jsonthing, axHandle):
             xs = [x,x]
             ys = [y,y]
             zs = [intervalss[2][0], intervalss[2][1]]
-            axHandle.plot(xs,ys,zs,'b')
+            axHandle.plot(xs,ys,zs, color)
 
     for y in intervalss[1]:
         for z in intervalss[2]:
             xs = [intervalss[0][0], intervalss[0][1]]
             ys = [y,y]
             zs = [z,z]
-            axHandle.plot(xs,ys,zs,'b')
+            axHandle.plot(xs,ys,zs,color)
 
     for x in intervalss[0]:
         for z in intervalss[2]:
             xs = [x,x]
             ys = [intervalss[1][0], intervalss[1][1]]
             zs = [z,z]
-            axHandle.plot(xs,ys,zs,'b')
+            axHandle.plot(xs,ys,zs,color)
 
 
 for rect in range(1,numberOfRects + 1):
-    plotRect(rect,j,ax)
+    plotRect(rect,j,ax,'b')
+
+for rect in range(1,aNumberOfRects + 1):
+    plotRect(rect,aj,ax,'r')
 
 
 # Set plot limits and labels
