@@ -31,8 +31,18 @@ class agent {
         float ay = 0.0;
         float az = 0.0;
         float timeStamp = 0.0;
+        bool plotBool = false;    
+        std::string plotFile;
+        std::string othrFile;
+
+
+        //These json objects are for plotting this agent's rs's
         nlohmann::json j;
         int jsonTrack = 1;
+        
+        //These json objects are for plotting recieved agent's rs's
+        nlohmann::json aj;
+        int ajsonTrack = 1;
 
         std::tuple<hyperRectangle, float> myReachableState;
 
@@ -102,6 +112,17 @@ class agent {
 
                 hyperRectangle receivedState(rectIntervals);
 
+                if (plotBool == true) {
+                    receivedState.toJson(aj,ajsonTrack);
+                    aj[0]["Rectangles"] = ajsonTrack - 1;
+                    std::ofstream outputFile(othrFile);
+                    if(outputFile.is_open() ) {
+                        outputFile << aj.dump(4);
+                        outputFile.close();
+                        std::cout << "JSONFILE SAVED" << std::endl;
+                    }
+                }
+
                 auto intersects = std::get<0>(myReachableState).intersects(receivedState);
 
                 if (intersects) {
@@ -139,8 +160,7 @@ class agent {
 
 int main(int argc, char **argv) {
 
-    std::string plotFile;
-    bool plotBool = false;
+    agent thisAgent(atoi(argv[1]));
 
     for (int i =  0; i < argc; i++ ) {
         std::cout << "arg " << i << " is " << argv[i] << std::endl;
@@ -156,14 +176,15 @@ int main(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
 	std::string tempString = argv[i];
         if (tempString == "plotting") {
-            plotFile = "/home/jsonlogs/myrs.json";
-            plotBool = true;
+            thisAgent.plotFile = "/home/jsonlogs/myrs.json";
+            thisAgent.othrFile = "/home/jsonlogs/adrs.json";
+            thisAgent.plotBool = true;
             std::cout << "Plotting Enabled, ";
-            std::cout << "saving to " << plotFile << std::endl;
+            std::cout << "saving to " << thisAgent.plotFile << "and, " << thisAgent.othrFile << std::endl;
         }
     }
 
-    agent thisAgent(atoi(argv[1]));
+
 
     thisAgent.j[0]["Rectangles"] = 0;
 
@@ -207,9 +228,9 @@ int main(int argc, char **argv) {
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
-        if (plotBool == true) {
+        if (thisAgent.plotBool == true) {
             thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-            std::ofstream outputFile(plotFile);
+            std::ofstream outputFile(thisAgent.plotFile);
             if(outputFile.is_open() ) {
                 outputFile << thisAgent.j.dump(4);
                 outputFile.close();
