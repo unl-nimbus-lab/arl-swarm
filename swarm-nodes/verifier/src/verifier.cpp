@@ -146,11 +146,20 @@ int main(int argc, char **argv) {
         std::cout << "arg " << i << " is " << argv[i] << std::endl;
     }
 
-    if (argc > 6){
-        std::string plotFile = argv[2];
-        plotBool = true;
-        std::cout << "Plotting Enabled" << std::endl;
-        //std::cout << "saving to " << fullFile << std::endl;
+    // if (argc > 6){
+    //     std::string plotFile = argv[2];
+    //     plotBool = true;
+    //     std::cout << "Plotting Enabled" << std::endl;
+    //     //std::cout << "saving to " << fullFile << std::endl;
+    // }
+
+    for (int i = 0; i < argc; i++) {
+        if (argv[i] == "plotting") {
+            plotFile = argv[i + 1];
+            plotBool = true;
+            std::cout << "Plotting Enabled, ";
+            std::cout << "saving to " << plotFile << std::endl;
+        }
     }
 
     agent thisAgent(atoi(argv[1]));
