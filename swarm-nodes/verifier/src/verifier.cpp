@@ -154,7 +154,8 @@ int main(int argc, char **argv) {
     // }
 
     for (int i = 0; i < argc; i++) {
-        if (argv[i] == "plotting") {
+	std::string tempString = argv[i];
+        if (tempString == "plotting") {
             plotFile = argv[i + 1];
             plotBool = true;
             std::cout << "Plotting Enabled, ";
