@@ -77,12 +77,12 @@ COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
 COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
 COPY swarm-nodes/pos_xform /home/catkin_ws/src/pos_xform
 COPY swarm-nodes/verifier /home/catkin_ws/src/verifier
-COPY swarm-nodes/verifier_comms /home/catkin_ws/verifier_comms
+COPY swarm-nodes/verifier_comms /home/catkin_ws/src/verifier_comms
 
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && catkin build -j1
+    && catkin build -j4
 
 RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
