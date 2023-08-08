@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeRechableSet(5.0 ,0.5 ,3.0, 0.05, 0.005);
+        thisAgent.computeRechableSet(4.0 ,0.5 ,3.0, 0.05, 0.005);
 
         std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
