@@ -12,6 +12,7 @@
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="true" />
 	<arg name="plotFile" default="agent_$(arg system_ID).json" />
+	<arg name="my_id" default="1" />
 	
 
 	<include file="$(find mavros)/launch/node.launch">
@@ -25,6 +26,7 @@
 		<arg name="log_output" value="$(arg log_output)" />
 		<arg name="fcu_protocol" value="$(arg fcu_protocol)" />
 		<arg name="respawn_mavros" value="$(arg respawn_mavros)" />
+		<arg name="my_id" value="$(arg my_id)" />
 	</include>
 
     <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID) $(arg homeLat) $(arg homeLon)" >
