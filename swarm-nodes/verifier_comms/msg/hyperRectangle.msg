@@ -1,5 +1,6 @@
 std_msgs/Header header
 int8 id
+std_msgs/Header reach_time
 verifier_comms/interval x
 verifier_comms/interval y
 verifier_comms/interval z

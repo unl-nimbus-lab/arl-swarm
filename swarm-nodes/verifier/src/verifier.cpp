@@ -9,9 +9,22 @@
 #include "mavros_msgs/SetMode.h"
 #include <string>
 #include <cstring>
+#include <chrono>
 #include <fstream>
 
 /* This node will subscribe to the agent's xy position topic and calculate it's reachable space */
+
+double getUnixTime() {
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    
+    // Convert the time point to Unix time (seconds since epoch)
+    std::chrono::duration<double> unix_time = now.time_since_epoch();
+    
+    // Convert the duration to a floating-point number
+    double unix_time_float = unix_time.count();
+    
+    return unix_time_float;
+}
 
 safetyChecker verifier;
 ros::ServiceClient set_mode;
@@ -94,6 +107,10 @@ class agent {
             int inId = msg->id;
             if (inId != SYSID_THISMAV) {
 
+                // Save broadcast Time
+
+                auto dc_start = getUnixTime();
+                //Start Decode
                 interval x(msg->x.min, msg->x.max);
                 interval y(msg->y.min, msg->y.max);
                 interval z(msg->z.min, msg->z.max);
@@ -112,18 +129,25 @@ class agent {
 
                 hyperRectangle receivedState(rectIntervals);
 
-                if (plotBool == true) {
-                    receivedState.toJson(aj,ajsonTrack);
-                    aj[0]["Rectangles"] = ajsonTrack - 1;
-                    std::ofstream outputFile(othrFile);
-                    if(outputFile.is_open() ) {
-                        outputFile << aj.dump(4);
-                        outputFile.close();
-                        std::cout << "JSONFILE SAVED" << std::endl;
-                    }
-                }
+                auto dc_time = getUnixTime();
 
+                // if (plotBool == true) {
+                //     receivedState.toJson(aj,ajsonTrack);
+                //     aj[0]["Rectangles"] = ajsonTrack - 1;
+                //     std::ofstream outputFile(othrFile);
+                //     if(outputFile.is_open() ) {
+                //         outputFile << aj.dump(4);
+                //         outputFile.close();
+                //         std::cout << "JSONFILE SAVED" << std::endl;
+                //     }
+                // }
+
+                //Start Intersection
+                auto in_start = getUnixTime();
                 auto intersects = std::get<0>(myReachableState).intersects(receivedState);
+                auto in_time = getUnixTime();
+
+                //Stop intersection
 
                 if (intersects) {
                     std::cout << "Detected Collision with agent: " << inId << std::endl;
@@ -158,6 +182,7 @@ class agent {
 };
 
 
+
 int main(int argc, char **argv) {
 
     agent thisAgent(atoi(argv[1]));
@@ -184,7 +209,8 @@ int main(int argc, char **argv) {
         }
     }
 
-
+    std::ofstream rs_outputFile("/home/rs_time.txt");
+    std::ofstream en_outputFile("/home/en_time.txt");
 
     thisAgent.j[0]["Rectangles"] = 0;
 
@@ -209,12 +235,11 @@ int main(int argc, char **argv) {
     rsMessage.id = thisAgent.SYSID_THISMAV;
 
     while( ros::ok() ) {
-    //     //Calculate my reachable space and send it
+        //Calculate my reachable space and send it
 
         duration = ros::Time::now() - time_begin;
         float reachTime = duration.toSec() * 1000;
         thisAgent.timeStamp = reachTime;
-
         /*
         Because I forget compute reachable set arguments:
         1) Postition Error
@@ -224,24 +249,38 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
+        // start reach time computation //
+        auto rs_start = getUnixTime();
         thisAgent.computeRechableSet(4.0 ,0.5 ,3.0, 0.05, 0.005);
+        auto rs_time = getUnixTime();
 
-        std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
-
-        if (thisAgent.plotBool == true) {
-            thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-            std::ofstream outputFile(thisAgent.plotFile);
-            if(outputFile.is_open() ) {
-                outputFile << thisAgent.j.dump(4);
-                outputFile.close();
-                std::cout << "JSONFILE SAVED" << std::endl;
-            }
+        if (rs_outputFile.is_open()) {
+            rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
         }
+  
+        // std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
+        // if (thisAgent.plotBool == true) {
+        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
+        //     std::ofstream outputFile(thisAgent.plotFile);
+        //     if(outputFile.is_open() ) {
+        //         outputFile << thisAgent.j.dump(4);
+        //         outputFile.close();
+        //         std::cout << "JSONFILE SAVED" << std::endl;
+        //     }
+        // }
+
+        //Start encode time Computation
+
+        auto en_start = getUnixTime();
         thisAgent.packRectangleMessage(std::get<0>(thisAgent.myReachableState), rsMessage);
-
-
         rsMessage.header.stamp = ros::Time::now();
+        auto en_time = getUnixTime();
+
+        if (en_outputFile.is_open()) {
+            en_outputFile << std::to_string(en_time - en_start) << std::endl;
+        }
+        //End encode time Computation
 
         pos_publisher.publish(rsMessage);
 
