@@ -34,6 +34,7 @@ std::ofstream rs_outputFile("/home/rs_time.txt");
 std::ofstream en_outputFile("/home/en_time.txt");
 std::ofstream dc_outputFile("/home/dc_time.txt");
 std::ofstream br_outputFile("/home/br_time.txt");
+std::ofstream in_outputFile("/home/in_time.txt");
 
 class agent {
     /* Agent class holds all state data (both dynaimic and reachable)*/
@@ -158,6 +159,10 @@ class agent {
 
                 auto dc_time = getUnixTime();
 
+                if (dc_outputFile.is_open()) { //Save rs time computation to file
+                    dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
+                }
+
                 // if (plotBool == true) {
                 //     receivedState.toJson(aj,ajsonTrack);
                 //     aj[0]["Rectangles"] = ajsonTrack - 1;
@@ -173,6 +178,10 @@ class agent {
                 auto in_start = getUnixTime();
                 auto intersects = myReachableState.intersects(receivedState);
                 auto in_time = getUnixTime();
+
+                if (in_outputFile.is_open()) { //Save rs time computation to file
+                    in_outputFile << std::to_string(in_time - in_start) << std::endl;
+                }
 
                 //Stop intersection
 
