@@ -29,6 +29,12 @@ double getUnixTime() {
 safetyChecker verifier;
 ros::ServiceClient set_mode;
 
+//outputfiles
+std::ofstream rs_outputFile("/home/rs_time.txt");
+std::ofstream en_outputFile("/home/en_time.txt");
+std::ofstream dc_outputFile("/home/dc_time.txt");
+std::ofstream br_outputFile("/home/br_time.txt");
+
 class agent {
     /* Agent class holds all state data (both dynaimic and reachable)*/
 
@@ -43,11 +49,10 @@ class agent {
         float ax = 0.0;
         float ay = 0.0;
         float az = 0.0;
-        float timeStamp = 0.0;
+        double timeStamp = 0.0;
         bool plotBool = false;    
         std::string plotFile;
         std::string othrFile;
-
 
         //These json objects are for plotting this agent's rs's
         nlohmann::json j;
@@ -57,14 +62,11 @@ class agent {
         nlohmann::json aj;
         int ajsonTrack = 1;
 
-        std::tuple<hyperRectangle, float> myReachableState;
+        //Verification-related states
+        hyperRectangle myReachableState;
+        double myReachTime;
 
-        std::tuple<hyperRectangle, float> computeRechableSet(
-                float positionError, 
-                float velocityError, 
-                float reachTime, 
-                float initialStepSize,
-                float reachTimeout) {
+        std::tuple<hyperRectangle, float> computeReachableSet(float positionError, float velocityError, float reachTime, float initialStepSize, float reachTimeout) {
 
             interval posErrorX(x - positionError, x + positionError);
             interval posErrorY(y - positionError, y + positionError);
@@ -85,10 +87,27 @@ class agent {
             hyperRectangle rect(rectIntervals);
             float acceleration[] = {ax, ay, az};
 
-            myReachableState = verifier.faceLiftingIterativeImprovement(rect, timeStamp, acceleration, reachTime, initialStepSize, reachTimeout);
-            //std::get<0>(myReachableState).toJson(j,jsonTrack);
+            /*
+            Face lifting Interave improvement arguments
+            rect: Initial State of the ego agent
+            start_time: global clock
+            acceleration: derived from pos_xform
+            reachTime: maximum reach time
+            initialStepSize: starting step size
+            reachTimeout: how long this can run 
+            */
 
-            return {std::get<0>(myReachableState), std::get<1>(myReachableState)};
+           // Managing the time proved to be a pain, for now we just calculate the reach time from "0.0"
+           // and will just convert it to seconds and add it to a freshly updated time stamp
+
+            auto myRs = verifier.faceLiftingIterativeImprovement(rect, 0.0, acceleration, reachTime, initialStepSize, reachTimeout);
+
+            myReachableState = std::get<0>(myRs); //Set the agent's reach space
+
+            timeStamp = getUnixTime();
+            myReachTime = std::get<1>(myRs) / 1000.0 + timeStamp; //Set the agent's reach time
+
+            return {std::get<0>(myRs), std::get<1>(myRs) };
         }
 
         void state_update_cb( const custom_libs::FullState::ConstPtr& msg ) {
@@ -107,9 +126,17 @@ class agent {
             int inId = msg->id;
             if (inId != SYSID_THISMAV) {
 
-                // Save broadcast Time
-
                 auto dc_start = getUnixTime();
+                ros::Time broadcastTime = msg->rs_time;
+                double inTime = broadcastTime.toSec();
+                auto isUseful = isStateValid(inTime, dc_start);
+
+                if (isUseful) {
+                    std::cout << "The Recieved State is valid" << std::endl;
+                } else {
+                    std::cout << "The Recieved State in too old" << std::endl;
+                }
+
                 //Start Decode
                 interval x(msg->x.min, msg->x.max);
                 interval y(msg->y.min, msg->y.max);
@@ -144,7 +171,7 @@ class agent {
 
                 //Start Intersection
                 auto in_start = getUnixTime();
-                auto intersects = std::get<0>(myReachableState).intersects(receivedState);
+                auto intersects = myReachableState.intersects(receivedState);
                 auto in_time = getUnixTime();
 
                 //Stop intersection
@@ -175,13 +202,19 @@ class agent {
             msg.vz.max = rect.intervals[5].max;
         }
 
+        bool isStateValid(double inTime, double myTime) {
+            if (inTime >= myTime) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         agent(int id) {
             /* Constructor to set the system ID for the Agent*/
             SYSID_THISMAV = id;
         }
 };
-
-
 
 int main(int argc, char **argv) {
 
@@ -190,7 +223,6 @@ int main(int argc, char **argv) {
     for (int i =  0; i < argc; i++ ) {
         std::cout << "arg " << i << " is " << argv[i] << std::endl;
     }
-
     // if (argc > 6){
     //     std::string plotFile = argv[2];
     //     plotBool = true;
@@ -198,6 +230,7 @@ int main(int argc, char **argv) {
     //     //std::cout << "saving to " << fullFile << std::endl;
     // }
 
+    // This block of code is a janky way of recording intervals for plotting hyperrectangels
     for (int i = 0; i < argc; i++) {
 	std::string tempString = argv[i];
         if (tempString == "plotting") {
@@ -209,27 +242,17 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::ofstream rs_outputFile("/home/rs_time.txt");
-    std::ofstream en_outputFile("/home/en_time.txt");
-
     thisAgent.j[0]["Rectangles"] = 0;
 
     //Initialize ROS
     ros::init(argc, argv, "verifier.cpp");
     ros::NodeHandle nh;
 
-    //Setup Publishers and subscribers
+    //Set up publishers, subscribers, and ros services
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
     ros::Subscriber rs_subscriber = nh.subscribe("/received_state", 10, &agent::intersection_cb, &thisAgent);
-
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
-
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
-
-    //Time Things
-    ros::Time time_begin = ros::Time::now();
-    ros::Time time_end = ros::Time::now();
-    ros::Duration duration = time_end - time_begin;
 
     verifier_comms::hyperRectangle rsMessage;
     rsMessage.id = thisAgent.SYSID_THISMAV;
@@ -237,24 +260,23 @@ int main(int argc, char **argv) {
     while( ros::ok() ) {
         //Calculate my reachable space and send it
 
-        duration = ros::Time::now() - time_begin;
-        float reachTime = duration.toSec() * 1000;
-        thisAgent.timeStamp = reachTime;
+        auto rs_start = getUnixTime(); //Start Reach Time computation
+
         /*
-        Because I forget compute reachable set arguments:
-        1) Postition Error
-        2) Velocity Error
-        3) Reach time
-        4) Initial Step Size
+        Because I often forget compute reachable set arguments:
+        1) Postition Error (minimum space size)
+        2) Velocity Error (minimum increase)
+        3) Reach time (how far ahead to look)
+        4) Initial Step Size (how big )
         5) Reach timeout
         */
 
-        // start reach time computation //
-        auto rs_start = getUnixTime();
-        thisAgent.computeRechableSet(4.0 ,0.5 ,3.0, 0.05, 0.005);
-        auto rs_time = getUnixTime();
+        thisAgent.computeReachableSet(4.0 ,0.5 ,3.0, 0.05, 0.005);
+        
+        auto rs_time = getUnixTime(); //End of Reach Time computation
 
-        if (rs_outputFile.is_open()) {
+        //Log the time to calculate reachable space
+        if (rs_outputFile.is_open()) { //Save rs time computation to file
             rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
         }
   
@@ -270,21 +292,21 @@ int main(int argc, char **argv) {
         //     }
         // }
 
-        //Start encode time Computation
+        auto en_start = getUnixTime(); //Start encode time computation
 
-        auto en_start = getUnixTime();
-        thisAgent.packRectangleMessage(std::get<0>(thisAgent.myReachableState), rsMessage);
+        thisAgent.packRectangleMessage(thisAgent.myReachableState, rsMessage);
         rsMessage.header.stamp = ros::Time::now();
-        auto en_time = getUnixTime();
 
-        if (en_outputFile.is_open()) {
+        ros::Time tempTime(thisAgent.myReachTime);
+        rsMessage.rs_time = tempTime;
+
+        auto en_time = getUnixTime(); //End endcode time computation
+
+        if (en_outputFile.is_open()) { //Save the encode time to file
             en_outputFile << std::to_string(en_time - en_start) << std::endl;
         }
-        //End encode time Computation
 
         pos_publisher.publish(rsMessage);
-
-
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }

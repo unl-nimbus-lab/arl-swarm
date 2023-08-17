@@ -206,7 +206,7 @@ class safetyChecker {
         hyperRectangle rect, 
         float startTime, 
         float acceleration[3], 
-        float reachTime, 
+        double reachTime, 
         float initialStepSize = 0.01, 
         float timeOut = 0.01,
         float minStepSize = 0.0000001) {
@@ -226,7 +226,7 @@ class safetyChecker {
                 break;
             }
             float reachTimeRemaining = reachTime;
-            float reachTimeAdvance = 0.0;
+            double reachTimeAdvance = 0.0;
 
             std::cout << "Iterating" << std::endl;
 
