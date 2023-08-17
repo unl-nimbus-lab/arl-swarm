@@ -127,9 +127,20 @@ class agent {
             int inId = msg->id;
             if (inId != SYSID_THISMAV) {
 
-                auto dc_start = getUnixTime();
-                ros::Time broadcastTime = msg->rs_time;
-                double inTime = broadcastTime.toSec();
+                // auto br_time = getUnixTime(); //Time broadcast is recieved
+                // ros::Time broadcastTime = msg->header.stamp;
+                // double br_start = broadcastTime.toSec(); //Time broadcast was sent
+
+                // if (br_outputFile.is_open()) { //Save br time computation to file
+                //     br_outputFile << std::to_string(br_time - br_start) << std::endl;
+                // }
+
+
+                auto dc_start = getUnixTime(); //start decode computation
+
+                ros::Time inTime_ros = msg->rs_time; //The reach time of the space
+                double inTime = inTime_ros.toSec();
+
                 auto isUseful = isStateValid(inTime, dc_start);
 
                 if (isUseful) {
@@ -157,11 +168,11 @@ class agent {
 
                 hyperRectangle receivedState(rectIntervals);
 
-                auto dc_time = getUnixTime();
+                // auto dc_time = getUnixTime(); //End decode time
 
-                if (dc_outputFile.is_open()) { //Save rs time computation to file
-                    dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
-                }
+                // if (dc_outputFile.is_open()) { //Save rs time computation to file
+                //     dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
+                // }
 
                 // if (plotBool == true) {
                 //     receivedState.toJson(aj,ajsonTrack);
@@ -175,13 +186,13 @@ class agent {
                 // }
 
                 //Start Intersection
-                auto in_start = getUnixTime();
+                // auto in_start = getUnixTime();
                 auto intersects = myReachableState.intersects(receivedState);
-                auto in_time = getUnixTime();
+                // auto in_time = getUnixTime();
 
-                if (in_outputFile.is_open()) { //Save rs time computation to file
-                    in_outputFile << std::to_string(in_time - in_start) << std::endl;
-                }
+                // if (in_outputFile.is_open()) { //Save rs time computation to file
+                //     in_outputFile << std::to_string(in_time - in_start) << std::endl;
+                // }
 
                 //Stop intersection
 
@@ -269,7 +280,7 @@ int main(int argc, char **argv) {
     while( ros::ok() ) {
         //Calculate my reachable space and send it
 
-        auto rs_start = getUnixTime(); //Start Reach Time computation
+        // auto rs_start = getUnixTime(); //Start Reach Time computation
 
         /*
         Because I often forget compute reachable set arguments:
@@ -280,14 +291,14 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeReachableSet(4.0 ,0.5 ,3.0, 0.05, 0.005);
+        thisAgent.computeReachableSet(5.0 ,0.5 ,5.0, 0.05, 0.005);
         
-        auto rs_time = getUnixTime(); //End of Reach Time computation
+        // auto rs_time = getUnixTime(); //End of Reach Time computation
 
         //Log the time to calculate reachable space
-        if (rs_outputFile.is_open()) { //Save rs time computation to file
-            rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
-        }
+        // if (rs_outputFile.is_open()) { //Save rs time computation to file
+        //     rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
+        // }
   
         // std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
@@ -301,7 +312,7 @@ int main(int argc, char **argv) {
         //     }
         // }
 
-        auto en_start = getUnixTime(); //Start encode time computation
+        // auto en_start = getUnixTime(); //Start encode time computation
 
         thisAgent.packRectangleMessage(thisAgent.myReachableState, rsMessage);
         rsMessage.header.stamp = ros::Time::now();
@@ -309,11 +320,11 @@ int main(int argc, char **argv) {
         ros::Time tempTime(thisAgent.myReachTime);
         rsMessage.rs_time = tempTime;
 
-        auto en_time = getUnixTime(); //End endcode time computation
+        // auto en_time = getUnixTime(); //End endcode time computation
 
-        if (en_outputFile.is_open()) { //Save the encode time to file
-            en_outputFile << std::to_string(en_time - en_start) << std::endl;
-        }
+        // if (en_outputFile.is_open()) { //Save the encode time to file
+        //     en_outputFile << std::to_string(en_time - en_start) << std::endl;
+        // }
 
         pos_publisher.publish(rsMessage);
         ros::Duration(0.5).sleep();
