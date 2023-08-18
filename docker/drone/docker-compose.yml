@@ -10,10 +10,12 @@ services:
     network_mode: "host"
     volumes:
       - /home/ubuntu/jsonlogs:/home/jsonlogs
+      - /home/ubuntu/veriflogs:/home/veriflogs
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
+                    source /home/log_manage.sh &&
                     roslaunch src/verifier/launch/container.launch system_ID:=${SYS_ID} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} my_id:=${SYS_ID} tgt_component:=1"
     restart: always

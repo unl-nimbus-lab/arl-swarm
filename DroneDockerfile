@@ -4,7 +4,8 @@ FROM arm64v8/ros:noetic-robot
 # Create the image file structure
 RUN mkdir /home/catkin_ws \
     && mkdir /home/catkin_ws/src \
-    && mkdir /home/rosbags
+    && mkdir /home/rosbags \
+    && mkdir /home/veriflogs 
 
 # Setup the environments
 ENV LANG=C.UTF-8
@@ -89,8 +90,8 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
 RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
 # Rosbag management
-COPY docker/drone/bag_manager.sh /home/
-RUN ["chmod","+x","/home/bag_manager.sh"]
+COPY docker/drone/log_manage.sh /home/
+RUN ["chmod","+x","/home/log_manage.sh"]
 
 # Overlay the ROS environment on top of the existing environment
 COPY docker/drone/ros_entrypoint.sh /
