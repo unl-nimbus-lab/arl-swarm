@@ -72,7 +72,7 @@ class TheRadio(object):
             remote_rs.z.max = zh
 
             # #add time to header
-            remote_rs.header.stamp = rospy.Time.now()
+            # remote_rs.header.stamp = rospy.Time.now()
                         
             # #publish to topic
             self.received_pub.publish(remote_rs)
@@ -158,6 +158,8 @@ class TheRadio(object):
         self.my_rs.ymax = round(data.y.max, 2)
         self.my_rs.zmin = round(data.z.min, 2)
         self.my_rs.zmax = round(data.z.max, 2)
+        self.my_rs.rs_time = round(data.rs_time.to_sec(), 2)
+        self.my_rs.br_time = round(data.header.to_sec(), 2)
 
     def mystate_callback(self, data):
         if (self.simming):
@@ -209,7 +211,11 @@ class TheRadio(object):
 
 
         #Publishers and subscribers regarless of simming
+
+        #This publisher is used to send rectangles from the radio/sim topics to the verifier node
         self.received_pub = rospy.Publisher(publish_str, hyperRectangle, queue_size = 10)
+
+        #This subscriber is meant to do something when the verifier node publishes a reach state
         rospy.Subscriber(subscribe_str, hyperRectangle, self.mystate_callback)
 
         if (self.simming == False):

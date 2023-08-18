@@ -2,12 +2,14 @@ class reachableState:
     def __init__(self, node_id):
         self.node_id = node_id
 
-        self.xmin = 0
-        self.xmax = 0
-        self.ymin = 0
-        self.ymax = 0
-        self.zmin = 0
-        self.zmax = 0
+        self.xmin = 0.0
+        self.xmax = 0.0
+        self.ymin = 0.0
+        self.ymax = 0.0
+        self.zmin = 0.0
+        self.zmax = 0.0
+        self.rs_time = 0.0 #When the reachable space is no longer valid
+        self.bc_time = 0.0 #When the original message was broadcast
 
     def __str__(self):
         ret_str = "id:"+str(self.node_id)
