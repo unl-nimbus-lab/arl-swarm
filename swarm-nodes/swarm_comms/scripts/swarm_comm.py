@@ -13,9 +13,37 @@ from swarm_comms.msg import allAgentsPosStamped
 from swarm_comms.msg import agentPos
 from mavros_msgs.msg import SwarmGPS
 from verifier_comms.msg import hyperRectangle
+from rospy.rostime import Time
 #Jack's agent class here:
 from agent import Agent
 from reachableState import reachableState
+
+'''
+This node is meant to handle the sending and reciving of reachable state messages in simulation or over the Xbee
+
+Simulation:
+    Incoming, remote reachable states:
+        1) message is recieved on /agent_XX_reachable_state -> rs_callback
+        2) rs_callback re-publishes on /agent_N/received_state (to the verifier node)
+
+Radio-Deploy:
+    Incoming, remote reachable states:
+        1) string is recieved and triggers the function: data_rcvd_callback
+        2) data_rcvd_callback extracts the information from the received string and packs it into a hyperRectangle ROS message (named remote_rs)
+        3) the remote_rs hyperRectangle ROS messages is published to the verifier node on the /received_state node
+
+Incoming, ego agent's reachable state:
+    1) ROS message with ego agent's reachable state is recieved on /my_reach_state topic -> my_state_callback
+        Simulation:
+            message is re-publisehd on /agent_N_reachable_state 
+        Radio-Deploy:
+            message is encoded into a string and sent to the radio using Xbee packages
+
+
+
+
+
+'''
 
 class TheRadio(object):
     '''Class to get xbee data and publish to ros topic'''
@@ -49,21 +77,7 @@ class TheRadio(object):
             #self.store_remote_agent_data(data, time_received)
             #now publish remote agent data to the agent_pos topic
             remote_rs = hyperRectangle()
-            # for agent in self.agent_list:
-            #     a = agentPos()
-            #     a.id = agent.node_id
-            #     a.x = agent.x
-            #     a.y = agent.y
-            #     a.z = agent.z
-            #     a.vx = agent.vx
-            #     a.vy = agent.vy
-            #     a.vz = agent.vz
-            #     a.ix = agent.ix
-            #     a.iy = agent.iy
-            #     a.iz = agent.iz
-            #     a.time_since_update = agent.time_between_locations
-            #     allAgents.agents.append(a)
-            
+
             remote_rs.id = id_num
             remote_rs.x.min = xl
             remote_rs.x.max = xh
@@ -71,14 +85,17 @@ class TheRadio(object):
             remote_rs.y.max = yh
             remote_rs.z.min = zl
             remote_rs.z.max = zh
+
             seconds = int(tr)
             nanoseconds = int((tr - seconds)*1e9)
-            remote_rs.t
+            reach_time = Time(secs=seconds, nsecs=nanoseconds)
+            remote_rs.rs_time = reach_time
 
-            # #add time to header
-            # remote_rs.header.stamp = rospy.Time.now()
-                        
-            # #publish to topic
+            seconds = int(tb)
+            nanoseconds = int((tb - seconds)*1e9)
+            broadcast_time = Time(secs=seconds, nsecs=nanoseconds)
+            remote_rs.header.stamp = broadcast_time
+
             self.received_pub.publish(remote_rs)
 
     def parse_remote_agent_location(self,data):
@@ -274,6 +291,8 @@ class TheRadio(object):
         r = rospy.Rate(2)
 
         while not rospy.is_shutdown():
+
+            adam = 2
             #change this to publish the gps coords at 10Hz.
             #Use the serial callback to update the swarm agent
             #data structure
@@ -320,7 +339,7 @@ class TheRadio(object):
             #         #remove node from list
             #         self.node_list.remove(agent.node_id)
 
-            r.sleep()
+            # r.sleep()
 
 if __name__ == '__main__':
     r = TheRadio()
