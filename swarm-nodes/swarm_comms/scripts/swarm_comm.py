@@ -45,7 +45,7 @@ class TheRadio(object):
         if (data[0] == 'C'):
             self.process_command(data[1])
         else:
-            id_num, xl, xh, yl, yh, zl, zh = self.parse_remote_agent_location(data)
+            id_num, xl, xh, yl, yh, zl, zh, tr, tb = self.parse_remote_agent_location(data)
             #self.store_remote_agent_data(data, time_received)
             #now publish remote agent data to the agent_pos topic
             remote_rs = hyperRectangle()
@@ -63,13 +63,17 @@ class TheRadio(object):
             #     a.iz = agent.iz
             #     a.time_since_update = agent.time_between_locations
             #     allAgents.agents.append(a)
-
+            
+            remote_rs.id = id_num
             remote_rs.x.min = xl
             remote_rs.x.max = xh
             remote_rs.y.min = yl
             remote_rs.y.max = yh
             remote_rs.z.min = zl
             remote_rs.z.max = zh
+            seconds = int(tr)
+            nanoseconds = int((tr - seconds)*1e9)
+            remote_rs.t
 
             # #add time to header
             # remote_rs.header.stamp = rospy.Time.now()
@@ -130,12 +134,26 @@ class TheRadio(object):
             temp_str = ''
             idx+= 1
 
+            while (data[idx] != 't'):
+                temp_str += data[idx]
+                idx += 1  
+            zh = float(temp_str)
+            temp_str = ''
+            idx += 1
+
+            while (data[idx] != 't'):
+                temp_str += data[idx]
+                idx += 1
+            tr = float(temp_str)
+            temp_str = ''
+            idx += 1
+
             while (idx < len(data)):
                 temp_str += data[idx]
                 idx += 1
-            zh = float(temp_str)
+            tb = float(temp_str)
 
-            return id_num, xl, xh, yl, yh, zl, zh
+            return id_num, xl, xh, yl, yh, zl, zh, tr, tb
 
     #The net_modified_callback is triggered when the network is modified
     def net_modified_callback(self, event_type, reason, node):
@@ -158,14 +176,21 @@ class TheRadio(object):
         self.my_rs.ymax = round(data.y.max, 2)
         self.my_rs.zmin = round(data.z.min, 2)
         self.my_rs.zmax = round(data.z.max, 2)
-        self.my_rs.rs_time = round(data.rs_time.to_sec(), 2)
-        self.my_rs.br_time = round(data.header.to_sec(), 2)
+        self.my_rs.rs_time = round(data.rs_time.to_sec(), 1)
+        self.my_rs.bc_time = round(data.header.to_sec(), 1)
 
     def mystate_callback(self, data):
-        if (self.simming):
+        if (self.simming): #If simming, publish my state info on the sim topics
             self.rs_pub.publish(data)
-        else:
+        else: #send my state on the radio
             self.update_rs(data)
+
+            radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)+'t'+str(self.my_rs.rs_time)+'t'+str(self.my_rs.bc_time)
+
+            try:
+                self.radio.send_data_broadcast(radio_str)
+            except TransmitException:
+                print("Data block too long.")
 
 
     def __init__(self):
@@ -215,7 +240,7 @@ class TheRadio(object):
         #This publisher is used to send rectangles from the radio/sim topics to the verifier node
         self.received_pub = rospy.Publisher(publish_str, hyperRectangle, queue_size = 10)
 
-        #This subscriber is meant to do something when the verifier node publishes a reach state
+        #This subscriber is meant to do something when the verifier node publishes a reach state to be sent out (either on a simulation topic or a radio broadcast)
         rospy.Subscriber(subscribe_str, hyperRectangle, self.mystate_callback)
 
         if (self.simming == False):
@@ -254,7 +279,7 @@ class TheRadio(object):
             #data structure
 
             #configure string position info
-            radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)
+            # radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)
             #print(radio_str)
             
             #store our own data here by calling self.store_remote_agent_data() and using radio_str
@@ -266,12 +291,12 @@ class TheRadio(object):
             #print(f"The length of radio_str is: {len(radio_str)}")
 
             ########################################################################3
-            if (self.simming == False):
-                #broadcast on radio if not simming
-                try:
-                    self.radio.send_data_broadcast(radio_str)
-                except TransmitException:
-                    print("Data block too long.")
+            # if (self.simming == False):
+            #     #broadcast on radio if not simming
+            #     try:
+            #         self.radio.send_data_broadcast(radio_str)
+            #     except TransmitException:
+            #         print("Data block too long.")
                 #print(radio_str)
             # else:
             #     #publish to topic
