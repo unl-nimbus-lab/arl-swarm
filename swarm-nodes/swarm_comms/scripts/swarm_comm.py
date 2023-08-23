@@ -289,11 +289,13 @@ class TheRadio(object):
         print("Swarm Comms node is running.")
 
         #restrict transmission of pos to 10 Hz
-        r = rospy.Rate(2)
+        #r = rospy.Rate(2)
 
-        while not rospy.is_shutdown():
+        rospy.spin()
 
-            adam = 2
+        #while not rospy.is_shutdown():
+
+            # adam = 2
             #change this to publish the gps coords at 10Hz.
             #Use the serial callback to update the swarm agent
             #data structure
