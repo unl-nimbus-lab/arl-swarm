@@ -202,8 +202,9 @@ class TheRadio(object):
         else: #send my state on the radio
             self.update_rs(data)
 
-            radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)+'t'+str(self.my_rs.rs_time)+'t'+str(self.my_rs.bc_time)
-
+            #radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)+'t'+str(self.my_rs.rs_time)+'t'+str(self.my_rs.bc_time)
+            print(radio_str)
+            print(len(radio_str))
             try:
                 self.radio.send_data_broadcast(radio_str)
             except TransmitException:
