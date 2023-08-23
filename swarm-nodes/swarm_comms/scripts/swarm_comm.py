@@ -187,14 +187,14 @@ class TheRadio(object):
         self.received_pub.publish(data)
 
     def update_rs(self, data):
-        self.my_rs.xmin = round(data.x.min, 2)
-        self.my_rs.xmax = round(data.x.max, 2)
-        self.my_rs.ymin = round(data.y.min, 2)
-        self.my_rs.ymax = round(data.y.max, 2)
-        self.my_rs.zmin = round(data.z.min, 2)
-        self.my_rs.zmax = round(data.z.max, 2)
-        self.my_rs.rs_time = round(data.rs_time.to_sec(), 1)
-        self.my_rs.bc_time = round(data.header.to_sec(), 1)
+        self.my_rs.xmin = int(data.x.min)
+        self.my_rs.xmax = int(data.x.max)
+        self.my_rs.ymin = int(data.y.min)
+        self.my_rs.ymax = int(data.y.max)
+        self.my_rs.zmin = int(data.z.min)
+        self.my_rs.zmax = int(data.z.max)
+        self.my_rs.rs_time = round(data.rs_time.to_sec(), 3)
+        self.my_rs.bc_time = round(data.header.stamp.to_sec(), 3)
 
     def mystate_callback(self, data):
         if (self.simming): #If simming, publish my state info on the sim topics

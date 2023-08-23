@@ -33,7 +33,7 @@
 
     </node>
 
-    <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID) plotting $(arg plotFile)">
+    <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID) plotting">
 
     </node>
 
