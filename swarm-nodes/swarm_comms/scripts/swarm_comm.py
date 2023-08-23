@@ -108,7 +108,7 @@ class TheRadio(object):
             temp_str = ''
             
             #grab the id number
-            while (data[idx] != ':'):
+            while (data[idx] != 'x'):
                 temp_str += data[idx]
                 idx += 1
             id_num = int(temp_str)
@@ -202,13 +202,13 @@ class TheRadio(object):
         else: #send my state on the radio
             self.update_rs(data)
 
-            radio_str = 'a'+str(self.sys_id)+':x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)+'t'+str(self.my_rs.rs_time)+'t'+str(self.my_rs.bc_time)
-            print(radio_str)
-            print(len(radio_str))
-            # try:
-            #     self.radio.send_data_broadcast(radio_str)
-            # except TransmitException:
-            #     print("Data block too long.")
+            radio_str = 'a'+str(self.sys_id)+'x'+str(self.my_rs.xmin)+'x'+str(self.my_rs.xmax)+'y'+str(self.my_rs.ymin)+'y'+str(self.my_rs.ymax)+'z'+str(self.my_rs.zmin)+'z'+str(self.my_rs.zmax)+'t'+str(self.my_rs.rs_time)+'t'+str(self.my_rs.bc_time)
+            # print(radio_str)
+            # print(len(radio_str))
+            try:
+                self.radio.send_data_broadcast(radio_str)
+            except TransmitException:
+                print("Data block too long.")
 
 
     def __init__(self):
