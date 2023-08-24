@@ -5,7 +5,7 @@ FROM arm64v8/ros:noetic-robot
 RUN mkdir /home/catkin_ws \
     && mkdir /home/catkin_ws/src \
     && mkdir /home/rosbags \
-    && mkdir /home/veriflogs 
+    && mkdir /home/verifier_logs 
 
 # Setup the environments
 ENV LANG=C.UTF-8
