@@ -14,7 +14,7 @@
 	<arg name="plotFile" default="agent_$(arg system_ID).json" />
 	<arg name="my_id" default="1" />
 
-	<arg name="log_dir" default=" "/>
+	<arg name="log_dir" default=""/>
 	
 
 	<include file="$(find mavros)/launch/node.launch">
