@@ -115,7 +115,7 @@ class TheRadio(object):
             temp_str = ''
 
             #received string
-            idx += 2
+            idx += 1
             while (data[idx] != 'x'):
                 temp_str += data[idx]
                 idx += 1
