@@ -17,6 +17,5 @@ services:
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
                     source /home/log_manage.sh &&
-                    echo $CURRENT_LOG_DIR &&
-                    roslaunch src/verifier/launch/container.launch system_ID:=${SYS_ID} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} my_id:=${SYS_ID} tgt_component:=1"
+                    roslaunch src/verifier/launch/container.launch system_ID:=${SYS_ID} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} my_id:=${SYS_ID} log_dir:=${CURRENT_LOG_DIR} tgt_component:=1"
     restart: always

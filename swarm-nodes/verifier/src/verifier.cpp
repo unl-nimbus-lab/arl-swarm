@@ -29,13 +29,6 @@ double getUnixTime() {
 safetyChecker verifier;
 ros::ServiceClient set_mode;
 
-//outputfiles
-std::ofstream rs_outputFile("/home/rs_time.txt");
-std::ofstream en_outputFile("/home/en_time.txt");
-std::ofstream dc_outputFile("/home/dc_time.txt");
-std::ofstream br_outputFile("/home/br_time.txt");
-std::ofstream in_outputFile("/home/in_time.txt");
-
 class agent {
     /* Agent class holds all state data (both dynaimic and reachable)*/
 
@@ -66,6 +59,14 @@ class agent {
         //Verification-related states
         hyperRectangle myReachableState;
         double myReachTime;
+
+        // //outputfiles
+        // std::string logDir = "/home/verifier_logs";
+        // std::ofstream rs_outputFile("/home/rs_time.txt");
+        // std::ofstream en_outputFile("/home/en_time.txt");
+        // std::ofstream dc_outputFile("/home/dc_time.txt");
+        // std::ofstream br_outputFile("/home/br_time.txt");
+        // std::ofstream in_outputFile("/home/in_time.txt");
 
         std::tuple<hyperRectangle, float> computeReachableSet(float positionError, float velocityError, float reachTime, float initialStepSize, float reachTimeout) {
 
@@ -230,15 +231,20 @@ class agent {
             }
         }
 
-        agent(int id) {
+        agent(int id, std::string logDir) {
             /* Constructor to set the system ID for the Agent*/
             SYSID_THISMAV = id;
+            std::ofstream rs_outputFile(logDir + "/rs_time.txt");
+            std::ofstream en_outputFile(logDir + "/en_time.txt");
+            std::ofstream dc_outputFile(logDir + "/dc_time.txt");
+            std::ofstream br_outputFile(logDir + "/br_time.txt");
+            std::ofstream in_outputFile(logDir + "/in_time.txt");
         }
 };
 
 int main(int argc, char **argv) {
 
-    agent thisAgent(atoi(argv[1]));
+    agent thisAgent(atoi(argv[1]), argv[3] );
 
     for (int i =  0; i < argc; i++ ) {
         std::cout << "arg " << i << " is " << argv[i] << std::endl;

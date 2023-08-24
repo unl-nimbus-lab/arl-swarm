@@ -13,6 +13,8 @@
 	<arg name="respawn_mavros" default="true" />
 	<arg name="plotFile" default="agent_$(arg system_ID).json" />
 	<arg name="my_id" default="1" />
+
+	<arg name="log_dir" default=" "/>
 	
 
 	<include file="$(find mavros)/launch/node.launch">
@@ -33,7 +35,7 @@
 
     </node>
 
-    <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID) plotting">
+    <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID) plotting $(arg log_dir)">
 
     </node>
 
