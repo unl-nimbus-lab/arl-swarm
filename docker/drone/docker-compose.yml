@@ -10,7 +10,7 @@ services:
     network_mode: "host"
     volumes:
       - /home/ubuntu/jsonlogs:/home/jsonlogs
-      - /home/ubuntu/veriflogs:/home/veriflogs
+      - /home/ubuntu/veriflogs:/home/verifier_logs
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}
