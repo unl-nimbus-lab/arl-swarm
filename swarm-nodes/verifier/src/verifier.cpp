@@ -60,6 +60,12 @@ class agent {
         hyperRectangle myReachableState;
         double myReachTime;
 
+        std::ofstream rs_outputFile;
+        std::ofstream en_outputFile;
+        std::ofstream dc_outputFile;
+        std::ofstream br_outputFile;
+        std::ofstream in_outputFile;
+
         // //outputfiles
         // std::string logDir = "/home/verifier_logs";
         // std::ofstream rs_outputFile("/home/rs_time.txt");
@@ -128,13 +134,13 @@ class agent {
             int inId = msg->id;
             if (inId != SYSID_THISMAV) {
 
-                // auto br_time = getUnixTime(); //Time broadcast is recieved
-                // ros::Time broadcastTime = msg->header.stamp;
-                // double br_start = broadcastTime.toSec(); //Time broadcast was sent
+                auto br_time = getUnixTime(); //Time broadcast is recieved
+                ros::Time broadcastTime = msg->header.stamp;
+                double br_start = broadcastTime.toSec(); //Time broadcast was sent
 
-                // if (br_outputFile.is_open()) { //Save br time computation to file
-                //     br_outputFile << std::to_string(br_time - br_start) << std::endl;
-                // }
+                if (br_outputFile.is_open()) { //Save br time computation to file
+                    br_outputFile << std::to_string(br_time - br_start) << std::endl;
+                }
 
 
                 auto dc_start = getUnixTime(); //start decode computation
@@ -169,11 +175,11 @@ class agent {
 
                 hyperRectangle receivedState(rectIntervals);
 
-                // auto dc_time = getUnixTime(); //End decode time
+                auto dc_time = getUnixTime(); //End decode time
 
-                // if (dc_outputFile.is_open()) { //Save rs time computation to file
-                //     dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
-                // }
+                if (dc_outputFile.is_open()) { //Save rs time computation to file
+                    dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
+                }
 
                 // if (plotBool == true) {
                 //     receivedState.toJson(aj,ajsonTrack);
@@ -187,13 +193,13 @@ class agent {
                 // }
 
                 //Start Intersection
-                // auto in_start = getUnixTime();
+                auto in_start = getUnixTime();
                 auto intersects = myReachableState.intersects(receivedState);
-                // auto in_time = getUnixTime();
+                auto in_time = getUnixTime();
 
-                // if (in_outputFile.is_open()) { //Save rs time computation to file
-                //     in_outputFile << std::to_string(in_time - in_start) << std::endl;
-                // }
+                if (in_outputFile.is_open()) { //Save rs time computation to file
+                    in_outputFile << std::to_string(in_time - in_start) << std::endl;
+                }
 
                 //Stop intersection
 
@@ -234,11 +240,11 @@ class agent {
         agent(int id, std::string logDir) {
             /* Constructor to set the system ID for the Agent*/
             SYSID_THISMAV = id;
-            std::ofstream rs_outputFile(logDir + "/rs_time.txt");
-            std::ofstream en_outputFile(logDir + "/en_time.txt");
-            std::ofstream dc_outputFile(logDir + "/dc_time.txt");
-            std::ofstream br_outputFile(logDir + "/br_time.txt");
-            std::ofstream in_outputFile(logDir + "/in_time.txt");
+            rs_outputFile.open(logDir + "/rs_time.txt");
+            en_outputFile.open(logDir + "/en_time.txt");
+            dc_outputFile.open(logDir + "/dc_time.txt");
+            br_outputFile.open(logDir + "/br_time.txt");
+            in_outputFile.open(logDir + "/in_time.txt");
         }
 };
 
@@ -286,7 +292,7 @@ int main(int argc, char **argv) {
     while( ros::ok() ) {
         //Calculate my reachable space and send it
 
-        // auto rs_start = getUnixTime(); //Start Reach Time computation
+        auto rs_start = getUnixTime(); //Start Reach Time computation
 
         /*
         Because I often forget compute reachable set arguments:
@@ -299,12 +305,12 @@ int main(int argc, char **argv) {
 
         thisAgent.computeReachableSet(1.5 ,0.5 ,3.0, 0.05, 0.005);
         
-        // auto rs_time = getUnixTime(); //End of Reach Time computation
+        auto rs_time = getUnixTime(); //End of Reach Time computation
 
         //Log the time to calculate reachable space
-        // if (rs_outputFile.is_open()) { //Save rs time computation to file
-        //     rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
-        // }
+        if (thisAgent.rs_outputFile.is_open()) { //Save rs time computation to file
+            thisAgent.rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
+        }
   
         // std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
 
@@ -318,7 +324,7 @@ int main(int argc, char **argv) {
         //     }
         // }
 
-        // auto en_start = getUnixTime(); //Start encode time computation
+        auto en_start = getUnixTime(); //Start encode time computation
 
         thisAgent.packRectangleMessage(thisAgent.myReachableState, rsMessage);
         rsMessage.header.stamp = ros::Time::now();
@@ -326,11 +332,11 @@ int main(int argc, char **argv) {
         ros::Time tempTime(thisAgent.myReachTime);
         rsMessage.rs_time = tempTime;
 
-        // auto en_time = getUnixTime(); //End endcode time computation
+        auto en_time = getUnixTime(); //End endcode time computation
 
-        // if (en_outputFile.is_open()) { //Save the encode time to file
-        //     en_outputFile << std::to_string(en_time - en_start) << std::endl;
-        // }
+        if (thisAgent.en_outputFile.is_open()) { //Save the encode time to file
+            thisAgent.en_outputFile << std::to_string(en_time - en_start) << std::endl;
+        }
 
         pos_publisher.publish(rsMessage);
         ros::Duration(0.5).sleep();
