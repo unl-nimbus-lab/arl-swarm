@@ -11,6 +11,7 @@
 #include <cstring>
 #include <chrono>
 #include <fstream>
+#include <sstream>
 
 /* This node will subscribe to the agent's xy position topic and calculate it's reachable space */
 
@@ -65,6 +66,7 @@ class agent {
         std::ofstream dc_outputFile;
         std::ofstream br_outputFile;
         std::ofstream in_outputFile;
+        std::ofstream hr_outputFile;
 
         // //outputfiles
         // std::string logDir = "/home/verifier_logs";
@@ -245,6 +247,7 @@ class agent {
             dc_outputFile.open(logDir + "/dc_time.txt");
             br_outputFile.open(logDir + "/br_time.txt");
             in_outputFile.open(logDir + "/in_time.txt");
+            hr_outputFile.open(logDir + "/reachable_spacest.txt");
         }
 };
 
@@ -323,6 +326,21 @@ int main(int argc, char **argv) {
         //         std::cout << "JSONFILE SAVED" << std::endl;
         //     }
         // }
+
+        if (thisAgent.plotBool == true) {
+            if (thisAgent.hr_outputFile.is_open() ) {
+                std::stringstream plotString;
+                plotString << "a" << thisAgent.SYSID_THISMAV << ":" 
+                                 << thisAgent.myReachableState.intervals[0].min << ":" 
+                                 << thisAgent.myReachableState.intervals[0].max << ":" 
+                                 << thisAgent.myReachableState.intervals[1].min << ":" 
+                                 << thisAgent.myReachableState.intervals[1].max << ":" 
+                                 << thisAgent.myReachableState.intervals[2].min << ":" 
+                                 << thisAgent.myReachableState.intervals[2].max << std::endl;
+
+                std::cout << plotString.str() << std::endl;
+            }
+        }
 
         auto en_start = getUnixTime(); //Start encode time computation
 
