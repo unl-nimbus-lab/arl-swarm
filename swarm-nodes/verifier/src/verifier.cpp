@@ -315,17 +315,6 @@ int main(int argc, char **argv) {
             thisAgent.rs_outputFile << std::to_string(rs_time - rs_start) << std::endl;
         }
   
-        // std::get<0>(thisAgent.myReachableState).toJson(thisAgent.j,thisAgent.jsonTrack);
-
-        // if (thisAgent.plotBool == true) {
-        //     thisAgent.j[0]["Rectangles"] = thisAgent.jsonTrack - 1;
-        //     std::ofstream outputFile(thisAgent.plotFile);
-        //     if(outputFile.is_open() ) {
-        //         outputFile << thisAgent.j.dump(4);
-        //         outputFile.close();
-        //         std::cout << "JSONFILE SAVED" << std::endl;
-        //     }
-        // }
 
         if (thisAgent.plotBool == true) {
             if (thisAgent.hr_outputFile.is_open() ) {
@@ -338,7 +327,7 @@ int main(int argc, char **argv) {
                                  << thisAgent.myReachableState.intervals[2].min << ":" 
                                  << thisAgent.myReachableState.intervals[2].max << std::endl;
 
-                std::cout << plotString.str() << std::endl;
+                thisAgent.hr_outputFile << plotString.str() << std::endl;
             }
         }
 
