@@ -247,7 +247,7 @@ class agent {
             dc_outputFile.open(logDir + "/dc_time.txt");
             br_outputFile.open(logDir + "/br_time.txt");
             in_outputFile.open(logDir + "/in_time.txt");
-            hr_outputFile.open(logDir + "/reachable_spacest.txt");
+            hr_outputFile.open(logDir + "/reachable_spaces.txt");
         }
 };
 
@@ -327,7 +327,7 @@ int main(int argc, char **argv) {
                                  << thisAgent.myReachableState.intervals[2].min << ":" 
                                  << thisAgent.myReachableState.intervals[2].max << std::endl;
 
-                thisAgent.hr_outputFile << plotString.str() << std::endl;
+                thisAgent.hr_outputFile << plotString.str();
             }
         }
 
