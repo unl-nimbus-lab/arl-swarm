@@ -327,7 +327,7 @@ int main(int argc, char **argv) {
                                  << thisAgent.myReachableState.intervals[2].min << ":" 
                                  << thisAgent.myReachableState.intervals[2].max << std::endl;
 
-                thisAgent.hr_outputFile << plotString.str();
+                thisAgent.hr_outputFile << plotString.str() << std::endl;
             }
         }
 
