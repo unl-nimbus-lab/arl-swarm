@@ -67,6 +67,7 @@ class agent {
         std::ofstream br_outputFile;
         std::ofstream in_outputFile;
         std::ofstream hr_outputFile;
+        std::ofstream rr_outputFile;
 
         // //outputfiles
         // std::string logDir = "/home/verifier_logs";
@@ -183,16 +184,18 @@ class agent {
                     dc_outputFile << std::to_string(dc_time - dc_start) << std::endl;
                 }
 
-                // if (plotBool == true) {
-                //     receivedState.toJson(aj,ajsonTrack);
-                //     aj[0]["Rectangles"] = ajsonTrack - 1;
-                //     std::ofstream outputFile(othrFile);
-                //     if(outputFile.is_open() ) {
-                //         outputFile << aj.dump(4);
-                //         outputFile.close();
-                //         std::cout << "JSONFILE SAVED" << std::endl;
-                //     }
-                // }
+                if (rr_outputFile.is_open() ) {
+                    std::stringstream plotString;
+                    plotString << "a" << inId << ":" 
+                                    << receivedState.intervals[0].min << ":" 
+                                    << receivedState.intervals[0].max << ":" 
+                                    << receivedState.intervals[1].min << ":" 
+                                    << receivedState.intervals[1].max << ":" 
+                                    << receivedState.intervals[2].min << ":" 
+                                    << receivedState.intervals[2].max;
+
+                    rr_outputFile << plotString.str() << std::endl;
+                }
 
                 //Start Intersection
                 auto in_start = getUnixTime();
@@ -248,6 +251,7 @@ class agent {
             br_outputFile.open(logDir + "/br_time.txt");
             in_outputFile.open(logDir + "/in_time.txt");
             hr_outputFile.open(logDir + "/reachable_spaces.txt");
+            rr_outputFile.open(logDir + "/rr_spaces.txt");
         }
 };
 
