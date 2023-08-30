@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
 
     //Set up publishers, subscribers, and ros services
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
-    ros::Subscriber cmd_subscriber = nh.subscribe("/mavros/debug_value/vect", 10, &agent::cmd_cb, &thisAgent);
+    ros::Subscriber cmd_subscriber = nh.subscribe("/mavros/debug_value/named_value_int", 10, &agent::cmd_cb, &thisAgent);
     ros::Subscriber rs_subscriber = nh.subscribe("/received_state", 10, &agent::intersection_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
 
