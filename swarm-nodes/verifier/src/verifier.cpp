@@ -338,7 +338,7 @@ int main(int argc, char **argv) {
         5) Reach timeout
         */
 
-        thisAgent.computeReachableSet(1.5 ,0.5 ,3.0, 0.05, 0.005);
+        thisAgent.computeReachableSet(1.0 ,0.25 ,3.0, 0.05, 0.005);
         
         auto rs_time = getUnixTime(); //End of Reach Time computation
 
