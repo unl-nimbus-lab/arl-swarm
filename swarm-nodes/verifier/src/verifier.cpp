@@ -7,11 +7,15 @@
 #include "mavros_msgs/SwarmGPS.h"
 #include "verifier_comms/hyperRectangle.h"
 #include "mavros_msgs/SetMode.h"
+#include "mavros_msgs/DebugValue.h"
 #include <string>
 #include <cstring>
 #include <chrono>
 #include <fstream>
 #include <sstream>
+
+#define START_ROS 1
+#define STOP_ROS 2
 
 /* This node will subscribe to the agent's xy position topic and calculate it's reachable space */
 
@@ -45,7 +49,8 @@ class agent {
         float ay = 0.0;
         float az = 0.0;
         double timeStamp = 0.0;
-        bool plotBool = false;    
+        bool plotBool = false;
+        bool ros_on = false;    
         std::string plotFile;
         std::string othrFile;
 
@@ -133,6 +138,25 @@ class agent {
             az = msg->acceleration.z;
         }
 
+        void cmd_cb( const mavros_msgs::DebugValue::ConstPtr& msg ) {
+            int cmd = msg->value_int;
+            
+            switch(cmd) {
+                case START_ROS:
+                    printf("STARTING_ROS");
+                        ros_on = true;
+                    break;
+                case STOP_ROS:
+                    printf("STOPPING_ROS");
+                        ros_on = false;
+                    break;
+                default:
+                    printf("INVALID CMD ID\n");
+                    break;
+
+            }
+        }
+
         void intersection_cb( const verifier_comms::hyperRectangle::ConstPtr& msg ) {
             int inId = msg->id;
             if (inId != SYSID_THISMAV) {
@@ -210,9 +234,11 @@ class agent {
 
                 if (intersects) {
                     std::cout << "Detected Collision with agent: " << inId << std::endl;
-                    mavros_msgs::SetMode mode_msg;
-                    mode_msg.request.custom_mode = "BRAKE";
-                    set_mode.call(mode_msg);     
+                    if (ros_on) {
+                        mavros_msgs::SetMode mode_msg;
+                        mode_msg.request.custom_mode = "BRAKE";
+                        set_mode.call(mode_msg);  
+                    }
                 }
             }
         }
@@ -289,8 +315,10 @@ int main(int argc, char **argv) {
 
     //Set up publishers, subscribers, and ros services
     ros::Subscriber pos_subscriber = nh.subscribe("/agent_position_xy", 1, &agent::state_update_cb, &thisAgent);
+    ros::Subscriber cmd_subscriber = nh.subscribe("/mavros/debug_value/vect", 10, &agent::cmd_cb, &thisAgent);
     ros::Subscriber rs_subscriber = nh.subscribe("/received_state", 10, &agent::intersection_cb, &thisAgent);
     ros::Publisher pos_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
+
     set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
     verifier_comms::hyperRectangle rsMessage;
@@ -329,7 +357,7 @@ int main(int argc, char **argv) {
                                  << thisAgent.myReachableState.intervals[1].min << ":" 
                                  << thisAgent.myReachableState.intervals[1].max << ":" 
                                  << thisAgent.myReachableState.intervals[2].min << ":" 
-                                 << thisAgent.myReachableState.intervals[2].max << std::endl;
+                                 << thisAgent.myReachableState.intervals[2].max;
 
                 thisAgent.hr_outputFile << plotString.str() << std::endl;
             }
