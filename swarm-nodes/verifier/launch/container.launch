@@ -43,12 +43,8 @@
 
     </node>
 
-	<node pkg="rosbag" type="record" name="record_bag" output="screen">
-		<param name="record-all" value="false" />
-		<param name="record-topic" value="/my_reachable_state" />
-		<param name="record-topic" value="/received_state" />
-		<param name="record-topic" value="/agent_position_xy" />
-		<param name="record-name" value="$(arg bagfile)" />
+	<node pkg="rosbag" type="record" name="record_bag" output="screen" args="record -O $(arg bagfile) /my_reachable_state /received_state /agent_position_xy">
+
 	</node>
 
 </launch>
