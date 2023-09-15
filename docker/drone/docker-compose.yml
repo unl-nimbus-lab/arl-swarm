@@ -9,7 +9,7 @@ services:
     container_name: anti_collision
     network_mode: "host"
     volumes:
-      - /home/ubuntu/:/home/hosts_home
+      - /home:/home/hosts_home
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}
