@@ -15,6 +15,5 @@ services:
       - ${PORT2}:${PORT2}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    source /home/log_manage.sh &&
-                    roslaunch src/verifier/launch/container.launch system_ID:=${SYS_ID} homeLat:=${HOME_LAT} homeLon:=${HOME_LON} fcu_url:=${PORT}:${BAUD} tgt_system:=${SYS_ID} my_id:=${SYS_ID} log_dir:=$${LATEST_VER_CON} tgt_component:=1"
+                    source /home/log_manage.sh"
     restart: always
