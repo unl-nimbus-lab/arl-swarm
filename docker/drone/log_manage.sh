@@ -1,4 +1,4 @@
-#!/bin/bash                                                            
+#!/bin/bash
 timestamp=$(date +"%Y")"-"$(date +"%m")"-"$(date +"%d")"-"$(date +"%H")"-"$(date +"%M")"-"$(date +"%S")
 
 container_directory_name=$HOME"hosts_home/ubuntu/verifier_logs/verifier_logs_$timestamp"
