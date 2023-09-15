@@ -9,8 +9,7 @@ services:
     container_name: anti_collision
     network_mode: "host"
     volumes:
-      - /home/ubuntu/jsonlogs:/home/jsonlogs
-      - /home/ubuntu/verifier_logs:/home/verifier_logs
+      - /home/ubuntu/:/home/hosts_home
     devices: 
       - ${PORT}:${PORT}
       - ${PORT2}:${PORT2}
