@@ -13,7 +13,7 @@
 	<arg name="respawn_mavros" default="true" />
 	<arg name="plotFile" default="agent_$(arg system_ID).json" />
 	<arg name="my_id" default="1" />
-
+	<arg name="bagfile" default="" />
 	<arg name="log_dir" default=""/>
 	
 
@@ -42,5 +42,13 @@
     <node pkg="swarm_comms" name="swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID)">
 
     </node>
+
+	<node pkg="rosbag" type="record" name="record_bag" output="screen">
+		<param name="record-all" value="false" />
+		<param name="record-topic" value="/my_reachable_state" />
+		<param name="record-topic" value="/received_state" />
+		<param name="record-topic" value="/agent_position_xy" />
+		<param name="record-name" value="$(arg bagfile)" />
+	</node>
 
 </launch>
