@@ -15,5 +15,5 @@ services:
       - ${PORT2}:${PORT2}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash &&
-                    bash"
+                    source /home/log_manage.sh"
     restart: always
