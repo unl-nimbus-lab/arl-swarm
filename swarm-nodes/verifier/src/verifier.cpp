@@ -242,7 +242,7 @@ class agent {
                     if (ros_on && nextFlightMode == 'L') {
                         mode_msg.request.custom_mode = "LOITER";
                         set_mode.call(mode_msg);
-                        nextFlightMode = 'B';
+                        nextFlightMode = 'L';
                     } else if (ros_on && nextFlightMode == 'B') {
                         mode_msg.request.custom_mode = "LOITER";
                         set_mode.call(mode_msg);
