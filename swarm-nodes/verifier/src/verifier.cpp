@@ -53,6 +53,7 @@ class agent {
         bool ros_on = false;    
         std::string plotFile;
         std::string othrFile;
+        char nextFlightMode = 'L';
 
         //These json objects are for plotting this agent's rs's
         nlohmann::json j;
@@ -148,6 +149,7 @@ class agent {
                         avros_msgs::SetMode mode_msg;
                         mode_msg.request.custom_mode = "GUIDED";
                         set_mode.call(mode_msg); 
+                        nextFlightMode = 'L';
                     break;
                 case STOP_ROS:
                     printf("STOPPING_ROS");
@@ -237,10 +239,15 @@ class agent {
 
                 if (intersects) {
                     std::cout << "Detected Collision with agent: " << inId << std::endl;
-                    if (ros_on) {
+                    if (ros_on && nextFlightMode == 'L') {
                         mavros_msgs::SetMode mode_msg;
-                        mode_msg.request.custom_mode = "LAND";
-                        set_mode.call(mode_msg);  
+                        mode_msg.request.custom_mode = "LOITER";
+                        set_mode.call(mode_msg);
+                        nextflight_mode = 'B';
+                    } else if (ros_on && nextFlightMode == 'B') {
+                        mavros_msgs::SetMode mode_msg;
+                        mode_msg.request.custom_mode = "BRAKE";
+                        set_mode.call(mode_msg);
                     }
                 }
             }
