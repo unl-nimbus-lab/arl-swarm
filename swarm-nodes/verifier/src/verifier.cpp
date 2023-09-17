@@ -145,6 +145,9 @@ class agent {
                 case START_ROS:
                     printf("STARTING_ROS");
                         ros_on = true;
+                        avros_msgs::SetMode mode_msg;
+                        mode_msg.request.custom_mode = "GUIDED";
+                        set_mode.call(mode_msg); 
                     break;
                 case STOP_ROS:
                     printf("STOPPING_ROS");
