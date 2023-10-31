@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   swarm_devel:
-    image: swarm_devel
+    image: grantphllps/swarm_devel
     #image: clusteringsw:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t

@@ -202,11 +202,11 @@ class safetyChecker {
         return {rekt, timeToElapse};
     }
 
-    std::tuple<hyperRectangle, float> faceLiftingIterativeImprovement( 
+std::tuple<hyperRectangle, float> faceLiftingIterativeImprovement( 
         hyperRectangle rect, 
         float startTime, 
         float acceleration[3], 
-        double reachTime, 
+        float reachTime, 
         float initialStepSize = 0.01, 
         float timeOut = 0.01,
         float minStepSize = 0.0000001) {
@@ -214,28 +214,32 @@ class safetyChecker {
         float stepSize = initialStepSize;
 
         hyperRectangle hull = rect;
+        hyperRectangle rekt = rect;
         float endTime = startTime;
 
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
+        int iterationCount = 0;
 
         while ( (duration / 1000.0) < timeOut) {
             if (stepSize < minStepSize) {
                 break;
             }
-            float reachTimeRemaining = reachTime;
-            double reachTimeAdvance = 0.0;
 
-            std::cout << "Iterating" << std::endl;
+            float reachTimeRemaining = reachTime;
+            float reachTimeAdvance = 0.0;
+
+            hull = rect;
+            rekt = rect;
 
             while (reachTimeRemaining > 0) {
-                auto result = singleFaceLift(rect, acceleration, stepSize, reachTimeRemaining);
+                auto result = singleFaceLift(rekt, acceleration, stepSize, reachTimeRemaining);
 
-                rect = std::get<0>(result);
+                rekt = std::get<0>(result);
 
-                hull.convexHull(rect, true);
+                hull.convexHull(rekt, true);
 
                 reachTimeAdvance += std::get<1>(result);
                 endTime = startTime + 1000 * reachTimeAdvance;
@@ -247,6 +251,10 @@ class safetyChecker {
 
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+            auto thing = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            
+            //std::cout << "Iteration: " << ++iterationCount << ", Time elapsed: " << thing << std::endl;
         }
 
         return {hull, endTime}; 
