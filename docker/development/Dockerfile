@@ -129,7 +129,7 @@ RUN rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstal
 # We perform a build here to avoid triggering the ungodly long
 # mavros builds when code changes are made in the field
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \ 
-    && catkin build -j1
+    && catkin build -j4
 
 # Overlay the ROS environment on top of the existing environment
 WORKDIR ${HOME}
