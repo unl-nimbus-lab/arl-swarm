@@ -7,17 +7,15 @@ int main(int argc, char **argv) {
     //TODO: this block is hideous, clean it up
     hrlAgent.setSysid(std::stod(argv[1])); //The ardupilot SYSID_THISMAV parameter
     hrlAgent.setClusterid(std::stod(argv[2]));  //Cluster ID parameter (should always == 1)
-    hrlAgent.setClusterOrder(std::stod(argv[3])); 
-    hrlAgent.setOriginalClusterOrder(std::stod(argv[3]));
-    hrlAgent.setClusterSize(std::stod(argv[4]));
-    hrlAgent.setClusterRadius(std::stod(argv[5]));
-    hrlAgent.setAgentAlt(std::stod(argv[6]));
-    hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9]));
-    hrlAgent.setRally1(std::stod(argv[10]),std::stod(argv[11]));
-    hrlAgent.setRally2(std::stod(argv[12]),std::stod(argv[13]));
-    std::string filename = argv[14];
+    hrlAgent.setClusterOrder(std::stod(argv[3])); //Probably not going to use
+    hrlAgent.setOriginalClusterOrder(std::stod(argv[3])); //Probably not going to use
+    hrlAgent.setClusterSize(std::stod(argv[4])); //Number of agents in the swarm
+    hrlAgent.setClusterRadius(std::stod(argv[5])); //m
+    hrlAgent.setAgentAlt(std::stod(argv[6])); //The altitude of the agent above MSL
+    hrlAgent.setHome(std::stod(argv[7]), std::stod(argv[8]), std::stod(argv[9])); //Base GPS coordinates
+
+    std::string filename = argv[14]; //HRL System Matricies JSON file
     std::cout << "FILE: " << filename << std::endl;
-    //std::string filename = "/home/catkin_ws/src/clustering_control/src/HRL_Sys_2_2.json";
 
     //Set the initial position target: the cluster is centered around 
     //the rally point (post drop or takeoff)
@@ -29,9 +27,7 @@ int main(int argc, char **argv) {
     json_reader jsonReader;
     struct Sys system_matricies = jsonReader.readJSON(filename);
 
-    //New Variables for HRL planner
-    // THIS NEEDS TO NOT BE HARDCODED >> Change this to be output from MATLAB and defined globally
-
+    //New Variables for HRL controller
     index_encodings = system_matricies.state_idxs_C; //Mapping of agents to their respective indicies in the state vector
 
     MatrixXd swarm_comp = composeSwarm(index_encodings);
