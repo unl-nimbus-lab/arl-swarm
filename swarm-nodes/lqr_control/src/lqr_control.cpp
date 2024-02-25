@@ -1,0 +1,145 @@
+#include <iostream>
+#include "ros/ros.h"
+#include <Eigen/Dense>
+#include "geometry_msgs/AccelStamped.h"
+#include "geometry_msgs/Vector3Stamped.h"
+#include "mavros_msgs/SetMode.h"
+//Ros node that outpus a xyz control vector at 20Hz
+
+double x_target = 30.0;
+double y_target = -10.0;
+double z_target = 400.0; //MSL altitude
+
+double thrust_lim = 0.15;
+double thrust_lim_z = 20.0;
+
+//Control gains
+double kp = 0.1;
+double ki = 0.01;
+double kd = 0.0;
+
+double error_z = 0.0;
+double error_z_sum = 0.0;
+double dz_error = 0.0;
+double dt = 0.25;
+double z_error_prev = 0.0;
+double output_raw_z = 0.0;
+
+//For the XY plane
+Eigen::MatrixXd x(4,1); 
+Eigen::MatrixXd k(2,4); 
+
+
+//For the Z dimension
+Eigen::MatrixXd x_z(3,1); //For the Z dimension
+Eigen::MatrixXd k_z(1,3);
+
+//The aug_states
+Eigen::MatrixXd aug_state(4,1);
+Eigen::MatrixXd aug_state_z(2,1);
+
+
+
+void stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg) {
+    x(0,0) = msg->accel.linear.x;
+    x(1,0) = msg->accel.linear.y;
+    x(2,0) = msg->accel.angular.x;
+    x(3,0) = msg->accel.angular.y;
+
+    x_z(0,0) = msg->accel.linear.z;
+    x_z(1,0) = msg->accel.angular.z;
+}
+
+
+int main(int argc, char **argv){ 
+
+    ros::init(argc, argv, "lqr_control");
+    ros::NodeHandle nh;
+    
+    //Initialize the state and gain matricies
+    x << 0.0, 0.0, 0.0, 0.0;
+    k << 0.9268, 0.0000, 1.7393, 0.0000,
+        0.0000, 0.9267, 0.0000, 1.7393;
+    
+    x_z << 0.0, 0.0, 0.0;
+    k_z << 2.8613, 3.3252, 0.8608;
+
+    aug_state << x_target, y_target, 0.0, 0.0;
+    aug_state_z << z_target, 0.0;
+
+    ros::Publisher control_pub = nh.advertise<geometry_msgs::Vector3Stamped>("vector", 2);
+    ros::Subscriber state_sub = nh.subscribe("/agent_state", 2, stateCallback);
+
+    ros::ServiceClient set_mode = nh.serviceClient<mavros_msgs::SetMode>("/agent_1/mavros/set_mode");
+
+    geometry_msgs::Vector3Stamped control_msg;
+    mavros_msgs::SetMode mode_msg;
+    mode_msg.request.custom_mode = "BRAKE";
+
+    ros::Rate loop_rate(4);
+
+    double fx = 0;
+    double fy = 0;
+    double fz = 0;
+
+    while(ros::ok()) {
+        
+        //PID control stuff
+        error_z = z_target - x_z(0,0);
+        
+        if ( abs(error_z) > 100.0) {
+            error_z = 0.0;
+        }
+
+        error_z_sum += error_z * dt;
+        dz_error = (error_z - z_error_prev) / dt;
+        z_error_prev = error_z;
+        
+        //0.5 marginally stable
+
+        //0.1P, 0.01I
+
+        output_raw_z = kp*error_z + ki*i_error_z;
+
+        auto output_raw = -1.0 * k * (x - aug_state);
+
+        auto error = x - aug_state;
+        
+        ROS_INFO("Output: %f, %f, %f zerror: %f, xy_error: %f", output_raw(0,0), output_raw(1,0), output_raw_z, error_z, error.norm());
+
+        fx = std::max( output_raw(0,0), -1 * thrust_lim);
+        fx = std::min( fx, thrust_lim);
+
+        fy = std::max( output_raw(1,0), -1 * thrust_lim);
+        fy = std::min( fy, thrust_lim);
+
+        fz = std::max( output_raw_z, 0.0 );
+        fz = std::min( fz, thrust_lim_z);
+
+        float check = fx*fx + fy*fy;
+
+        while(2*check > fz*fz) {
+            fx = fx * 0.8;
+            fy = fy * 0.8;
+            check = fx*fx + fy*fy;
+        }
+
+        
+        control_msg.vector.x = fx;
+        control_msg.vector.y = fy;
+        if (error.norm() < 5.0) {
+            ROS_WARN("Close to target, stopping");
+            set_mode.call(mode_msg);
+        }
+
+        control_msg.vector.z = fz;
+        control_pub.publish(control_msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+
+    }
+
+    
+    
+    return 0;
+}

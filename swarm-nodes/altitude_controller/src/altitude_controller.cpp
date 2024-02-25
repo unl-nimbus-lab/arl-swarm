@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     k_z << 20.0, 18.0;
     aug_state << z_target, 0.0;
 
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(20);
 
     while (ros::ok()) {
         auto output_raw = -1.0  * k_z * (x_z - aug_state);

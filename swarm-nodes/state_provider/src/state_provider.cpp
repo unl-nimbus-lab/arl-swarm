@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     //ROS publishers
     ros::Publisher state_pub = nh.advertise<geometry_msgs::AccelStamped>("/agent_state", 10, true);
 
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(4);
     geometry_msgs::AccelStamped state_message; //reuse the accelStamped message because I don't want to make a new one
 
     while (ros::ok()) {

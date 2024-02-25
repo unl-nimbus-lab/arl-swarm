@@ -18,14 +18,24 @@ ros::Subscriber vect_sub; //vector subscriber
 
 tf2::Quaternion q; //quaternion for attitude target
 
+float roll_lim = 0.5;
+float pitch_lim = 0.5;
+
 void vectorCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg) {
-    float Fx = msg->vector.x;
-    float Fy = msg->vector.y;
+    float Fx = -1.0 * msg->vector.x;
+    float Fy = -1.0 * msg->vector.y;
     float Fz = msg->vector.z;
 
     float roll = atan2(Fy, Fz);
+    // roll = std::max(roll, -roll_lim);
+    // roll = std::min(roll, roll_lim);
+
     float pitch = atan2(-Fx, sqrt(Fy*Fy + Fz*Fz));
+    // pitch = std::max(pitch, -pitch_lim);
+    // pitch = std::min(pitch, pitch_lim);
+
     float yaw = 0.0;
+
     float thrust = sqrt(Fx*Fx + Fy*Fy + Fz*Fz);
 
     q.setRPY(roll, pitch, yaw);
@@ -47,11 +57,8 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     
     //ros::Publisher command_pub = nh.advertise<std_msgs::String>("command", 1000);
-    att_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/agent_1/mavros/setpoint_raw/attitude", 250);
-    vect_sub = nh.subscribe("vector", 250, vectorCallback);
-
-    
-    ros::Rate loop_rate(10);
+    att_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/agent_1/mavros/setpoint_raw/attitude", 2);
+    vect_sub = nh.subscribe("vector", 2, vectorCallback);
     
     while (ros::ok()) {
         ros::spin();
