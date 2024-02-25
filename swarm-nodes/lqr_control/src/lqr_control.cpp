@@ -96,8 +96,7 @@ int main(int argc, char **argv){
         z_error_prev = error_z;
         
         //0.5 marginally stable
-
-        //0.1P, 0.01I
+        //0.1P, 0.01I works close to target ~37m
 
         output_raw_z = kp*error_z + ki*i_error_z;
 
