@@ -11,17 +11,17 @@ double y_target = -10.0;
 double z_target = 400.0; //MSL altitude
 
 double thrust_lim = 0.15;
-double thrust_lim_z = 20.0;
+double thrust_lim_z = 5.0;
 
 //Control gains
-double kp = 0.1;
-double ki = 0.01;
-double kd = 0.0;
+double kp = 1.0;
+double ki = 0.;//24;
+double kd = 0;//0.375;
 
 double error_z = 0.0;
 double error_z_sum = 0.0;
 double dz_error = 0.0;
-double dt = 0.25;
+double dt = 0.04;
 double z_error_prev = 0.0;
 double output_raw_z = 0.0;
 
@@ -58,8 +58,8 @@ int main(int argc, char **argv){
     
     //Initialize the state and gain matricies
     x << 0.0, 0.0, 0.0, 0.0;
-    k << 0.9268, 0.0000, 1.7393, 0.0000,
-        0.0000, 0.9267, 0.0000, 1.7393;
+    k << 0.9879, 0.0000, 1.814, 0.0000,
+        0.0000, 0.9879, 0.0000, 1.8140;
     
     x_z << 0.0, 0.0, 0.0;
     k_z << 2.8613, 3.3252, 0.8608;
@@ -76,7 +76,7 @@ int main(int argc, char **argv){
     mavros_msgs::SetMode mode_msg;
     mode_msg.request.custom_mode = "BRAKE";
 
-    ros::Rate loop_rate(4);
+    ros::Rate loop_rate(25);
 
     double fx = 0;
     double fy = 0;
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
         error_z = z_target - x_z(0,0);
         
         if ( abs(error_z) > 100.0) {
-            error_z = 0.0;
+            error_z = 100.0;
         }
 
         error_z_sum += error_z * dt;
@@ -98,13 +98,13 @@ int main(int argc, char **argv){
         //0.5 marginally stable
         //0.1P, 0.01I works close to target ~37m
 
-        output_raw_z = kp*error_z + ki*i_error_z;
+        output_raw_z = kp*error_z + ki*error_z_sum + kd*dz_error;
 
         auto output_raw = -1.0 * k * (x - aug_state);
 
         auto error = x - aug_state;
         
-        ROS_INFO("Output: %f, %f, %f zerror: %f, xy_error: %f", output_raw(0,0), output_raw(1,0), output_raw_z, error_z, error.norm());
+        ROS_INFO("Output: %f, %f, %f zerror: %f, xy_error: %f", output_raw(0,0), output_raw(1,0), output_raw_z, error_z_sum, error.norm());
 
         fx = std::max( output_raw(0,0), -1 * thrust_lim);
         fx = std::min( fx, thrust_lim);
