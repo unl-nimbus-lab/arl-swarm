@@ -10,5 +10,6 @@ docker run -it --net=host \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/altitude_controller",target=/home/catkin_ws/src/altitude_controller/ \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/state_provider",target=/home/catkin_ws/src/state_provider/ \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/lqr_control",target=/home/catkin_ws/src/lqr_control/ \
+ --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/hrl_command_interpret",target=/home/catkin_ws/src/hrl_command_interpret/ \
  swarm_devel
 
