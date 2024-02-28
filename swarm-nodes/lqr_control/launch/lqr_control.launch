@@ -10,6 +10,7 @@
 
     <!-- Remap the command topic to the swarm_comms topic -->
     <!-- <remap from="/agent_1/mavros/setpoint_raw/attitude" to="debug" /> -->
+  </node>
 
-    </node>
+  <node name="hrl_command_interpret" pkg="hrl_command_interpret" type="hrl_command_interpret" output="screen" />
 </launch>

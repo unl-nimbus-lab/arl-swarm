@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   custom_libs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
