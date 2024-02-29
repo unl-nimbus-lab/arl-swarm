@@ -32,6 +32,8 @@ double output_raw_z = 0.0;
 
 int control_mode = 0;
 
+int rate = 25;
+
 //For the XY plane
 Eigen::MatrixXd x(4,1); 
 Eigen::MatrixXd k(2,4); 
@@ -98,7 +100,7 @@ int main(int argc, char **argv){
     
     guided_msg.request.custom_mode = "GUIDED";
 
-    ros::Rate loop_rate(25);
+    ros::Rate loop_rate(rate);
 
     double fx = 0;
     double fy = 0;

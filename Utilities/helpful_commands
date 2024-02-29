@@ -11,5 +11,5 @@ docker run -it --net=host \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/state_provider",target=/home/catkin_ws/src/state_provider/ \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/lqr_control",target=/home/catkin_ws/src/lqr_control/ \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/hrl_command_interpret",target=/home/catkin_ws/src/hrl_command_interpret/ \
+ --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/hrl_control",target=/home/catkin_ws/src/hrl_control/ \
  swarm_devel
-
