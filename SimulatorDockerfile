@@ -75,22 +75,28 @@ COPY swarm-nodes/custom_libs /home/catkin_ws/src/custom_libs
 # COPY swarm-nodes/estimator /home/catkin_ws/src/estimator
 # COPY swarm-nodes/hrl_lqi /home/catkin_ws/src/hrl_lqi
 COPY swarm-nodes/swarm_msgs /home/catkin_ws/src/swarm_msgs
-COPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
-COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
-COPY swarm-nodes/observer /home/catkin_ws/src/observer
-COPY swarm-nodes/hrl_planner /home/catkin_ws/src/hrl_planner
-COPY swarm-nodes/pre-planned_arl /home/catkin_ws/src/pre-planned_arl
+# dCOPY swarm-nodes/swarm_comms /home/catkin_ws/src/swarm_comms
+# COPY swarm-nodes/clustering_control /home/catkin_ws/src/clustering_control
+# COPY swarm-nodes/observer /home/catkin_ws/src/observer
+# COPY swarm-nodes/hrl_planner /home/catkin_ws/src/hrl_planner
+# COPY swarm-nodes/pre-planned_arl /home/catkin_ws/src/pre-planned_arl
 # COPY swarm-nodes/live_gcs /home/catkin_ws/src/live_gcs
+COPY swarm-nodes/command_xform /home/catkin_ws/src/command_xform
+COPY swarm-nodes/state_provider /home/catkin_ws/src/state_provider
+COPY swarm-nodes/lqr_control /home/catkin_ws/src/lqr_control
+COPY swarm-nodes/hrl_command_interpret /home/catkin_ws/src/hrl_command_interpret
+COPY swarm-nodes/hrl_control /home/catkin_ws/src/hrl_control
+
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build
 
-RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
+# RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
 
 # Rosbag management
-COPY docker/drone/bag_manager.sh /home/
-RUN ["chmod","+x","/home/bag_manager.sh"]
+#COPY docker/drone/bag_manager.sh /home/
+#RUN ["chmod","+x","/home/bag_manager.sh"]
 
 # Overlay the ROS environment on top of the existing environment
 COPY docker/drone/ros_entrypoint.sh /

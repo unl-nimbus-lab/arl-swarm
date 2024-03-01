@@ -8,6 +8,7 @@
 #include "geometry_msgs/AccelStamped.h"
 #include "geometry_msgs/PointStamped.h"
 #include "mavros_msgs/SetMode.h"
+#include "std_msgs/Bool.h"
 
 class HRLController {
     public:
@@ -22,6 +23,9 @@ class HRLController {
 
         ros::Subscriber aug_state_sub;
         void augStateCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
+
+        ros::Subscriber publish_state_sub;
+        void publishStateCallback(const std_msgs::Bool::ConstPtr& msg);
 
         ros::ServiceClient set_mode;
 
@@ -50,6 +54,7 @@ class HRLController {
         double fy = 0.0;
         double fz = 0.0;
         float controller_period = 0.04;
+        bool publish_flag = false;
 
         geometry_msgs::Vector3Stamped control_msg;
 

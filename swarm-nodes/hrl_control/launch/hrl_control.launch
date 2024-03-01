@@ -1,4 +1,15 @@
 <launch>
+
+  <!-- Set default values from environment variables -->
+  <param name="fcu_urlo"  value="$(optenv PORT udp://127.0.0.1:14560@14565)" />
+  <param name="system_ID" value="$(optenv SYS_ID 1)" />
+  <param name="agentIDX"  value="$(optenv AGENT_IDX 1)" />
+  <param name="agentAlt"  value="$(optenv AGENT_ALT 400)" />
+  <param name="homeLat"   value="$(optenv HOME_LAT 40.846740)"/>
+  <param name="homeLon"   value="$(optenv HOME_LON -96.471819)"/>
+  <param name="homeAlt"   value="$(optenv HOME_ALT 390)"/>
+
+
   <!-- Launch state_provider node -->
   <node name="state_provider" pkg="state_provider" type="state_provider" output="screen" />
 

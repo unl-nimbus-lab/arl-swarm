@@ -7,6 +7,26 @@
 #include <mavros_msgs/SwarmGPS.h>
 #include <nav_msgs/Odometry.h>
 #include "geometry_msgs/AccelStamped.h"
+
+#include "state_provider/state_provider.h"
+
+StateProvider::StateProvider() {
+
+
+    nh.param<int>("SYSID_THISMAV", SYSID_THISMAV, 1);
+    nh.param<double>("global_origin_lat", global_origin.lat, 40.846740);
+    nh.param<double>("global_origin_lon", global_origin.lon, -96.471819);
+
+    state_pub = nh.advertise<geometry_msgs::AccelStamped>("/agent_state", 10, true);
+
+    pos_sub = nh.subscribe("/agent_1/mavros/global_position/swarm", 10, pos_callback);
+    vel_sub = nh.subscribe("/agent_1/mavros/global_position/local", 10, vel_callback);
+    
+}
+
+
+
+
 //This node subsribes to the agent's gps location and converts it to a local XY frame
 //centered at a pre-determined orgin (RMF for instance)
 
