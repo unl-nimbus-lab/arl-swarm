@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   geographic_msgs
   geometry_msgs
   custom_libs
-  swarm_comms
 )
 
 ## System dependencies are found with CMake's conventions

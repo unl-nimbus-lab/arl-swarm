@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   mavlink 
   mavros_msgs
   custom_libs
-  swarm_comms
 )
 
 include_directories( include ${catkin_INCLUDE_DIRS} )
