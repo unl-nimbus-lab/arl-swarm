@@ -4,8 +4,8 @@ StateProvider::StateProvider() {
 
 
     nh.param<int>("SystemID", SYSID_THISMAV, 1);
-    nh.param<double>("global_origin_lat", global_origin.lat, 40.846740);
-    nh.param<double>("global_origin_lon", global_origin.lon, -96.471819);
+    nh.param<double>("homeLat", global_origin.lat, 40.846740);
+    nh.param<double>("homeLon", global_origin.lon, -96.471819);
 
     state_pub = nh.advertise<geometry_msgs::AccelStamped>("/agent_state", 10, true);
 
