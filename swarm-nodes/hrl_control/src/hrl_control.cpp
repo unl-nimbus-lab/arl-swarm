@@ -1,7 +1,10 @@
 #include "hrl_control/hrl_control.h"
+
+//This node uses state feedback to compute control inputs, its behavior can be modified by 
+//sending debug vectors (see hrl_command_interpret for more information)
  
 HRLController::HRLController() {
-    //Initialize the ROS node publishers, subscribers, and services
+    //ROS things
     control_pub = nh.advertise<geometry_msgs::Vector3Stamped>("vector", 2);
     
     state_sub = nh.subscribe("/agent_state", 2, &HRLController::stateCallback, this);
@@ -50,7 +53,7 @@ void HRLController::publishStateCallback(const std_msgs::Bool::ConstPtr& msg) {
 
 void HRLController::computeControl( const ros::TimerEvent& event ) {
 
-    if (publish_flag) {
+    if (publish_flag) {//Only publish the state if the flag is set
 
         //First the altitude PID controller
         error_z = target_z - x_z(0,0); //compute the error

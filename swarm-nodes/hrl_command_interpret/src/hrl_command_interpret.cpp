@@ -1,7 +1,10 @@
 #include "hrl_command_interpret/hrl_command_interpret.h"
 
+//This node is used to interpret commands sent from the ground station and convert them into a form that can be used by the HRLController
+
 HRLCommandInterpret::HRLCommandInterpret() {
 
+    //Set the global origin from the parameter server so they can be converted to local coordinates if needed
     nh.param<double>("homeLat", global_origin.lat, 40.846740);
     nh.param<double>("homeLon", global_origin.lon, -96.471819);
 
@@ -13,6 +16,7 @@ HRLCommandInterpret::HRLCommandInterpret() {
 }
 
 void HRLCommandInterpret::updateAugState(float x_target, float y_target) {
+    //send new aug state component to the agents (cluster target)
     aug_state.header.stamp = ros::Time::now();
     aug_state.point.x = x_target;
     aug_state.point.y = y_target;
@@ -21,7 +25,13 @@ void HRLCommandInterpret::updateAugState(float x_target, float y_target) {
 }
 
 void HRLCommandInterpret::debugVecCallback(const mavros_msgs::DebugValue::ConstPtr& msg) {
-
+    //Handle commands sent in the form of debug vectors
+    //Command set:
+    //CXXX$XXX Where the "XXX" after the "C" identifies the cluster and
+    //the "XXX" after the "$" identifies the command
+    
+    //CXX$1: target as global position
+    //CXX$2: target as local position
     parseCommand(msg->name, msg_tgt_cluster, msg_command);
 
     switch(*msg_command) {
@@ -55,6 +65,10 @@ void HRLCommandInterpret::debugVecCallback(const mavros_msgs::DebugValue::ConstP
 }
 
 void HRLCommandInterpret::debugIntCallback(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    //Handle commands sent in the form of debug integers to turn on/off the publishing of the state of the HRLcontroller
+    //Command set (integer value)
+    //1: turn on
+    //2: turn off
     std_msgs::Bool publish_state;
     switch(msg->value_int) {
         case 1:
