@@ -7,9 +7,6 @@
 #include "custom_libs/geo_converter.hpp"
 #include "geometry_msgs/AccelStamped.h"
 
-
-
-
 class StateProvider {
     public:
         StateProvider();
@@ -24,16 +21,16 @@ class StateProvider {
         ros::Subscriber vel_sub;
         void velCallback(const nav_msgs::Odometry::ConstPtr& msg);
 
-        ros::Timer state_timer;
-        void computeState( const ros::TimerEvent& event );
+        ros::Timer state_pub_timer;
+        void publishState(const ros::TimerEvent& event);
 
         geo_converter converter;
-
-        double sign(double input);
 
         int SYSID_THISMAV;
 
         geometry_msgs::AccelStamped state_msg;
+
+
 
 
     private:
@@ -50,5 +47,5 @@ class StateProvider {
             double vy;
             double vz;
         } agent_state;
-
+};
 #endif

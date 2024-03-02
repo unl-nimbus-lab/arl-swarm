@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     
     //ros::Publisher command_pub = nh.advertise<std_msgs::String>("command", 1000);
-    att_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/agent_1/mavros/setpoint_raw/attitude", 2);
+    att_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude", 2);
     vect_sub = nh.subscribe("vector", 2, vectorCallback);
     
     while (ros::ok()) {

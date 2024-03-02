@@ -4,6 +4,7 @@
 #include <string>
 #include <custom_libs/geo_converter.hpp>
 #include <geometry_msgs/PointStamped.h>
+#include <std_msgs/Bool.h>
 
 geo_converter converter;
 
@@ -22,6 +23,7 @@ int* msg_command = new int;
 geometry_msgs::PointStamped aug_state;
 
 ros::Publisher aug_state_pub;
+ros::Publisher publish_state_pub;
 
 double sign(double input) {
     //Deterine the sign of a double
@@ -102,13 +104,33 @@ void commandCallback(const mavros_msgs::DebugValue::ConstPtr& msg) {
 
 }
 
+void debugIntCallback(const mavros_msgs::DebugValue::ConstPtr& msg) {
+    std_msgs::Bool publish_state;
+    switch(msg->value_int) {
+        case 1:
+            publish_state.data = true;
+            publish_state_pub.publish(publish_state);
+                break;
+        case 2:
+            publish_state.data = false;
+            publish_state_pub.publish(publish_state);
+                break;
+        default:
+            ROS_ERROR("Invalid INT command received");
+                break;
+    }
+}
+
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "hrl_command_interpret");
     ros::NodeHandle nh;
 
-    aug_state_pub = nh.advertise<geometry_msgs::PointStamped>("/agent_1/aug_state", 2);
-    ros::Subscriber debug_sub = nh.subscribe("/agent_1/mavros/debug_value/debug_vector", 5, commandCallback);
+    aug_state_pub = nh.advertise<geometry_msgs::PointStamped>("/aug_state", 2);
+    publish_state_pub = nh.advertise<std_msgs::Bool>("/publish_state", 2);
+
+    ros::Subscriber debug_sub = nh.subscribe("/mavros/debug_value/debug_vector", 5, commandCallback);
+    ros::Subscriber debug_int_sub = nh.subscribe("/mavros/debug_value/named_value_int", 5, debugIntCallback);
     
     ros::spin();
 
