@@ -33,21 +33,20 @@ class HRLController {
         ros::Timer controller_timer;
         void computeControl( const ros::TimerEvent& event );
 
+        Eigen::MatrixXd vectorIdXs(Eigen::MatrixXd input);
+        Eigen::MatrixXd generateAugStateIDXs(Eigen::MatrixXd swarmComp);
+
         json_reader reader;
         struct Sys system_matricies;
 
-
-        //XY dimension
-        Eigen::Matrix<double, 4, 1> x;
-        Eigen::Matrix<double, 2, 4> k; 
         Eigen::Matrix<double, 4, 1> aug_state;
-        Eigen::Matrix<double, 2, 1> output_raw;
 
         Eigen::MatrixXd X;
         Eigen::MatrixXd AUG_STATE;
         Eigen::MatrixXd OUTPUT_RAW;
         Eigen::MatrixXd SWARM_COMP;
         Eigen::MatrixXd IDXs;
+        Eigen::MatrixXd AUG_STATE_IDXs;
         Eigen::MatrixXd IT;
         
         //Z dimension PID controller
@@ -60,7 +59,6 @@ class HRLController {
         double target_z = 400.0;
         double control_mod = 1.0;
 
-
         //general control things
         double fx = 0.0;
         double fy = 0.0;
@@ -72,6 +70,7 @@ class HRLController {
 
         int SYSID_THISMAV;
         int CLSID_THISMAV;
+        
         int OUTIDX;
 
     private:

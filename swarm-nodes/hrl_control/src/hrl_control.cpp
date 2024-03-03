@@ -4,7 +4,7 @@
 //sending debug vectors (see hrl_command_interpret for more information)
  
 HRLController::HRLController() {
-    //ROS things
+    //ROS Publishes, Subscribers, and Services
     control_pub = nh.advertise<geometry_msgs::Vector3Stamped>("vector", 2);
     
     state_sub = nh.subscribe("/agent_state", 2, &HRLController::stateCallback, this);
@@ -15,10 +15,10 @@ HRLController::HRLController() {
     guided_msg.request.custom_mode = "GUIDED";
     brake_msg.request.custom_mode = "BRAKE";
 
-    //Timer event that tiggers the main control loop
-    controller_timer = nh.createTimer(ros::Duration(0.04), &HRLController::computeControl, this);
+    //Timer that tiggers the main control loop
+    controller_timer = nh.createTimer(ros::Duration(controller_period), &HRLController::computeControl, this);
 
-    //Be sure to use absolute paths here
+    //Be sure to use absolute paths to the system matricies
     system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys_2_2.json");
     
     //Resize and initialize the current state of the swarm to zeros since we may not have full feedback yet
@@ -26,66 +26,53 @@ HRLController::HRLController() {
     int numberOfAgents = system_matricies.p.sum();
     ROS_WARN("Number of agents is %d", numberOfAgents);
 
-    nh.param<int>("SystemID", SYSID_THISMAV, 3);
+    nh.param<int>("SystemID", SYSID_THISMAV, 1);
     ROS_WARN("Set SYSID_THISMAV to %d", SYSID_THISMAV);
 
+    //Its helpful to have the state indices in a vector of IDXs
     IDXs.resize(numberOfAgents,1);
-    int count = 0;
-    for (int i = 0; i < system_matricies.state_idxs_C.rows(); i++) {
-        for (int j = 0; j < system_matricies.state_idxs_C.cols(); j++) {
-            IDXs(count,0) = system_matricies.state_idxs_C(i,j);
-            count++;
-        }
-    }
+    IDXs = vectorIdXs(system_matricies.state_idxs_C);
 
+    //Reshape and initialize the state vector,
     X.resize(numberOfHRLStates, 1);
     X.setZero();
+
+    //Helpful to have the aug state indexes for each cluster
+    AUG_STATE_IDXs.resize(system_matricies.p.rows(), 1);
+    AUG_STATE_IDXs = generateAugStateIDXs(system_matricies.p);
 
     //Need a better way to manage the aug_state
     AUG_STATE.resize(numberOfHRLStates, 1);
     AUG_STATE.setZero();
-    AUG_STATE(4,0)  = -100.0;
-    AUG_STATE(5,0)  =  100.0;
-    AUG_STATE(16,0) =  100.0;
-    AUG_STATE(17,0) =  100.0;
+
+    AUG_STATE( AUG_STATE_IDXs(0)     ,0) =     0.0; //Cluster 1 X
+    AUG_STATE( AUG_STATE_IDXs(0) + 1 ,0) =   100.0; //Cluster 1 Y
+    AUG_STATE( AUG_STATE_IDXs(1)     ,0) =     0.0; //Cluster 2 X
+    AUG_STATE( AUG_STATE_IDXs(1) + 1 ,0) =  -100.0; //Cluster 2 Y
 
     //This should be number of agents x 2
-    OUTPUT_RAW.resize(4, 1);
+    OUTPUT_RAW.resize(numberOfAgents * 2, 1);
     OUTPUT_RAW.setZero();
 
+    //Inverse of transformation matrix
     IT = system_matricies.T.inverse();
 
+    //This agent's output index from the LQR controller
     OUTIDX = (SYSID_THISMAV - 1) * 2;
 
-    // std::cout << "The length of aug_state is " << AUG_STATE.size() << std::endl;
-    // std::cout << "AUG_STATE: " << std::endl << AUG_STATE << std::endl;
-
-    
-    //Initialize the state and gain matricies
-    x << 0.0, 0.0, 0.0, 0.0;
-    k << 0.9879, 0.0000, 1.814, 0.0000,
-        0.0000, 0.9879, 0.0000, 1.8140;
-
     x_z << 0.0, 0.0, 0.0;
-
-    aug_state << 30.0, -10.0, 0.0, 0.0;
 }
 
 void HRLController::stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg) {
     //Update the system's state from the message
-    // x(0,0) = msg->accel.linear.x;
-    // x(1,0) = msg->accel.linear.y;
-    // x(2,0) = msg->accel.angular.x;
-    // x(3,0) = msg->accel.angular.y;
-
     x_z(0,0) = msg->accel.linear.z;
     x_z(1,0) = msg->accel.angular.z;
 
     int i = IDXs(SYSID_THISMAV - 1,0); //Get the idx of this agent
 
-
     X = IT*X; //Un-transform X
 
+    //Add in this agents state to the vector
     X(i,0) = msg->accel.linear.x;
     X(i+1,0) = msg->accel.linear.y;
     X(i+2,0) = msg->accel.angular.x;
@@ -104,6 +91,42 @@ void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr
 void HRLController::publishStateCallback(const std_msgs::Bool::ConstPtr& msg) {
     //Update the flag to publish the state
     publish_flag = msg->data;
+}
+
+Eigen::MatrixXd HRLController::vectorIdXs(Eigen::MatrixXd input) {
+    //This function takes a matrix of indices and reshapes it into a vector
+    int count = 0;
+    Eigen::MatrixXd output(input.rows()*input.cols(),1);
+    for (int i = 0; i < input.rows(); i++) {
+        for (int j = 0; j < input.cols(); j++) {
+            output(count,0) = system_matricies.state_idxs_C(i,j);
+            count++;
+        }
+    }
+    return output;
+}
+
+Eigen::MatrixXd HRLController::generateAugStateIDXs(Eigen::MatrixXd swarmComp) {
+    //This function takes a swarm composition and returns the indices of the aug_states for each cluster
+    //swarmComp looks like [2 4]' for a swar with 2 clusters, one with 2 agents and one with 4 agents
+
+    //The calculation here is in each cluster, there are 4 states per agent, 2(n-1) relative integral states
+    //and 2 cluster-centroid integral states
+    int numberOfClusters = swarmComp.rows();
+    std::cout << "number of clusters: " << numberOfClusters << std::endl;
+    int tempIdx = 0;
+    int outIdx = 0;
+    Eigen::MatrixXd output(numberOfClusters,1);
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        int numberOfAgents = swarmComp(i,0);
+        tempIdx = tempIdx + 4*(numberOfAgents - 1);
+        output(outIdx++,0) = tempIdx;
+        tempIdx = tempIdx + 2 + 2*(numberOfAgents - 1) + 4;
+    }
+    std::cout << "aug state IDXs: " << std::endl << output << std::endl;
+    return output;
+
 }
 
 
@@ -129,45 +152,33 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             raw_output_z = kp*error_z + ki*error_z_integral + kd*error_z_derivative;
         }
 
-
+        Limits on the integral states since these can explode
         for (int i = 8; i < 12; i++) {
-            X(i,0) = std::max( X(i,0), -5.0);
-            X(i,0) = std::min( X(i,0), 5.0);
+            X(i,0) = std::max( X(i,0), -50.0);
+            X(i,0) = std::min( X(i,0), 50.0);
         }
 
         for (int i = 20; i < 24; i++) {
-            X(i,0) = std::max( X(i,0), -5.0);
-            X(i,0) = std::min( X(i,0),  5.0);
+            X(i,0) = std::max( X(i,0), -50.0);
+            X(i,0) = std::min( X(i,0),  50.0);
         }
 
         OUTPUT_RAW = -1.0 * system_matricies.DKL * (X - AUG_STATE);
-        //auto ERROR = X - AUG_STATE;
 
+        //Gaurd rails on the control signal, ensures that we don't command extreme angles to the UAV
         OUTPUT_RAW( OUTIDX, 0) = std::max( OUTPUT_RAW( OUTIDX, 0), -1 * thrust_lim);
         OUTPUT_RAW( OUTIDX, 0) = std::min( OUTPUT_RAW( OUTIDX, 0),      thrust_lim);
 
         OUTPUT_RAW( OUTIDX + 1, 0) = std::max( OUTPUT_RAW( OUTIDX + 1, 0), -1 * thrust_lim);
         OUTPUT_RAW( OUTIDX + 1, 0) = std::min( OUTPUT_RAW( OUTIDX + 1, 0),      thrust_lim);
 
-        std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW << std::endl;
-
         fx = OUTPUT_RAW(OUTIDX,     0);
         fy = OUTPUT_RAW(OUTIDX + 1, 0);
-
-        //Now the XY controller, LQR control
-        output_raw = -1.0 * k * (x - aug_state);
-        auto error = x - aug_state;
-
-        //Limit the control signal to the thrust limits
-        // fx = std::max( output_raw(0,0), -1 * thrust_lim);
-        // fx = std::min( fx, thrust_lim);
-
-        // fy = std::max( output_raw(1,0), -1 * thrust_lim);
-        // fy = std::min( fy, thrust_lim);
 
         fz = std::max( raw_output_z, thrust_min );//Note, should always have a non-zero thrust for Z
         fz = std::min( fz, thrust_lim_z);
         
+        //pack the control_msg, the control mod values are set based on the altitude error
         control_msg.vector.x = control_mod*fx;
         control_msg.vector.y = control_mod*fy;
         control_msg.vector.z = fz;
@@ -181,11 +192,10 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         control_pub.publish(control_msg);
 
-        X = system_matricies.DTA * (X - AUG_STATE) + system_matricies.DTB * OUTPUT_RAW - system_matricies.ZD * 0.04 + AUG_STATE;
+        //Propogate the state forward for estimation in case the state feedback is lost
+        X = system_matricies.DTA * (X - AUG_STATE) + system_matricies.DTB * OUTPUT_RAW - system_matricies.ZD * controller_period + AUG_STATE;
         
-
-
-        auto X_T = IT*X;
+        //auto X_T = IT*X;
         //std::cout << "X: " << std::endl << X_T << std::endl; 
 
         //update new controller rate
