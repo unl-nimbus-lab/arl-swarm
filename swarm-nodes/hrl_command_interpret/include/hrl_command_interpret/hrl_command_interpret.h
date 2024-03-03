@@ -22,7 +22,7 @@ class HRLCommandInterpret {
         ros::Subscriber debug_int_sub;
         void debugIntCallback(const mavros_msgs::DebugValue::ConstPtr& msg);
 
-        void updateAugState(float x_target, float y_target);
+        void updateAugState(float x_target, float y_target, int cluster_id);
 
         geo_converter converter;
 

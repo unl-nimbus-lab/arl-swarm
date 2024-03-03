@@ -15,12 +15,12 @@ HRLCommandInterpret::HRLCommandInterpret() {
     debug_int_sub = nh.subscribe("/mavros/debug_value/named_value_int", 5, &HRLCommandInterpret::debugIntCallback, this);
 }
 
-void HRLCommandInterpret::updateAugState(float x_target, float y_target) {
+void HRLCommandInterpret::updateAugState(float x_target, float y_target, int cluster_id) {
     //send new aug state component to the agents (cluster target)
     aug_state.header.stamp = ros::Time::now();
     aug_state.point.x = x_target;
     aug_state.point.y = y_target;
-    aug_state.point.z = 0.0;
+    aug_state.point.z = cluster_id;
     aug_state_pub.publish(aug_state);
 }
 
@@ -49,12 +49,12 @@ void HRLCommandInterpret::debugVecCallback(const mavros_msgs::DebugValue::ConstP
             x_target = converter.gps_to_meters(global_origin.lat, global_origin.lon, global_origin.lat, lon);
             x_target = x_sign * x_target;
             //conert to local
-            updateAugState(x_target, y_target);
+            updateAugState(x_target, y_target, *msg_tgt_cluster);
                 break;
 
         case 2://Command type 2: target as local position
             ROS_INFO("Received local position target command");
-            updateAugState(msg->data[0], msg->data[1]);
+            updateAugState(msg->data[0], msg->data[1], *msg_tgt_cluster);
                 break;
 
         default:

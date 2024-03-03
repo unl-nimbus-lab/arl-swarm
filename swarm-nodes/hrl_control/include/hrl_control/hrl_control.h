@@ -37,6 +37,8 @@ class HRLController {
         void vectorIdXsTest();
         Eigen::MatrixXd generateAugStateIDXs(Eigen::MatrixXd swarmComp);
         void generateAugStateIDXsTest();
+        Eigen::MatrixXd generateIntStateIDXs(Eigen::MatrixXd swarmComp);
+        void generateIntStateIDXsTest();
 
         json_reader reader;
         struct Sys system_matricies;
@@ -49,7 +51,10 @@ class HRLController {
         Eigen::MatrixXd SWARM_COMP;
         Eigen::MatrixXd IDXs;
         Eigen::MatrixXd AUG_STATE_IDXs;
+        Eigen::MatrixXd INT_STATE_IDXs;
         Eigen::MatrixXd IT;
+        
+        Eigen::MatrixXd ERROR;
         
         //Z dimension PID controller
         Eigen::Matrix<double, 3, 1> x_z;
@@ -74,6 +79,8 @@ class HRLController {
         int CLSID_THISMAV;
         
         int OUTIDX;
+
+        int numberOfIntStates = 0;
 
     private:
         double thrust_lim = 0.1;

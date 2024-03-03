@@ -5,6 +5,7 @@
     <!-- Set default values from environment variables -->
     <param name="MavPort"  value="$(optenv PORT udp://127.0.0.1:14560@14565)" />
     <param name="SystemID" value="$(optenv SYS_ID 1)" />
+    <param name="ClusterID" value="$(optenv CLS_ID 1)" />
     <param name="agentIDX"  value="$(optenv AGENT_IDX 1)" />
     <param name="agentAlt"  value="$(optenv AGENT_ALT 400)" />
     <param name="homeLat"   value="$(optenv HOME_LAT 40.846740)"/>
@@ -51,6 +52,7 @@
       <remap from="/aug_state" to="/agent_$(env SYS_ID)/aug_state" />
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />
       <remap from="/vector" to="/agent_$(env SYS_ID)/vector" />
+      <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
 
     </node>
 
