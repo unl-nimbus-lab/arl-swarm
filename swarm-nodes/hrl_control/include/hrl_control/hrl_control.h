@@ -34,7 +34,9 @@ class HRLController {
         void computeControl( const ros::TimerEvent& event );
 
         Eigen::MatrixXd vectorIdXs(Eigen::MatrixXd input);
+        void vectorIdXsTest();
         Eigen::MatrixXd generateAugStateIDXs(Eigen::MatrixXd swarmComp);
+        void generateAugStateIDXsTest();
 
         json_reader reader;
         struct Sys system_matricies;

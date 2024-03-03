@@ -61,6 +61,9 @@ HRLController::HRLController() {
     OUTIDX = (SYSID_THISMAV - 1) * 2;
 
     x_z << 0.0, 0.0, 0.0;
+
+    //vectorIdXsTest();
+    generateAugStateIDXsTest();
 }
 
 void HRLController::stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg) {
@@ -99,7 +102,7 @@ Eigen::MatrixXd HRLController::vectorIdXs(Eigen::MatrixXd input) {
     Eigen::MatrixXd output(input.rows()*input.cols(),1);
     for (int i = 0; i < input.rows(); i++) {
         for (int j = 0; j < input.cols(); j++) {
-            output(count,0) = system_matricies.state_idxs_C(i,j);
+            output(count,0) = input(i,j);
             count++;
         }
     }
@@ -113,7 +116,7 @@ Eigen::MatrixXd HRLController::generateAugStateIDXs(Eigen::MatrixXd swarmComp) {
     //The calculation here is in each cluster, there are 4 states per agent, 2(n-1) relative integral states
     //and 2 cluster-centroid integral states
     int numberOfClusters = swarmComp.rows();
-    std::cout << "number of clusters: " << numberOfClusters << std::endl;
+    //std::cout << "number of clusters: " << numberOfClusters << std::endl;
     int tempIdx = 0;
     int outIdx = 0;
     Eigen::MatrixXd output(numberOfClusters,1);
@@ -124,11 +127,82 @@ Eigen::MatrixXd HRLController::generateAugStateIDXs(Eigen::MatrixXd swarmComp) {
         output(outIdx++,0) = tempIdx;
         tempIdx = tempIdx + 2 + 2*(numberOfAgents - 1) + 4;
     }
-    std::cout << "aug state IDXs: " << std::endl << output << std::endl;
+    //std::cout << "aug state IDXs: " << std::endl << output << std::endl;
     return output;
 
 }
 
+void HRLController::vectorIdXsTest() {
+    //Test the vectorIdxs function
+    Eigen::MatrixXd testMat1(2,2);
+    testMat1 << 1, 2, 3, 4;
+    std::cout << "Test Matrix: " << std::endl << testMat1 << std::endl;
+    Eigen::MatrixXd testVec1 = vectorIdXs(testMat1);
+    std::cout << "Test Vector: " << std::endl << testVec1 << std::endl;
+
+    Eigen::MatrixXd testMat2(3,3);
+    testMat2 << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+    std::cout << "Test Matrix: " << std::endl << testMat2 << std::endl;
+    Eigen::MatrixXd testVec2 = vectorIdXs(testMat2);
+    std::cout << "Test Vector: " << std::endl << testVec2 << std::endl;
+
+    Eigen::MatrixXd testMat3(4,4);
+    testMat3 << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16;
+    std::cout << "Test Matrix: " << std::endl << testMat3 << std::endl;
+    Eigen::MatrixXd testVec3 = vectorIdXs(testMat3);
+    std::cout << "Test Vector: " << std::endl << testVec3 << std::endl;
+
+    Eigen::MatrixXd testMat4(2,3);
+    testMat4 << 1, 2, 3, 4, 5, 6;
+    std::cout << "Test Matrix: " << std::endl << testMat4 << std::endl;
+    Eigen::MatrixXd testVec4 = vectorIdXs(testMat4);
+    std::cout << "Test Vector: " << std::endl << testVec4 << std::endl;
+
+    Eigen::MatrixXd testMat5(3,2);
+    testMat5 << 1, 2, 3, 4, 5, 6;
+    std::cout << "Test Matrix: " << std::endl << testMat5 << std::endl;
+    Eigen::MatrixXd testVec5 = vectorIdXs(testMat5);
+    std::cout << "Test Vector: " << std::endl << testVec5 << std::endl;
+
+}
+
+void HRLController::generateAugStateIDXsTest() {
+    //Test the generateAugStateIDXs function
+    Eigen::MatrixXd testMat1(2,1);
+    testMat1 << 2, 2;
+    std::cout << "Test Matrix: " << std::endl << testMat1 << std::endl;
+    Eigen::MatrixXd testVec1 = generateAugStateIDXs(testMat1);
+    std::cout << "Test Vector: " << std::endl << testVec1 << std::endl;
+    //4 16
+
+    Eigen::MatrixXd testMat2(2,1);
+    testMat2 << 4, 4;
+    std::cout << "Test Matrix: " << std::endl << testMat2 << std::endl;
+    Eigen::MatrixXd testVec2 = generateAugStateIDXs(testMat2);
+    std::cout << "Test Vector: " << std::endl << testVec2 << std::endl;
+    //12 36
+
+    Eigen::MatrixXd testMat3(3,1);
+    testMat3 << 4, 4, 4;
+    std::cout << "Test Matrix: " << std::endl << testMat3 << std::endl;
+    Eigen::MatrixXd testVec3 = generateAugStateIDXs(testMat3);
+    std::cout << "Test Vector: " << std::endl << testVec3 << std::endl;
+    //12 36 60
+
+    Eigen::MatrixXd testMat4(3,1);
+    testMat4 << 2, 3, 2;
+    std::cout << "Test Matrix: " << std::endl << testMat4 << std::endl;
+    Eigen::MatrixXd testVec4 = generateAugStateIDXs(testMat4);
+    std::cout << "Test Vector: " << std::endl << testVec4 << std::endl;
+    //4 20 34
+    Eigen::MatrixXd testMat5(2,1);
+    testMat5 << 2, 3;
+    std::cout << "Test Matrix: " << std::endl << testMat5 << std::endl;
+    Eigen::MatrixXd testVec5 = generateAugStateIDXs(testMat5);
+    std::cout << "Test Vector: " << std::endl << testVec5 << std::endl;
+    //4 20
+
+}
 
 void HRLController::computeControl( const ros::TimerEvent& event ) {
 
@@ -152,7 +226,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             raw_output_z = kp*error_z + ki*error_z_integral + kd*error_z_derivative;
         }
 
-        Limits on the integral states since these can explode
+        //Limits on the integral states since these can explode
         for (int i = 8; i < 12; i++) {
             X(i,0) = std::max( X(i,0), -50.0);
             X(i,0) = std::min( X(i,0), 50.0);
