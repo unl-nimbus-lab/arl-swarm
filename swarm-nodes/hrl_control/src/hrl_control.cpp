@@ -63,7 +63,7 @@ HRLController::HRLController() {
     x_z << 0.0, 0.0, 0.0;
 
     //vectorIdXsTest();
-    generateAugStateIDXsTest();
+    //generateAugStateIDXsTest();
 }
 
 void HRLController::stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg) {
