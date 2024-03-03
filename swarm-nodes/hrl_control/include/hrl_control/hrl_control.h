@@ -9,6 +9,7 @@
 #include "geometry_msgs/PointStamped.h"
 #include "mavros_msgs/SetMode.h"
 #include "std_msgs/Bool.h"
+#include "custom_libs/json_reader.hpp"
 
 class HRLController {
     public:
@@ -32,12 +33,23 @@ class HRLController {
         ros::Timer controller_timer;
         void computeControl( const ros::TimerEvent& event );
 
+        json_reader reader;
+        struct Sys system_matricies;
+
+
         //XY dimension
         Eigen::Matrix<double, 4, 1> x;
         Eigen::Matrix<double, 2, 4> k; 
         Eigen::Matrix<double, 4, 1> aug_state;
         Eigen::Matrix<double, 2, 1> output_raw;
 
+        Eigen::MatrixXd X;
+        Eigen::MatrixXd AUG_STATE;
+        Eigen::MatrixXd OUTPUT_RAW;
+        Eigen::MatrixXd SWARM_COMP;
+        Eigen::MatrixXd IDXs;
+        Eigen::MatrixXd IT;
+        
         //Z dimension PID controller
         Eigen::Matrix<double, 3, 1> x_z;
         double error_z = 0.0;
@@ -57,6 +69,10 @@ class HRLController {
         bool publish_flag = false;
 
         geometry_msgs::Vector3Stamped control_msg;
+
+        int SYSID_THISMAV;
+        int CLSID_THISMAV;
+        int OUTIDX;
 
     private:
         double thrust_lim = 0.1;
