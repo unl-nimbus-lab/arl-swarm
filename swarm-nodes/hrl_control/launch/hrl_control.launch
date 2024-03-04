@@ -3,7 +3,8 @@
   <group ns="agent_$(env SYS_ID)">
 
     <!-- Set default values from environment variables -->
-    <param name="MavPort"  value="$(optenv PORT udp://127.0.0.1:14560@14565)" />
+    <param name="MavDev"  value="$(optenv PORT udp://127.0.0.1)" />
+    <param name="MavPort" value="$(optenv BAUD 14560@14565)" />
     <param name="SystemID" value="$(optenv SYS_ID 1)" />
     <param name="ClusterID" value="$(optenv CLS_ID 1)" />
     <param name="agentIDX"  value="$(optenv AGENT_IDX 1)" />
@@ -14,7 +15,7 @@
 
 
 
-    <arg name="fcu_url" default="$(env PORT)"/>
+    <arg name="fcu_url" default="$(env PORT):$(env BAUD)"/>
     <arg name="gcs_url" default="" />
     <arg name="tgt_system" default="$(env SYS_ID)" />
     <arg name="tgt_component" default="" />
