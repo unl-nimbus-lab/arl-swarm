@@ -19,7 +19,7 @@ HRLController::HRLController() {
     controller_timer = nh.createTimer(ros::Duration(controller_period), &HRLController::computeControl, this);
 
     //Be sure to use absolute paths to the system matricies
-    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys_4_4.json");
+    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys_4_4_4.json");
     
     //Resize and initialize the current state of the swarm to zeros since we may not have full feedback yet
     int numberOfHRLStates = system_matricies.ZD.size();
@@ -31,6 +31,9 @@ HRLController::HRLController() {
 
     nh.param<int>("ClusterID", CLSID_THISMAV, 1);
     ROS_WARN("Set CLUSTERID_THISMAV to %d", CLSID_THISMAV);
+
+    nh.param<double>("agentAlt", target_z, 400);
+    ROS_WARN("Set target_z to %f", target_z);
 
     //Its helpful to have the state indices in a vector of IDXs
     IDXs.resize(numberOfAgents,1);
@@ -49,15 +52,23 @@ HRLController::HRLController() {
     AUG_STATE.resize(numberOfHRLStates, 1);
     AUG_STATE.setZero();
 
+    int numberOfClusters = system_matricies.p.rows();
+
     //Generate default augmented states (this is only hard coded for 2 clusters for now)
-    AUG_STATE( AUG_STATE_IDXs(0)     ,0) =     0.0; //Cluster 1 X
-    AUG_STATE( AUG_STATE_IDXs(0) + 1 ,0) =   100.0; //Cluster 1 Y
-    AUG_STATE( AUG_STATE_IDXs(1)     ,0) =     0.0; //Cluster 2 X
-    AUG_STATE( AUG_STATE_IDXs(1) + 1 ,0) =  -100.0; //Cluster 2 Y
+    for (int i = 0; i < numberOfClusters; i++) {
+        float angle = 2*3.14/numberOfClusters * i;
+        AUG_STATE( AUG_STATE_IDXs(i)     ,0) = 100.0*cos(angle); //Cluster X
+        AUG_STATE( AUG_STATE_IDXs(i) + 1 ,0) = 100.0*sin(angle); //Cluster Y
+    }
+
+    // AUG_STATE( AUG_STATE_IDXs(0)     ,0) =     0.0; //Cluster 1 X
+    // AUG_STATE( AUG_STATE_IDXs(0) + 1 ,0) =   100.0; //Cluster 1 Y
+    // AUG_STATE( AUG_STATE_IDXs(1)     ,0) =     0.0; //Cluster 2 X
+    // AUG_STATE( AUG_STATE_IDXs(1) + 1 ,0) =  -100.0; //Cluster 2 Y
 
 
     //Create vector of integral state indices
-    int numberOfClusters = system_matricies.p.rows();
+
     for (int i = 0; i < numberOfClusters; i++) {
         int tempAgents = system_matricies.p(i,0);
         numberOfIntStates = numberOfIntStates + 2*(tempAgents - 1) + 2;
@@ -406,7 +417,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         //std::cout << "ERROR: " << std::endl << ERROR << std::endl;
 
-        // To avoid dancing around the target, switch to BRAKE mode if close, uploading a new
+        // To avoid "dancing" around the target, switch to BRAKE mode if close, uploading a new
         // waypoint will automatically switch back to GUIDED mode when it is recieved.
         if (ERROR.norm() < 5.0) {
            ROS_WARN("Close to target, stopping");
