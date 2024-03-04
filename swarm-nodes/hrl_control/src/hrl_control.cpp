@@ -120,6 +120,11 @@ void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr
     //Update the augmented state from GCS the set to GUIDED mode
     int cluster_id = msg->point.z;
 
+    if (cluster_id > system_matricies.p.rows() || cluster_id < 1) {
+        ROS_ERROR("Cluster ID is out of range");
+        return;
+    }
+
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1)     ,0) = msg->point.x;
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1) + 1 ,0) = msg->point.y;
 
