@@ -74,9 +74,6 @@
       <remap from="/mavros/debug_value/named_value_int" to="/agent_$(env SYS_ID)/mavros/debug_value/named_value_int" />
 
     </node>
-
-    <node pkg="rosbag" type="record" name="record_node" output="screen" args="-o /home/rosbags/default_record /agent_$(env SYS_ID)/vector">
-    </node>
   
   </group>
 
