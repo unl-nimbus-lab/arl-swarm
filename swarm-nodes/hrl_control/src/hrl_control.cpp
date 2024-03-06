@@ -19,7 +19,7 @@ HRLController::HRLController() {
     controller_timer = nh.createTimer(ros::Duration(controller_period), &HRLController::computeControl, this);
 
     //Be sure to use absolute paths to the system matricies
-    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys_4_4_4.json");
+    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys.json");
     
     //Resize and initialize the current state of the swarm to zeros since we may not have full feedback yet
     int numberOfHRLStates = system_matricies.ZD.size();
@@ -36,6 +36,7 @@ HRLController::HRLController() {
     ROS_WARN("Set target_z to %f", target_z);
 
     nh.param<double>("thrustScalar",thrust_scalar, 1.0);
+    ROS_WARN("Set thrust_scalar to %f", thrust_scalar);
 
     //Its helpful to have the state indices in a vector of IDXs
     IDXs.resize(numberOfAgents,1);
@@ -399,9 +400,9 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         OUTPUT_RAW = -1.0 * system_matricies.DKL * (X - AUG_STATE);
 
-        std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX    ,0) << std::endl;
-        std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX + 1,0) << std::endl;
-        std::cout << std::endl;
+        // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX    ,0) << std::endl;
+        // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX + 1,0) << std::endl;
+        // std::cout << std::endl;
 
         //Gaurd rails on the control signal, ensures that we don't command extreme angles to the UAV
         OUTPUT_RAW( OUTIDX, 0) = std::max( OUTPUT_RAW( OUTIDX, 0), -1 * thrust_lim);
