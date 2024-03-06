@@ -12,6 +12,7 @@
     <param name="homeLat"   value="$(optenv HOME_LAT 40.846740)"/>
     <param name="homeLon"   value="$(optenv HOME_LON -96.471819)"/>
     <param name="homeAlt"   value="$(optenv HOME_ALT 390)"/>
+    <param name="bagDir"    value="$(optenv BAG_DIR /home/rosbags/ )"/>
 
 
 
@@ -73,6 +74,10 @@
       <remap from="/mavros/debug_value/debug_vector" to="/agent_$(env SYS_ID)/mavros/debug_value/debug_vector" />
       <remap from="/mavros/debug_value/named_value_int" to="/agent_$(env SYS_ID)/mavros/debug_value/named_value_int" />
 
+    </node>
+
+    <node name="bag_handler" pkg="bag_handler" type="bag_handler.py" output="screen">
+      <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
     </node>
   
   </group>
