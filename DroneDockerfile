@@ -86,13 +86,14 @@ COPY swarm-nodes/state_provider /home/catkin_ws/src/state_provider
 COPY swarm-nodes/lqr_control /home/catkin_ws/src/lqr_control
 COPY swarm-nodes/hrl_command_interpret /home/catkin_ws/src/hrl_command_interpret
 COPY swarm-nodes/hrl_control /home/catkin_ws/src/hrl_control
+COPY swarm-nodes/bag_handler /home/catkin_ws/src/bag_handler
 
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build
 
-# RUN chmod +x /home/catkin_ws/src/swarm_comms/scripts/swarm_comm.py
+RUN chmod +x /home/catkin_ws/src/bag_handler/scripts/bag_handler.py
 
 # # Rosbag management
 # COPY docker/drone/bag_manager.sh /home/
