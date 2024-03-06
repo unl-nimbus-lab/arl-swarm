@@ -13,6 +13,7 @@
     <param name="homeLon"   value="$(optenv HOME_LON -96.471819)"/>
     <param name="homeAlt"   value="$(optenv HOME_ALT 390)"/>
     <param name="bagDir"    value="$(optenv BAG_DIR /home/rosbags/ )"/>
+    <param name="thrustScalar"  value="$(optenv THRUST_SCALAR 1.0 )"/>
 
 
 

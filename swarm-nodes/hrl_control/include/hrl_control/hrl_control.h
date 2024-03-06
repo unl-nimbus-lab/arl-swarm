@@ -72,6 +72,7 @@ class HRLController {
         double fz = 0.0;
         float controller_period = 0.04;
         bool publish_flag = false;
+        double thrust_scalar = 1.0;
 
         geometry_msgs::Vector3Stamped control_msg;
 

@@ -35,6 +35,8 @@ HRLController::HRLController() {
     nh.param<double>("agentAlt", target_z, 400);
     ROS_WARN("Set target_z to %f", target_z);
 
+    nh.param<double>("thrustScalar",thrust_scalar, 1.0);
+
     //Its helpful to have the state indices in a vector of IDXs
     IDXs.resize(numberOfAgents,1);
     IDXs = vectorIdXs(system_matricies.state_idxs_C);
@@ -127,6 +129,7 @@ void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr
 
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1)     ,0) = msg->point.x;
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1) + 1 ,0) = msg->point.y;
+    ROS_WARN("Cluster %d updated to %f, %f", cluster_id, msg->point.x, msg->point.y);
 
     if (cluster_id == CLSID_THISMAV) {
         publish_flag = true;
@@ -379,7 +382,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             error_z_integral = 0.0;
             ROS_WARN("Altitude error too large, Adjusting height only");
         } else {
-            control_mod = 1.0;
+            control_mod = thrust_scalar; //turn on the XY controller
             //Compute the PID control signal for the altitude
             error_z_integral += error_z * controller_period;
             error_z_derivative = (error_z - error_z_previous) / controller_period;
@@ -395,6 +398,10 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         }
 
         OUTPUT_RAW = -1.0 * system_matricies.DKL * (X - AUG_STATE);
+
+        std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX    ,0) << std::endl;
+        std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX + 1,0) << std::endl;
+        std::cout << std::endl;
 
         //Gaurd rails on the control signal, ensures that we don't command extreme angles to the UAV
         OUTPUT_RAW( OUTIDX, 0) = std::max( OUTPUT_RAW( OUTIDX, 0), -1 * thrust_lim);
