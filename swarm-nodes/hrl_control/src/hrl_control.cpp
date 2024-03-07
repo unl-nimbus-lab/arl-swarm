@@ -383,7 +383,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             error_z_integral = 0.0;
             ROS_WARN("Altitude error too large, Adjusting height only");
         } else {
-            control_mod = thrust_scalar; //turn on the XY controller
+            control_mod = 1.0;//thrust_scalar; //turn on the XY controller and scale the thrust
             //Compute the PID control signal for the altitude
             error_z_integral += error_z * controller_period;
             error_z_derivative = (error_z - error_z_previous) / controller_period;
@@ -403,6 +403,9 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX    ,0) << std::endl;
         // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX + 1,0) << std::endl;
         // std::cout << std::endl;
+
+        OUTPUT_RAW( OUTIDX, 0)      = thrust_scalar*OUTPUT_RAW( OUTIDX, 0);
+        OUTPUT_RAW( OUTIDX + 1, 0)  = thrust_scalar*OUTPUT_RAW( OUTIDX + 1, 0);
 
         //Gaurd rails on the control signal, ensures that we don't command extreme angles to the UAV
         OUTPUT_RAW( OUTIDX, 0) = std::max( OUTPUT_RAW( OUTIDX, 0), -1 * thrust_lim);

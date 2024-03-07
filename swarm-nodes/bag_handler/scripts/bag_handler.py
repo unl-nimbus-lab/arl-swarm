@@ -19,9 +19,9 @@ bag_dir = None
 def start_recording():
     global rosbag_process
     global bag_dir
-    topic1 = "agent_" + str(rospy.get_param("SystemID")) + "/mavros/global_position/swarm"
-    topic2 = "agent_" + str(rospy.get_param("SystemID")) + "/mavros/agent_state"
-    topic3 = "agent_" + str(rospy.get_param("SystemID")) + "/vector"
+    topic1 = "/agent_" + str(rospy.get_param("SystemID")) + "/mavros/global_position/swarm"
+    topic2 = "/agent_" + str(rospy.get_param("SystemID")) + "/mavros/agent_state"
+    topic3 = "/agent_" + str(rospy.get_param("SystemID")) + "/vector"
     rosbag_process = subprocess.Popen(["rosbag", "record", "-o", bag_dir + "/bag", topic1, topic2, topic3])
 
 def stop_recording():
