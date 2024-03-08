@@ -15,7 +15,7 @@ include_directories( include ${catkin_INCLUDE_DIRS} )
 
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs mavros_msgs geometry_msgs nav_msgs
-  DEPENDS system_lib
+  #DEPENDS system_lib
 )
 
 ###########

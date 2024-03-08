@@ -63,7 +63,9 @@ HRLController::HRLController() {
         AUG_STATE( AUG_STATE_IDXs(i)     ,0) = 100.0*cos(angle); //Cluster X
         AUG_STATE( AUG_STATE_IDXs(i) + 1 ,0) = 100.0*sin(angle); //Cluster Y
     }
-
+    ROS_INFO("DEFAULT AUG_STATE: ");
+    std::cout << "AUG_STATE: " << std::endl << AUG_STATE << std::endl;
+    ROS_INFO("===============");
     // AUG_STATE( AUG_STATE_IDXs(0)     ,0) =     0.0; //Cluster 1 X
     // AUG_STATE( AUG_STATE_IDXs(0) + 1 ,0) =   100.0; //Cluster 1 Y
     // AUG_STATE( AUG_STATE_IDXs(1)     ,0) =     0.0; //Cluster 2 X
@@ -130,7 +132,8 @@ void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr
 
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1)     ,0) = msg->point.x;
     AUG_STATE( AUG_STATE_IDXs(cluster_id - 1) + 1 ,0) = msg->point.y;
-    ROS_WARN("Cluster %d updated to %f, %f", cluster_id, msg->point.x, msg->point.y);
+    ROS_WARN("Cluster AUG_STATE %d updated to %f, %f", cluster_id, msg->point.x, msg->point.y);
+    std::cout << "AUG_STATE: " << std::endl << AUG_STATE << std::endl;
 
     if (cluster_id == CLSID_THISMAV) {
         publish_flag = true;
@@ -381,7 +384,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             control_mod  = 0.0; //turn off the XY controller
             raw_output_z = kp*error_z;//Only going to use P control to avoid large windup
             error_z_integral = 0.0;
-            ROS_WARN("Altitude error too large, Adjusting height only");
+            ROS_INFO("Altitude error too large, Adjusting height only");
         } else {
             control_mod = 1.0;//thrust_scalar; //turn on the XY controller and scale the thrust
             //Compute the PID control signal for the altitude

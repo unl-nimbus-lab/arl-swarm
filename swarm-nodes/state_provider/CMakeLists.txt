@@ -93,7 +93,7 @@ include_directories( include ${catkin_INCLUDE_DIRS} )
 
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
-  DEPENDS system_lib
+  #DEPENDS system_lib
 )
 
 ## Declare a C++ executable
