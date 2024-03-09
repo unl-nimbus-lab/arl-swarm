@@ -11,6 +11,7 @@
 #include <math.h>
 #include "json.hpp"
 #include <fstream>
+#include <vector>
 #include <eigen3/Eigen/Dense>
 
 using json = nlohmann::json;
@@ -31,12 +32,20 @@ struct Sys {
 	MatrixXd DTB;
 	MatrixXd state_idxs_C;
 } ;
+ 
+struct dSys {
+	MatrixXd DTA;
+	MatrixXd DTB;
+	MatrixXd KD;
+};
+ 
 
 class json_reader{
 
 	public:
 
-		Sys readJSON(std::string path_to_json); // This retrns the full info on the json file 
+		Sys readJSON(std::string path_to_json); // This retrns the full info on the json file
+		std::vector<dSys> read_coreg_system(std::string path_to_json);
 		Sys get_formation(std::string path_to_json); // This returns the agent groupings
 		//double gps_to_meters(double lat1, double lon1, double lat2, double lon2) ; // This gives the distance beteen two gps coordiantes in meters
 		//double meters_to_lat(double base_lat, double base_lon, double d ); // This gives the latitde from a base lat,lon coordinnates and a particualr distance with a bearing of 0 degrees

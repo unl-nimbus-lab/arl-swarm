@@ -214,6 +214,100 @@ Sys json_reader::readJSON(std::string path_to_json)
 	return s ;
 }
 
+std::vector<dSys> read_coreg_system(std::string path_to_json) {
+//Read the json file containing the gain schedule with system comonents DTA, DTB, and KD
+//Starting at 1 hz, outputs a vector of structures that are accessed like:
+// gain_schedule[frequencey-1].DTA etc. 
+    
+    std::ifstream i(path_to_json);
+
+	//Start some file error checking
+    if (!i.is_open()) {
+        std::cerr << "Error opening JSON file." << std::endl;
+    }
+
+	nlohmann::json jsonData;
+	i >> jsonData;
+
+    if (!jsonData.is_array()) {
+        std::cerr << "JSON data is not an array." << std::endl;
+    }
+
+    size_t numberOfGains = jsonData.size();
+    //std::cout << "Number of items in the JSON file: " << numberOfGains << std::endl;
+
+	//Vector to be returned
+    std::vector<dSys> gain_schedule(numberOfGains);
+
+	//Iterate through the json items and assign the structures in to the gain schedule
+    for (int i = 0; i < numberOfGains; i++) {
+        auto TA_json = jsonData[i]["TA"];
+        auto TB_json = jsonData[i]["TB"];
+        auto K_json = jsonData[i]["K"];
+
+        size_t TA_rows = TA_json.size();
+        size_t TA_cols = TA_json[0].size();
+
+        size_t TB_rows = TB_json.size();
+        size_t TB_cols = TB_json[0].size();
+
+        size_t K_rows = K_json.size();
+        size_t K_cols = K_json[0].size();
+
+        Eigen::MatrixXd TA(TA_rows,TA_cols);
+        Eigen::MatrixXd TB(TB_rows,TB_cols);
+        Eigen::MatrixXd K(K_rows,K_cols);
+
+
+        for (auto& el : TA_json.items())
+        {
+                int i = 0 ;
+                for (auto& subel : el.value()){
+                        TA(stoi(el.key()),i) = subel ;
+                        i++ ;
+                }
+        }
+        // std::cout << "TA Matrix" << std::endl;
+        // std::cout << "======" << std::endl;
+        // std::cout << TA << std::endl;
+
+        for (auto& el : TB_json.items())
+        {
+                int i = 0 ;
+                for (auto& subel : el.value()){
+                        TB(stoi(el.key()),i) = subel ;
+                        i++ ;
+                }
+        }
+        // std::cout << "TB Matrix" << std::endl;
+        // std::cout << "======" << std::endl;
+        // std::cout << TB << std::endl;
+
+        for (auto& el : K_json.items())
+        {
+                int i = 0 ;
+                for (auto& subel : el.value()){
+                        K(stoi(el.key()),i) = subel ;
+                        i++ ;
+                }
+        }
+        // std::cout << "K Matrix" << std::endl;
+        // std::cout << "======" << std::endl;
+        // std::cout << K << std::endl;
+
+        gain_schedule[i].DTA.resize(TA_rows,TA_cols);
+        gain_schedule[i].DTB.resize(TB_rows,TB_cols);
+        gain_schedule[i].KD.resize(K_rows,K_cols);
+
+        gain_schedule[i].DTA = TA;
+        gain_schedule[i].DTB = TB;
+        gain_schedule[i].KD = K;
+
+    }
+
+    return gain_schedule;
+
+}
 
 Sys get_formation(std::string path_to_json){
 
