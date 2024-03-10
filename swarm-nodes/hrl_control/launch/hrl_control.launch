@@ -58,6 +58,7 @@
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />
       <remap from="/vector" to="/agent_$(env SYS_ID)/vector" />
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
+      <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
 
     </node>
 

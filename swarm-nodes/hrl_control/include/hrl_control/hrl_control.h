@@ -10,6 +10,7 @@
 #include "geometry_msgs/PointStamped.h"
 #include "mavros_msgs/SetMode.h"
 #include "std_msgs/Bool.h"
+#include "std_msgs/Int32.h"
 #include "custom_libs/json_reader.hpp"
 #include <chrono>
 
@@ -20,6 +21,7 @@ class HRLController {
         ros::NodeHandle nh;
 
         ros::Publisher control_pub;
+        ros::Publisher cyber_state_pub;
         
         ros::Subscriber state_sub;
         void stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg);
@@ -85,6 +87,7 @@ class HRLController {
         double thrust_scalar = 1.0;
 
         geometry_msgs::Vector3Stamped control_msg;
+        std_msgs::Int32 cyber_state_msg;
 
         int SYSID_THISMAV;
         int CLSID_THISMAV;

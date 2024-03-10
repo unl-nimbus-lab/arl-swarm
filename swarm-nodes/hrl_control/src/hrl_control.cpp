@@ -6,6 +6,7 @@
 HRLController::HRLController() {
     //ROS Publishes, Subscribers, and Services
     control_pub = nh.advertise<geometry_msgs::Vector3Stamped>("vector", 2);
+    cyber_state_pub = nh.advertise<std_msgs::Int32>("cyber_state", 2);
     
     state_sub = nh.subscribe("/agent_state", 2, &HRLController::stateCallback, this);
     aug_state_sub = nh.subscribe("/aug_state", 1, &HRLController::augStateCallback, this);
@@ -27,6 +28,7 @@ HRLController::HRLController() {
     //Resize and initialize the current state of the swarm to zeros since we may not have full feedback yet
     int numberOfHRLStates = system_matricies.ZD.size();
     int numberOfAgents = system_matricies.p.sum();
+    int numberOfClusters = system_matricies.p.rows();
     ROS_WARN("Number of agents is %d", numberOfAgents);
 
     nh.param<int>("SystemID", SYSID_THISMAV, 1);
@@ -71,8 +73,6 @@ HRLController::HRLController() {
     AUG_STATE.resize(numberOfHRLStates, 1);
     AUG_STATE.setZero();
 
-    int numberOfClusters = system_matricies.p.rows();
-
     //Generate default augmented states (this is only hard coded for 2 clusters for now)
     for (int i = 0; i < numberOfClusters; i++) {
         float angle = 2*3.14/numberOfClusters * i;
@@ -84,7 +84,6 @@ HRLController::HRLController() {
     ROS_INFO("===============");
 
     //Create vector of integral state indices
-
     for (int i = 0; i < numberOfClusters; i++) {
         int tempAgents = system_matricies.p(i,0);
         numberOfIntStates = numberOfIntStates + 2*(tempAgents - 1) + 2;
@@ -541,13 +540,15 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         cyber_state = std::max( std::min( (int)temp_f, 30), cyber_reference);
 
-        std::cout << "Relative Error: " << REL_ERROR.norm() << std::endl;
-        std::cout << "temp: " << temp_f << std::endl;
+        // std::cout << "Relative Error: " << REL_ERROR.norm() << std::endl;
+        // std::cout << "temp: " << temp_f << std::endl;
         
 
         //update new controller rate
         controller_period = 1.0/cyber_state;
         controller_timer.setPeriod( ros::Duration(controller_period), true);
+        cyber_state_msg.data = cyber_state;
+        cyber_state_pub.publish(cyber_state_msg);
 
         //auto end = getUnixTime() - start;
         //std::cout << "Control loop took: " << end << " seconds" << std::endl;
