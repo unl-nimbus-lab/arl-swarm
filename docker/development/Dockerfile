@@ -75,7 +75,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-rosdep \
         python3-rosinstall \
         python3-vcstools \
-        ros-noetic-ros-base \
+        ros-noetic-desktop \
     && rosdep init \
     && rosdep update \
     && rm -rf /var/lib/apt/lists/*

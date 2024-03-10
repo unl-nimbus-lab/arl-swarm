@@ -92,11 +92,15 @@ HRLController::HRLController() {
     INT_STATE_IDXs.resize(numberOfIntStates, 1);
     INT_STATE_IDXs = generateIntStateIDXs(system_matricies.p);
 
-    REL_INT_STATE_IDXs.resize( 1, numberOfAgents);
+    //old
+    // REL_INT_STATE_IDXs.resize( 1, numberOfAgents);
+    // auto relative_int_state_idxs = generateRelativeIntstateIDXs(INT_STATE_IDXs, system_matricies.p);
+    // REL_INT_STATE_IDXs = vectorIdXs(relative_int_state_idxs);
+    // std::cout << "REL_INT_STATE_IDXs: " << std::endl << REL_INT_STATE_IDXs << std::endl;
 
-    auto relative_int_state_idxs = generateRelativeIntstateIDXs(INT_STATE_IDXs, system_matricies.p);
-    REL_INT_STATE_IDXs = vectorIdXs(relative_int_state_idxs);
-    std::cout << "REL_INT_STATE_IDXs: " << std::endl << REL_INT_STATE_IDXs << std::endl;
+    REL_INT_STATE_IDXs.resize( system_matricies.state_idxs_C.rows() , system_matricies.state_idxs_C.cols() );
+    REL_INT_STATE_IDXs.setZero();
+    REL_INT_STATE_IDXs = generateRelativeIntstateIDXs(INT_STATE_IDXs, system_matricies.p);
 
     //Create the KCP matrix ()
     KCP.resize( 1, numberOfHRLStates);
@@ -528,10 +532,20 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         //Will use the proximity to the cluster centroid as the error measure, that is,
         //the closer the agent is to the centroid, the less cyber input is needed
 
-        REL_ERROR(0,0) = X( IDXs( SYSID_THISMAV - 1 )    ) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )   );
-        REL_ERROR(1,0) = X( IDXs( SYSID_THISMAV - 1 ) + 1) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1);
+        // REL_ERROR(0,0) = X( IDXs( SYSID_THISMAV - 1 )    ) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )   );
+        // REL_ERROR(1,0) = X( IDXs( SYSID_THISMAV - 1 ) + 1) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1);
+        
+        cluster_spread = 0.0;
 
-        cyber_input = Kcp * REL_ERROR.norm() - Kc * (cyber_state - cyber_reference);
+        for (int i = 0; i < system_matricies.p(0, CLSID_THISMAV - 1) - 1; i++) {
+            auto temp1 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i )    );
+            auto temp2 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i ) + 1);
+            cluster_spread = cluster_spread + std::pow(temp1, 2) + std::pow(temp2, 2);
+        }
+
+        cluster_spread = std::sqrt(cluster_spread);
+
+        cyber_input = Kcp * cluster_spread - Kc * (cyber_state - cyber_reference);
 
         float temp_f = static_cast<float>(cyber_state);
         
@@ -540,11 +554,10 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         cyber_state = std::max( std::min( (int)temp_f, 30), cyber_reference);
 
-        // std::cout << "Relative Error: " << REL_ERROR.norm() << std::endl;
-        // std::cout << "temp: " << temp_f << std::endl;
+        std::cout << "Cyber_state: " << cyber_state << std::endl;
         
 
-        //update new controller rate
+        //Update new controller rate
         controller_period = 1.0/cyber_state;
         controller_timer.setPeriod( ros::Duration(controller_period), true);
         cyber_state_msg.data = cyber_state;

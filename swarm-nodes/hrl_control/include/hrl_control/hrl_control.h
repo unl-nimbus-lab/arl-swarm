@@ -99,8 +99,9 @@ class HRLController {
         int cyber_state = 25; //Hz
         int cyber_reference = 10; //Hz
         float cyber_input = 0.0; //Unitless
-        double Kc  = 5.0; //cyber-system gain
-        double Kcp = 0.5; //physical system gain
+        double Kc  = 6.0; //cyber-system gain
+        double Kcp = 0.1; //physical system gain
+        double cluster_spread = 0.0;
 
     private:
         double thrust_lim = 0.1;
