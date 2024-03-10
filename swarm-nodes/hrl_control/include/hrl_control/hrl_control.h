@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+#include <cmath>
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/AccelStamped.h"
@@ -10,6 +11,7 @@
 #include "mavros_msgs/SetMode.h"
 #include "std_msgs/Bool.h"
 #include "custom_libs/json_reader.hpp"
+#include <chrono>
 
 class HRLController {
     public:
@@ -39,9 +41,13 @@ class HRLController {
         void generateAugStateIDXsTest();
         Eigen::MatrixXd generateIntStateIDXs(Eigen::MatrixXd swarmComp);
         void generateIntStateIDXsTest();
+        Eigen::MatrixXd generateRelativeIntstateIDXs(Eigen::MatrixXd intStateIDXs, Eigen::MatrixXd swarmComp);
+
+        double getUnixTime();
 
         json_reader reader;
         struct Sys system_matricies;
+        std::vector<struct dSys> gain_schedule;
 
         Eigen::Matrix<double, 4, 1> aug_state;
 
@@ -53,8 +59,12 @@ class HRLController {
         Eigen::MatrixXd AUG_STATE_IDXs;
         Eigen::MatrixXd INT_STATE_IDXs;
         Eigen::MatrixXd IT;
+        Eigen::MatrixXd REL_INT_STATE_IDXs;
+        Eigen::MatrixXd ZD_REL;
         
         Eigen::MatrixXd ERROR;
+        Eigen::MatrixXd REL_ERROR;
+        Eigen::MatrixXd KCP;
         
         //Z dimension PID controller
         Eigen::Matrix<double, 3, 1> x_z;
@@ -70,7 +80,7 @@ class HRLController {
         double fx = 0.0;
         double fy = 0.0;
         double fz = 0.0;
-        float controller_period = 0.04;
+        double controller_period = 0.04; //seconds
         bool publish_flag = false;
         double thrust_scalar = 1.0;
 
@@ -82,6 +92,12 @@ class HRLController {
         int OUTIDX;
 
         int numberOfIntStates = 0;
+
+        int cyber_state = 25; //Hz
+        int cyber_reference = 10; //Hz
+        float cyber_input = 0.0; //Unitless
+        double Kc  = 5.0; //cyber-system gain
+        double Kcp = 0.5; //physical system gain
 
     private:
         double thrust_lim = 0.1;

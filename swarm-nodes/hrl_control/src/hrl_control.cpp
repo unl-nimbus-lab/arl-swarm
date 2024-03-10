@@ -19,7 +19,10 @@ HRLController::HRLController() {
     controller_timer = nh.createTimer(ros::Duration(controller_period), &HRLController::computeControl, this);
 
     //Be sure to use absolute paths to the system matricies
-    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys.json");
+    system_matricies = reader.readJSON("/home/catkin_ws/src/hrl_control/src/HRL_Sys.json"); //This is the 2x4 system btw
+
+    //Load in the coregulate gain schedule
+    gain_schedule = reader.read_coreg_system("/home/catkin_ws/src/hrl_control/src/HRL_sys_gain_schedule.json");
     
     //Resize and initialize the current state of the swarm to zeros since we may not have full feedback yet
     int numberOfHRLStates = system_matricies.ZD.size();
@@ -37,6 +40,19 @@ HRLController::HRLController() {
 
     nh.param<double>("thrustScalar",thrust_scalar, 1.0);
     ROS_WARN("Set thrust_scalar to %f", thrust_scalar);
+
+    nh.param<int>("startingControlRate", cyber_state, 25);
+    ROS_WARN("Set cyber_state set to %d", cyber_state);
+
+    nh.param<int>("cyberRef", cyber_reference, 10);
+    ROS_WARN("Set cyber_reference to %d", cyber_reference);
+
+    //MatrixChecking
+    // if (system_matricies.DTA.rows() != gain_schedule[cyber_state - 1].DTA.rows() || system_matricies.DTA.cols() != gain_schedule[cyber_state - 1].DTA.cols()) {
+    //     ROS_ERROR("DTA and gain_schedule[cyber_state - 1].DTA are not the same size");
+    // }
+
+    // std::cout << "DTA: " << std::endl << gain_schedule[4].DTB << std::endl;
 
     //Its helpful to have the state indices in a vector of IDXs
     IDXs.resize(numberOfAgents,1);
@@ -66,11 +82,6 @@ HRLController::HRLController() {
     ROS_INFO("DEFAULT AUG_STATE: ");
     std::cout << "AUG_STATE: " << std::endl << AUG_STATE << std::endl;
     ROS_INFO("===============");
-    // AUG_STATE( AUG_STATE_IDXs(0)     ,0) =     0.0; //Cluster 1 X
-    // AUG_STATE( AUG_STATE_IDXs(0) + 1 ,0) =   100.0; //Cluster 1 Y
-    // AUG_STATE( AUG_STATE_IDXs(1)     ,0) =     0.0; //Cluster 2 X
-    // AUG_STATE( AUG_STATE_IDXs(1) + 1 ,0) =  -100.0; //Cluster 2 Y
-
 
     //Create vector of integral state indices
 
@@ -78,8 +89,23 @@ HRLController::HRLController() {
         int tempAgents = system_matricies.p(i,0);
         numberOfIntStates = numberOfIntStates + 2*(tempAgents - 1) + 2;
     }
+
     INT_STATE_IDXs.resize(numberOfIntStates, 1);
     INT_STATE_IDXs = generateIntStateIDXs(system_matricies.p);
+
+    REL_INT_STATE_IDXs.resize( 1, numberOfAgents);
+
+    auto relative_int_state_idxs = generateRelativeIntstateIDXs(INT_STATE_IDXs, system_matricies.p);
+    REL_INT_STATE_IDXs = vectorIdXs(relative_int_state_idxs);
+    std::cout << "REL_INT_STATE_IDXs: " << std::endl << REL_INT_STATE_IDXs << std::endl;
+
+    //Create the KCP matrix ()
+    KCP.resize( 1, numberOfHRLStates);
+    KCP.setZero();
+    KCP( 0, IDXs( SYSID_THISMAV - 1)    ) = 1.0;
+    KCP( 0, IDXs( SYSID_THISMAV - 1) + 1) = 1.0;
+    std::cout << "KCP: " << std::endl << KCP << std::endl;
+
 
     //This should be number of agents x 2
     OUTPUT_RAW.resize(numberOfAgents * 2, 1);
@@ -92,8 +118,18 @@ HRLController::HRLController() {
     ERROR.resize( 2, 1);
     ERROR.setZero();
 
+    REL_ERROR.resize( 2, 1);
+    REL_ERROR.setZero();
+
     //This agent's output index from the LQR controller
     OUTIDX = (SYSID_THISMAV - 1) * 2;
+
+    ZD_REL.resize( system_matricies.ZD.rows(), 1 );
+    ZD_REL.setZero();
+    ZD_REL( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )     ) = system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )     );
+    ZD_REL( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1 ) = system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1 );
+
+    std::cout << "ZD_REL: " << std::endl << ZD_REL << std::endl;
 
     x_z << 0.0, 0.0, 0.0;
 
@@ -144,6 +180,17 @@ void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr
 void HRLController::publishStateCallback(const std_msgs::Bool::ConstPtr& msg) {
     //Update the flag to publish the state
     publish_flag = msg->data;
+}
+
+double HRLController::getUnixTime() {
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> unix_time = now.time_since_epoch();
+
+    double unix_time_seconds = unix_time.count();
+
+    return unix_time_seconds;
+
 }
 
 Eigen::MatrixXd HRLController::vectorIdXs(Eigen::MatrixXd input) {
@@ -210,10 +257,31 @@ Eigen::MatrixXd HRLController::generateIntStateIDXs(Eigen::MatrixXd swarmComp) {
         output(outIdx++,0) = tempIdx++;
         output(outIdx++,0) = tempIdx++;
     }
-    //std::cout << "integral state IDXs: " << std::endl << output << std::endl;
+    std::cout << "integral state IDXs: " << std::endl << output << std::endl;
     return output;
 
 }
+
+Eigen::MatrixXd HRLController::generateRelativeIntstateIDXs(Eigen::MatrixXd intStateIDXs, Eigen::MatrixXd swarmComp) {
+    //This function takes the integral state indices and returns the relative integral state indices
+    int numberOfIntStates = intStateIDXs.rows();
+    int numberOfClusters = swarmComp.rows();
+    int intStateCounter = 0;
+
+    Eigen::MatrixXd output( numberOfClusters, (int)swarmComp.maxCoeff() );
+
+    for (int i = 0; i < numberOfClusters; i++) {
+        for (int j = 1; j < swarmComp(i,0); j++) {
+            output(i,j) = intStateIDXs(intStateCounter,0);
+            intStateCounter = intStateCounter + 2;
+        }
+        output(i,0) = intStateIDXs(intStateCounter,0);
+        intStateCounter = intStateCounter + 2;
+    }
+    
+    return output;
+}
+
 
 void HRLController::vectorIdXsTest() {
     //Test the vectorIdxs function
@@ -374,6 +442,8 @@ void HRLController::generateIntStateIDXsTest() {
 
 void HRLController::computeControl( const ros::TimerEvent& event ) {
 
+    //auto start = getUnixTime();
+
     if (publish_flag) {//Only publish the state if the flag is set
 
         //First the altitude PID controller
@@ -401,7 +471,9 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
             X(intStateIdx , 0) = std::min( X(intStateIdx ,0), 50.0);
         }
 
-        OUTPUT_RAW = -1.0 * system_matricies.DKL * (X - AUG_STATE);
+
+        //OUTPUT_RAW = -1.0 * system_matricies.DKL * (X - AUG_STATE);
+        OUTPUT_RAW = -1.0 * gain_schedule[cyber_state - 1].KD * (X - AUG_STATE);
 
         // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX    ,0) << std::endl;
         // std::cout << "OUTPUT_RAW: " << std::endl << OUTPUT_RAW(OUTIDX + 1,0) << std::endl;
@@ -438,8 +510,8 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
 
         // To avoid "dancing" around the target, switch to BRAKE mode if close, uploading a new
         // waypoint will automatically switch back to GUIDED mode when it is recieved.
-        if (ERROR.norm() < 5.0) {
-           ROS_WARN("Close to target, stopping");
+        if (ERROR.norm() < 5.0 && abs(error_z) < 2.0) {
+           ROS_WARN("Close to target, scontrol_ratetopping");
            set_mode.call(brake_msg);
            publish_flag = false;
         }
@@ -447,14 +519,38 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         control_pub.publish(control_msg);
 
         //Propogate the state forward for estimation in case the state feedback is lost
-        X = system_matricies.DTA * (X - AUG_STATE) + system_matricies.DTB * OUTPUT_RAW - system_matricies.ZD * controller_period + AUG_STATE;
+        //X = gain_schedule[cyber_state - 1].DTA * (X - AUG_STATE) + gain_schedule[cyber_state].DTB * OUTPUT_RAW - system_matricies.ZD * controller_period + AUG_STATE;
+        X = gain_schedule[cyber_state - 1].DTA * (X - AUG_STATE) + gain_schedule[cyber_state - 1].DTB * OUTPUT_RAW - system_matricies.ZD * controller_period + AUG_STATE;
         
         //auto X_T = IT*X;
         //std::cout << "X: " << std::endl << X_T << std::endl; 
 
+        //Compute the cyber control input
+        //Will use the proximity to the cluster centroid as the error measure, that is,
+        //the closer the agent is to the centroid, the less cyber input is needed
+
+        REL_ERROR(0,0) = X( IDXs( SYSID_THISMAV - 1 )    ) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )   );
+        REL_ERROR(1,0) = X( IDXs( SYSID_THISMAV - 1 ) + 1) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1);
+
+        cyber_input = Kcp * REL_ERROR.norm() - Kc * (cyber_state - cyber_reference);
+
+        float temp_f = static_cast<float>(cyber_state);
+        
+        temp_f = temp_f + cyber_input / temp_f;
+        temp_f = std::ceil(temp_f);
+
+        cyber_state = std::max( std::min( (int)temp_f, 30), cyber_reference);
+
+        std::cout << "Relative Error: " << REL_ERROR.norm() << std::endl;
+        std::cout << "temp: " << temp_f << std::endl;
+        
+
         //update new controller rate
-        //float controller_period = 1.0/controller_rate_;
-        //controller_timer_.setPeriod( ros::Duration(controller_period), true);
+        controller_period = 1.0/cyber_state;
+        controller_timer.setPeriod( ros::Duration(controller_period), true);
+
+        //auto end = getUnixTime() - start;
+        //std::cout << "Control loop took: " << end << " seconds" << std::endl;
     }
 
 }

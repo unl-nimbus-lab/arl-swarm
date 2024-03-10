@@ -214,7 +214,7 @@ Sys json_reader::readJSON(std::string path_to_json)
 	return s ;
 }
 
-std::vector<dSys> read_coreg_system(std::string path_to_json) {
+std::vector<dSys> json_reader::read_coreg_system(std::string path_to_json) {
 //Read the json file containing the gain schedule with system comonents DTA, DTB, and KD
 //Starting at 1 hz, outputs a vector of structures that are accessed like:
 // gain_schedule[frequencey-1].DTA etc. 
@@ -241,9 +241,9 @@ std::vector<dSys> read_coreg_system(std::string path_to_json) {
 
 	//Iterate through the json items and assign the structures in to the gain schedule
     for (int i = 0; i < numberOfGains; i++) {
-        auto TA_json = jsonData[i]["TA"];
-        auto TB_json = jsonData[i]["TB"];
-        auto K_json = jsonData[i]["K"];
+        auto TA_json = jsonData[i]["DTA"];
+        auto TB_json = jsonData[i]["DTB"];
+        auto K_json = jsonData[i]["DKL"];
 
         size_t TA_rows = TA_json.size();
         size_t TA_cols = TA_json[0].size();

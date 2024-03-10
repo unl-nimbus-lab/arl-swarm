@@ -14,6 +14,8 @@
     <param name="homeAlt"   value="$(optenv HOME_ALT 390)"/>
     <param name="bagDir"    value="$(optenv BAG_DIR /home/rosbags/ )"/>
     <param name="thrustScalar"  value="$(optenv THRUST_SCALAR 1.0 )"/>
+    <param name="startingControlRate"  value="$(optenv CONTROL_RATE 30 )"/>
+    <param name="cyberRef" value="$(optenv CYBER_REF 10 )"/>
 
 
 
