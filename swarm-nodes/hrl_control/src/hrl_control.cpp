@@ -537,7 +537,7 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         
         cluster_spread = 0.0;
 
-        for (int i = 0; i < system_matricies.p(0, CLSID_THISMAV - 1) - 1; i++) {
+        for (int i = 0; i < system_matricies.p( CLSID_THISMAV - 1, 0) - 1; i++) {
             auto temp1 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i )    );
             auto temp2 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i ) + 1);
             cluster_spread = cluster_spread + std::pow(temp1, 2) + std::pow(temp2, 2);
