@@ -59,6 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install \
     numpy \
     pandas \
+    matplotlib \
     scipy \
     matplotlib \
     pyserial \
@@ -75,7 +76,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-rosdep \
         python3-rosinstall \
         python3-vcstools \
-        ros-noetic-desktop \
+        ros-noetic-desktop-full \
     && rosdep init \
     && rosdep update \
     && rm -rf /var/lib/apt/lists/*
