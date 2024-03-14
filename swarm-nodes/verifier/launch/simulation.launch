@@ -1,0 +1,210 @@
+<launch>
+
+	<arg name="system_ID1" default="1" />
+    <arg name="system_ID2" default="2" />
+    <arg name="system_ID3" default="3" />
+    <arg name="system_ID4" default="4" />
+    <arg name="system_ID5" default="5" />
+    <arg name="system_ID6" default="6" />
+    <arg name="system_ID7" default="7" />
+    <arg name="system_ID8" default="8" />
+
+	<arg name="homeLon" default="-96.4710998" />
+	<arg name="homeLat" default="40.8459997" />
+    <arg name="file" default="rechableStates.json" />
+
+    <group ns="agent_$(arg system_ID1)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID1) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID1)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID1)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID1)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID1)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID1)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID1)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID1)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID1)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID1)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID1)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID1)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID1) sim 8">
+
+    </node>
+
+
+    <group ns="agent_$(arg system_ID2)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID2) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID2)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID2)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID2)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID2)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID2)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID2)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID2)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID2)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID2)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID2)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID2)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID2) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID3)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID3) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID3)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID3)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID3)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID3)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID3)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID3)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID3)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID3)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID3)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID3)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID3)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID3) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID4)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID4) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID4)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID4)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID4)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID4)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID4)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID4)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID4)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID4)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID4)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID4)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID4)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID4) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID5)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID5) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID5)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID5)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID5)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID5)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID5)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID5)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID5)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID5)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID5)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID5)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID5)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID5) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID6)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID6) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID6)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID6)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID6)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID6)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID6)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID6)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID6)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID6)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID6)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID6)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID6)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID6) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID7)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID7) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID7)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID7)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID7)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID7)/agent_position_xy"/>rs_callback
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID7)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID7)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID7)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID7)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID7)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID7)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID7)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID7) sim 8">
+
+    </node>
+
+    <group ns="agent_$(arg system_ID8)">
+        <node pkg="pos_xform" name="pos_xform" type="pos_xform" output="screen" args="$(arg system_ID8) $(arg homeLat) $(arg homeLon)"> 
+
+            <remap from="/mavros/global_position/swarm" to="/agent_$(arg system_ID8)/mavros/global_position/swarm"/>
+            <remap from="/mavros/global_position/swarm_vel" to="/agent_$(arg system_ID8)/mavros/global_position/swarm_vel"/>
+            <remap from="/mavros/local_position/velocity_local" to="/agent_$(arg system_ID8)/mavros/local_position/velocity_local" />
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID8)/agent_position_xy"/>
+
+        </node>
+
+        <node pkg="verifier" name="verifier" type="verifier" output="screen" args="$(arg system_ID8)">
+            <remap from="/agent_position_xy" to="/agent_$(arg system_ID8)/agent_position_xy"/>
+            <remap from="/mavros/set_mode" to="/agent_$(arg system_ID8)/mavros/set_mode" />
+            <!-- <remap from="/reachable_state" to="/agent_$(arg system_ID8)/reachable_state"/> -->
+            <remap from="/my_reach_state"  to="/agent_$(arg system_ID8)/my_reach_state" />
+            <remap from="/received_state"  to="/agent_$(arg system_ID8)/received_state" />
+        </node>
+
+    </group>
+
+    <node pkg="swarm_comms" name="agent_$(arg system_ID8)_swarm_comms" type="swarm_comm.py" output="screen" args="$(arg system_ID8) sim 8">
+
+    </node>
+
+</launch>
+   

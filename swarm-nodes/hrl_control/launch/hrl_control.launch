@@ -80,6 +80,14 @@
 
     </node>
 
+    <node name="verifier" pkg="verifier" type="verifier" output="screen">
+      <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
+      <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
+      <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+
+
+    </node>
+
     <node name="bag_handler" pkg="bag_handler" type="bag_handler.py" output="screen">
       <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
     </node>
