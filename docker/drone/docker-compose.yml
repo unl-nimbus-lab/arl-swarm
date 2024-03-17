@@ -13,6 +13,7 @@ services:
       - /home/ubuntu/arl-swarm/docker/drone:/home/drone
     devices: 
       - ${PORT}:${PORT}
+      - ${RADIO}:${RADIO}
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash && 
                     export $$(cat /home/drone/.env) &&

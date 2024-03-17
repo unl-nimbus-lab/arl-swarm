@@ -13,6 +13,7 @@ docker run -it --net=host \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/bag_handler",target=/home/catkin_ws/src/bag_handler/ \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/verifier",target=/home/catkin_ws/src/verifier \
  --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/verifier_comms",target=/home/catkin_ws/src/verifier_comms \
+ --mount type=bind,source="/home/gus/arl-swarm/swarm-nodes/swarm_cmd",target=/home/catkin_ws/src/swarm_cmd/ \
  --mount type=bind,source="/home/gus/rosbags/",target=/home/rosbags/ \
   -e DISPLAY \
   -e QT_X11_NO_MITSHM=1 \

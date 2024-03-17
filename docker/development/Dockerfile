@@ -88,6 +88,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-noetic-control-toolbox \
     && rm -rf /var/lib/apt/lists/*
 
+COPY Utilities/xbee-python-master /home/xbee-python-master
+RUN pip3 install /home/xbee-python-master
+
+COPY Utilities/swarm_cmd_gcs.py /home/swarm_cmd_gcs.py
+RUN chmod +x /home/swarm_cmd_gcs.py
+
 # Install MAVROS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-lxml \
@@ -115,6 +121,9 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && rosdep update \
     && catkin init \
     && wstool init src
+
+COPY Utilities/xbee-python-master /home/xbee-python-master
+RUN pip3 install /home/xbee-python-master
 
 # Install MAVROS
 # Note that we perform this step as an independent layer to prevent
