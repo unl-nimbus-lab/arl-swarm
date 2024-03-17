@@ -97,6 +97,7 @@
       <!-- <remap from="/vector" to="/agent_$(env SYS_ID)/vector" /> -->
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
+      <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
       <!-- <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" /> -->
 
