@@ -89,6 +89,7 @@ COPY swarm-nodes/hrl_control /home/catkin_ws/src/hrl_control
 COPY swarm-nodes/bag_handler /home/catkin_ws/src/bag_handler
 COPY swarm-nodes/verifier /home/catkin_ws/src/verifier
 COPY swarm-nodes/verifier_comms /home/catkin_ws/src/verifier_comms
+COPY swarm-nodes/swarm_cmd /home/catkin_ws/src/swarm_cmd
 
 # Build the catkin workspace
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
