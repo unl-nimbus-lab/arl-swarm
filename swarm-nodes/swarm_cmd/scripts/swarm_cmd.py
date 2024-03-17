@@ -7,6 +7,9 @@ from digi.xbee.devices import *
 from digi.xbee.util import utils
 from digi.xbee.exception import *
 from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest
+from std_msgs.msg import Bool
+
+
 
 class TheRadio(object):
     '''Class to get xbee radio working'''
@@ -33,9 +36,13 @@ class TheRadio(object):
 
 
         elif command == '1':
+            publish_state.data = True
+            ros_pub.publish(publish_state)
             print("Starting HRL Publishing from swarm_cmd")
 
         elif command == '2':
+            publish_state.data = False
+            ros_pub.publish(publish_state)
             print("Stopping HRL Publishing from swarm_cmd")
 
         elif command == '3':
@@ -110,6 +117,8 @@ if __name__ == '__main__':
     
     set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
     arming_client   = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)
+    ros_pub = rospy.Publisher('/publish_state', Bool, queue_size=1)
+
     
     guided_set_mode = SetModeRequest()
     guided_set_mode.custom_mode = 'GUIDED'
@@ -122,6 +131,9 @@ if __name__ == '__main__':
 
     arm_cmd = CommandBoolRequest()
     arm_cmd.value = True
+
+    publish_state = Bool()
+    publish_state.data = True
 
     radio = TheRadio()
     rospy.spin()
