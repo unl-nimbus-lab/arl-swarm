@@ -91,9 +91,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY Utilities/xbee-python-master /home/xbee-python-master
 RUN pip3 install /home/xbee-python-master
 
-COPY Utilities/swarm_cmd_gcs.py /home/swarm_cmd_gcs.py
-RUN chmod +x /home/swarm_cmd_gcs.py
-
 # Install MAVROS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-lxml \

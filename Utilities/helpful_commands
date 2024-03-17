@@ -32,7 +32,11 @@ docker run -it --net=host \
  --mount type=bind,source="/Users/gphillip/arl-swarm/swarm-nodes/bag_handler",target=/home/catkin_ws/src/bag_handler/ \
  swarm_devel
 
- 
+docker run -it --net=host \
+    --mount type=bind,source="/home/gus/arl-swarm/Utilities/swarm_cmd_gcs.py",target=/home/swarm_cmd_gcs.py  \
+    --device=/dev/ttyUSB0 \
+    swarm_devel
+
 
 
 
