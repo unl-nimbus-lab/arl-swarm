@@ -90,7 +90,7 @@
     </node>
 
     <!-- Launch swarm_cmd node -->
-    <node name="swarm_cmd" pkg="swarm_cmd" type="swarm_cmd.py" output="screen">
+    <node name="swarm_cmd" pkg="swarm_cmd" type="swarm_cmd.py" output="screen" respawn="true">
       <!-- <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
       <remap from="/aug_state" to="/agent_$(env SYS_ID)/aug_state" /> -->
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />
