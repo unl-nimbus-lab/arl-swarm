@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import serial
+import rospy
 from digi.xbee.devices import *
 from digi.xbee.util import utils
 from digi.xbee.exception import *
@@ -37,5 +38,18 @@ class TheRadio(object):
         print("Activating network modification callback...")
         self.xnet.add_network_modified_callback(self.net_modified_callback)
 
+    #The net_modified_callback is triggered when the network is modified
+    def net_modified_callback(self, event_type, reason, node):
+        print("  >>> Network event:")
+        print("              Type: %s (%d)" % (event_type.description, event_type.code))
+        print("              Reason: %s (%d)" % (reason.description, reason.code))
+
+        if not node:
+            return
+
+        print("              Node: %s" % node)
+
+
 if __name__ == '__main__':
     radio = TheRadio()
+    rospy.spin()

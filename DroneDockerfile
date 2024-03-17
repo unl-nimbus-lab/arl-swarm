@@ -96,7 +96,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build
 
 RUN chmod +x /home/catkin_ws/src/bag_handler/scripts/bag_handler.py
-
+RUN chmod +x /home/catkin_ws/src/swarm_cmd/scripts/swarm_cmd.py
 # # Rosbag management
 # COPY docker/drone/bag_manager.sh /home/
 # RUN ["chmod","+x","/home/bag_manager.sh"]
