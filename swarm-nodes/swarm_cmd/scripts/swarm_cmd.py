@@ -6,7 +6,7 @@ import re
 from digi.xbee.devices import *
 from digi.xbee.util import utils
 from digi.xbee.exception import *
-from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest
+from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest, CommandTOL, CommandTOLRequest
 from std_msgs.msg import Bool
 
 
@@ -56,6 +56,7 @@ class TheRadio(object):
             print("Disarming from swarm_cmd")
 
         elif command == '5':
+            takeoff_client.call(takeoff_cmd)
             print("Taking off from swarm_cmd")
 
         elif command == '6':
@@ -117,6 +118,7 @@ if __name__ == '__main__':
     
     set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
     arming_client   = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)
+    takeoff_client  = rospy.ServiceProxy("/mavros/cmd/takeoff", CommandTOL)
     ros_pub = rospy.Publisher('/publish_state', Bool, queue_size=1)
 
     
@@ -134,6 +136,10 @@ if __name__ == '__main__':
 
     publish_state = Bool()
     publish_state.data = True
+
+    takeoff_cmd = CommandTOLRequest()
+    takeoff_cmd.yaw = 0
+    takeoff_cmd.altitude = 5.0
 
     radio = TheRadio()
     rospy.spin()
