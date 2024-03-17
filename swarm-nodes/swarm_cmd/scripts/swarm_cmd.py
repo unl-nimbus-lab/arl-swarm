@@ -2,19 +2,70 @@
 import sys
 import serial
 import rospy
+import re
 from digi.xbee.devices import *
 from digi.xbee.util import utils
 from digi.xbee.exception import *
+from mavros_msgs.srv import SetMode, SetModeRequest
 
 class TheRadio(object):
     '''Class to get xbee radio working'''
+
+    started = False
+    stopped = True
+    armed   = False
+    takeoff = False
+    guided  = False
+    rtl     = False
+    land    = False
+    disarm  = False
 
     def data_received_callback(self, xb_msg):
         data = xb_msg.data.decode('utf-8')
         print("Data received: " + data)
 
+        command_sender = re.split(r'[CA]',data)
+        command = command_sender[1]
+        sender  = command_sender[2]
+
+        if command == '0':
+            print("HERE!")
+
+
+        elif command == '1':
+            print("Starting HRL Publishing from swarm_cmd")
+
+        elif command == '2':
+            print("Stopping HRL Publishing from swarm_cmd")
+
+        elif command == '3':
+            print("Arming from swarm_cmd")
+
+        elif command == '4':
+            print("Disarming from swarm_cmd")
+
+        elif command == '5':
+            print("Taking off from swarm_cmd")
+
+        elif command == '6':
+            set_mode_client.call(land_set_mode)
+            print("Landing from swarm_cmd")
+
+        elif command == '7':
+            set_mode_client.call(guided_set_mode)
+            print("Set guided from swarm_cmd")
+
+        elif command == '8':
+            set_mode_client.call(rtl_set_mode)
+            print("RTL from swarm_cmd")
+
+        elif command == '9':
+            print("command 9 does nothing")
+
+        else:
+            print("unrecognized command")
+
     def __init__(self):
-        rospy.init_node('swarm_cmd')
 
         radio_port = "/dev/ttyXBEE"
         radio_baud = 57600
@@ -23,7 +74,7 @@ class TheRadio(object):
         self.radio.open()
 
         self.radio.add_data_received_callback(self.data_received_callback)
-
+        
         print("Polling network...")
         self.xnet = self.radio.get_network()
         self.xnet.start_discovery_process()
@@ -51,5 +102,24 @@ class TheRadio(object):
 
 
 if __name__ == '__main__':
+    rospy.init_node('swarm_cmd')
+    
+    set_mode_client = rospy.ServiceProxy("/agent_5/mavros/set_mode", SetMode)
+
+    guided_set_mode = SetModeRequest()
+    guided_set_mode.custom_mode = 'GUIDED'
+
+    land_set_mode = SetModeRequest()
+    land_set_mode.custom_mode = 'LAND'
+
+    rtl_set_mode = SetModeRequest()
+    rtl_set_mode.custom_mode = 'RTL'
+
+    radio_port = "/dev/ttyXBEE"
+    radio_baud = 57600
+
+    rospy.wait_for_service('/agent_5/mavros/set_mode')
+    rospy.loginfo("found the setmode service")
+
     radio = TheRadio()
     rospy.spin()
