@@ -6,7 +6,7 @@ import re
 from digi.xbee.devices import *
 from digi.xbee.util import utils
 from digi.xbee.exception import *
-from mavros_msgs.srv import SetMode, SetModeRequest
+from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest
 
 class TheRadio(object):
     '''Class to get xbee radio working'''
@@ -39,9 +39,13 @@ class TheRadio(object):
             print("Stopping HRL Publishing from swarm_cmd")
 
         elif command == '3':
+            arm_cmd.value = True
+            arming_client.call(arm_cmd)
             print("Arming from swarm_cmd")
 
         elif command == '4':
+            arm_cmd.value = False
+            arming_client.call(arm_cmd)
             print("Disarming from swarm_cmd")
 
         elif command == '5':
@@ -104,8 +108,9 @@ class TheRadio(object):
 if __name__ == '__main__':
     rospy.init_node('swarm_cmd')
     
-    set_mode_client = rospy.ServiceProxy("/agent_5/mavros/set_mode", SetMode)
-
+    set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
+    arming_client   = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)
+    
     guided_set_mode = SetModeRequest()
     guided_set_mode.custom_mode = 'GUIDED'
 
@@ -115,11 +120,8 @@ if __name__ == '__main__':
     rtl_set_mode = SetModeRequest()
     rtl_set_mode.custom_mode = 'RTL'
 
-    radio_port = "/dev/ttyXBEE"
-    radio_baud = 57600
-
-    rospy.wait_for_service('/agent_5/mavros/set_mode')
-    rospy.loginfo("found the setmode service")
+    arm_cmd = CommandBoolRequest()
+    arm_cmd.value = True
 
     radio = TheRadio()
     rospy.spin()
