@@ -14,14 +14,12 @@ from std_msgs.msg import Bool
 class TheRadio(object):
     '''Class to get xbee radio working'''
 
-    started = False
-    stopped = True
-    armed   = False
-    takeoff = False
-    guided  = False
-    rtl     = False
-    land    = False
-    disarm  = False
+    started_ros = False
+    armed_state = False
+    takeoff     = False
+    guided      = False
+    rtl         = False
+    land        = False
 
     def data_received_callback(self, xb_msg):
         data = xb_msg.data.decode('utf-8')
@@ -39,21 +37,33 @@ class TheRadio(object):
             publish_state.data = True
             ros_pub.publish(publish_state)
             print("Starting HRL Publishing from swarm_cmd")
+            if started_ros == False:
+                self.radio.send_data_broadcast("C1A0")
+            started_ros = True
 
         elif command == '2':
             publish_state.data = False
             ros_pub.publish(publish_state)
             print("Stopping HRL Publishing from swarm_cmd")
+            if started_ros == True:
+                self.radio.send_data_broadcast("C2A0")
+            started_ros = False
 
         elif command == '3':
             arm_cmd.value = True
             arming_client.call(arm_cmd)
             print("Arming from swarm_cmd")
+            if armed_state == False:
+                self.radio.send_data_broadcast("C3A0")
+            armed_state = True
 
         elif command == '4':
             arm_cmd.value = False
             arming_client.call(arm_cmd)
             print("Disarming from swarm_cmd")
+            if armed_state == True:
+                self.radio.send_data_broadcast("C4A0")
+            armed_state = False
 
         elif command == '5':
             takeoff_client.call(takeoff_cmd)
@@ -62,14 +72,23 @@ class TheRadio(object):
         elif command == '6':
             set_mode_client.call(land_set_mode)
             print("Landing from swarm_cmd")
-
+            if land == False:
+                self.radio.send_data_broadcast("C6A0")
+            land = True
+            
         elif command == '7':
             set_mode_client.call(guided_set_mode)
             print("Set guided from swarm_cmd")
+            if guided == False:
+                self.radio.send_data_broadcast("C7A0")
+            guided = True
 
         elif command == '8':
             set_mode_client.call(rtl_set_mode)
             print("RTL from swarm_cmd")
+            if rtl == False:
+                self.radio.send_data_broadcast("C8A0")
+            rtl = True
 
         elif command == '9':
             print("command 9 does nothing")
