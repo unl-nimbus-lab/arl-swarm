@@ -75,7 +75,7 @@ HRLController::HRLController() {
 
     //Generate default augmented states (this is only hard coded for 2 clusters for now)
     for (int i = 0; i < numberOfClusters; i++) {
-        float angle = 2*3.14/numberOfClusters * i;
+        float angle = 1.51/numberOfClusters * i;
         AUG_STATE( AUG_STATE_IDXs(i)     ,0) = 100.0*cos(angle); //Cluster X
         AUG_STATE( AUG_STATE_IDXs(i) + 1 ,0) = 100.0*sin(angle); //Cluster Y
     }
