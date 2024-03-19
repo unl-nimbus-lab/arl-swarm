@@ -49,6 +49,9 @@ HRLController::HRLController() {
     nh.param<int>("cyberRef", cyber_reference, 10);
     ROS_WARN("Set cyber_reference to %d", cyber_reference);
 
+    nh.param<double>("homeLat", global_origin_lat, 40.846740);
+    nh.param<double>("homeLon", global_origin_lon, -96.471819);
+
     //MatrixChecking
     // if (system_matricies.DTA.rows() != gain_schedule[cyber_state - 1].DTA.rows() || system_matricies.DTA.cols() != gain_schedule[cyber_state - 1].DTA.cols()) {
     //     ROS_ERROR("DTA and gain_schedule[cyber_state - 1].DTA are not the same size");
@@ -158,6 +161,25 @@ void HRLController::stateCallback(const geometry_msgs::AccelStamped::ConstPtr& m
     X(i+3,0) = msg->accel.angular.y;
     X = system_matricies.T*X; //Transform X
 
+}
+
+void HRLController::swarmStateCallback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
+    double lat = msg->latitude;
+    double lon = msg->longitude;
+
+    //Assumption: we are working in the northern hemisphere
+    //This is a simple conversion from lat/lon to meters
+    double agent_state_y = converter.gps_to_meters(global_origin_lat, global_origin_lon, lat, global_origin_lon);
+    double agent_state_x = converter.gps_to_meters(global_origin_lat, global_origin_lon, global_origin_lat, lon);
+
+    //Update the state of the swarm
+    int i = IDXs(msg->system_id - 1,0); //Get the idx of this agent
+    X = IT*X; //Un-transform X
+
+    X(i,0) = agent_state_x;
+    X(i+1,0) = agent_state_y;
+
+    X = system_matricies.T*X; //Transform X
 }
 
 void HRLController::augStateCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {

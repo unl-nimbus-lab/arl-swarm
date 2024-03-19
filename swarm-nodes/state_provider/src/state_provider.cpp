@@ -29,24 +29,25 @@ double sign(double input) {
 }
 
 void StateProvider::posCallback(const mavros_msgs::SwarmGPS::ConstPtr& msg) {
-    if (msg->system_id == SYSID_THISMAV) {//Check if this message is for this agent
-        //This message is for this agent
-        double lat = msg->latitude;
-        double lon = msg->longitude;
-
-        //Assumption: we are working in the northern hemisphere
-        double y_sign = sign(lat - global_origin.lat);
-        double x_sign = sign(lon - global_origin.lon);
-
-        //See custom libs for more deatails but this is just the haversine formula
-        agent_state.y = converter.gps_to_meters(global_origin.lat, global_origin.lon, lat, global_origin.lon);
-        agent_state.y = y_sign * agent_state.y;
-
-        agent_state.x = converter.gps_to_meters(global_origin.lat, global_origin.lon, global_origin.lat, lon);
-        agent_state.x = x_sign * agent_state.x;
-
-        agent_state.z = msg->altitude;
+    //This message is for this agent
+    if (msg->system_id != SYSID_THISMAV) {
+        return;
     }
+    double lat = msg->latitude;
+    double lon = msg->longitude;
+
+    //Assumption: we are working in the northern hemisphere
+    double y_sign = sign(lat - global_origin.lat);
+    double x_sign = sign(lon - global_origin.lon);
+
+    //See custom libs for more deatails but this is just the haversine formula
+    agent_state.y = converter.gps_to_meters(global_origin.lat, global_origin.lon, lat, global_origin.lon);
+    agent_state.y = y_sign * agent_state.y;
+
+    agent_state.x = converter.gps_to_meters(global_origin.lat, global_origin.lon, global_origin.lat, lon);
+    agent_state.x = x_sign * agent_state.x;
+
+    agent_state.z = msg->altitude;
 }
 
 void StateProvider::velCallback(const nav_msgs::Odometry::ConstPtr& msg) { //This is assuming we are only getting velocity from the host agent

@@ -9,6 +9,8 @@
 #include "geometry_msgs/AccelStamped.h"
 #include "geometry_msgs/PointStamped.h"
 #include "mavros_msgs/SetMode.h"
+#include "mavros_msgs/SwarmGPS.h"
+#include "custom_libs/geo_converter.hpp"
 #include "std_msgs/Bool.h"
 #include "std_msgs/Int32.h"
 #include "custom_libs/json_reader.hpp"
@@ -25,6 +27,9 @@ class HRLController {
         
         ros::Subscriber state_sub;
         void stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg);
+
+        ros::Subscriber swarm_state_sub;
+        void swarmStateCallback(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 
         ros::Subscriber aug_state_sub;
         void augStateCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
@@ -46,6 +51,10 @@ class HRLController {
         Eigen::MatrixXd generateRelativeIntstateIDXs(Eigen::MatrixXd intStateIDXs, Eigen::MatrixXd swarmComp);
 
         double getUnixTime();
+        geo_converter converter;
+
+        double global_origin_lat = 0.0;
+        double global_origin_lon = 0.0;
 
         json_reader reader;
         struct Sys system_matricies;
