@@ -49,6 +49,9 @@ HRLController::HRLController() {
     nh.param<int>("cyberRef", cyber_reference, 10);
     ROS_WARN("Set cyber_reference to %d", cyber_reference);
 
+    nh.param<bool>("coregEnabled", coreg_enabled, false);
+    ROS_WARN("Set coreg_enabled to %d", coreg_enabled);
+
     nh.param<double>("homeLat", global_origin_lat, 40.846740);
     nh.param<double>("homeLon", global_origin_lon, -96.471819);
 
@@ -78,7 +81,7 @@ HRLController::HRLController() {
 
     //Generate default augmented states (this is only hard coded for 2 clusters for now)
     for (int i = 0; i < numberOfClusters; i++) {
-        float angle = 1.51/numberOfClusters * i;
+        float angle = 2*3.14/numberOfClusters * i;
         AUG_STATE( AUG_STATE_IDXs(i)     ,0) = 100.0*cos(angle); //Cluster X
         AUG_STATE( AUG_STATE_IDXs(i) + 1 ,0) = 100.0*sin(angle); //Cluster Y
     }
@@ -557,36 +560,40 @@ void HRLController::computeControl( const ros::TimerEvent& event ) {
         // REL_ERROR(0,0) = X( IDXs( SYSID_THISMAV - 1 )    ) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 )   );
         // REL_ERROR(1,0) = X( IDXs( SYSID_THISMAV - 1 ) + 1) - system_matricies.ZD( REL_INT_STATE_IDXs( SYSID_THISMAV - 1 ) + 1);
         
-        cluster_spread = 0.0;
+        if (coreg_enabled == true) {
+            cluster_spread = 0.0;
 
-        for (int i = 0; i < system_matricies.p( CLSID_THISMAV - 1, 0) - 1; i++) {
-            auto temp1 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i )    );
-            auto temp2 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i ) + 1);
-            cluster_spread = cluster_spread + std::pow(temp1, 2) + std::pow(temp2, 2);
+            for (int i = 0; i < system_matricies.p( CLSID_THISMAV - 1, 0) - 1; i++) {
+                auto temp1 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i )    );
+                auto temp2 = X( system_matricies.state_idxs_C( CLSID_THISMAV - 1, i ) + 1);
+                cluster_spread = cluster_spread + std::pow(temp1, 2) + std::pow(temp2, 2);
+            }
+
+            cluster_spread = std::sqrt(cluster_spread);
+
+            cyber_input = Kcp * cluster_spread - Kc * (cyber_state - cyber_reference);
+
+            float temp_f = static_cast<float>(cyber_state);
+            
+            temp_f = temp_f + cyber_input / temp_f;
+            temp_f = std::ceil(temp_f);
+
+            cyber_state = std::max( std::min( (int)temp_f, 30), cyber_reference);
+
+            std::cout << "Cyber_state: " << cyber_state << std::endl;
+            
+
+            //Update new controller rate
+            controller_period = 1.0/cyber_state;
+            controller_timer.setPeriod( ros::Duration(controller_period), true);
+            
+
+            //auto end = getUnixTime() - start;
+            //std::cout << "Control loop took: " << end << " seconds" << std::endl;
         }
 
-        cluster_spread = std::sqrt(cluster_spread);
-
-        cyber_input = Kcp * cluster_spread - Kc * (cyber_state - cyber_reference);
-
-        float temp_f = static_cast<float>(cyber_state);
-        
-        temp_f = temp_f + cyber_input / temp_f;
-        temp_f = std::ceil(temp_f);
-
-        cyber_state = std::max( std::min( (int)temp_f, 30), cyber_reference);
-
-        std::cout << "Cyber_state: " << cyber_state << std::endl;
-        
-
-        //Update new controller rate
-        controller_period = 1.0/cyber_state;
-        controller_timer.setPeriod( ros::Duration(controller_period), true);
         cyber_state_msg.data = cyber_state;
         cyber_state_pub.publish(cyber_state_msg);
-
-        //auto end = getUnixTime() - start;
-        //std::cout << "Control loop took: " << end << " seconds" << std::endl;
     }
 
 }

@@ -15,6 +15,7 @@
     <param name="bagDir"    value="$(optenv BAG_DIR /home/rosbags/ )"/>
     <param name="thrustScalar"  value="$(optenv THRUST_SCALAR 1.0 )"/>
     <param name="startingControlRate"  value="$(optenv CONTROL_RATE 30 )"/>
+    <param name="coregEnabled" value="$(optenv COREG_ENABLED false )"/>
     <param name="cyberRef" value="$(optenv CYBER_REF 10 )"/>
 
 

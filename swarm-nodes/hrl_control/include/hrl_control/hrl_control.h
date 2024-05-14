@@ -112,6 +112,8 @@ class HRLController {
         double Kcp = 0.4; //physical system gain
         double cluster_spread = 0.0;
 
+        bool coreg_enabled = false;
+
     private:
         double thrust_lim = 0.1;
         double thrust_lim_z = 5.0;
