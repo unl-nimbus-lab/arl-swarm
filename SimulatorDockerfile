@@ -96,6 +96,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && catkin build
 
 RUN chmod +x /home/catkin_ws/src/bag_handler/scripts/bag_handler.py
+RUN chmod +x /home/catkin_ws/src/verifier_comms/scripts/verifier_comm_sim.py
 
 # Rosbag management
 #COPY docker/drone/bag_manager.sh /home/

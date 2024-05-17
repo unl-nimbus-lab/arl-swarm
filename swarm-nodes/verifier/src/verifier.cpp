@@ -21,6 +21,8 @@ agent::agent() {
     nh.param<float>("reachTimout", reachTimeout, 0.005);
     ROS_WARN("Set reachTimeout to %f", reachTimeout);
 
+    rsMessage.id = SYSID_THISMAV;
+
 
 }
 
@@ -42,13 +44,17 @@ void agent::compute_rs( const ros::TimerEvent& event ) {
     4) Initial Step Size (how big )
     5) Reach timeout
     */
-
+    
+    //finish timing the computation
     actualTime = getUnixTime() - actualTime;
 
+    //Populate the ROS message with the reachable set
     packRectangleMessage(myReachableState, rsMessage);
+    
     rsMessage.header.stamp = ros::Time::now();
-
     ros::Time tempTime(actualTime);
+    
+    //Add the timestamp and the actual time
     rsMessage.header.stamp = ros::Time::now();
     rsMessage.rs_time = tempTime;
 

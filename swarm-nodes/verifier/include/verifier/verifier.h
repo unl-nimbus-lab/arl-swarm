@@ -63,7 +63,7 @@ class agent {
         char nextFlightMode = 'L';
 
         //ROS publishers and subscribers
-        ros::Publisher rect_publisher;
+        ros::Publisher rect_publisher; //<-- Topic where reachable state gets published
         ros::Subscriber physical_state_subscriber;
         ros::Subscriber cyber_state_subscriber; //<< Get rid of this
 

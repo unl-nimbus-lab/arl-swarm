@@ -22,32 +22,39 @@ class HRLController {
 
         ros::NodeHandle nh;
 
-        ros::Publisher control_pub;
-        ros::Publisher cyber_state_pub;
+        ros::Publisher control_pub; //3D thrust vector [X, Y, Z]
+        ros::Publisher cyber_state_pub; //The cyber state as a rate [Hz]
         
-        ros::Subscriber state_sub;
+        ros::Subscriber state_sub; // 6D State of the agent [X, Y, Z, Vx, Vy, Vz]
         void stateCallback(const geometry_msgs::AccelStamped::ConstPtr& msg);
 
-        ros::Subscriber swarm_state_sub;
+        ros::Subscriber swarm_state_sub; // Subsribes to the mavros swarm state (if its there)
         void swarmStateCallback(const mavros_msgs::SwarmGPS::ConstPtr& msg);
 
-        ros::Subscriber aug_state_sub;
+        ros::Subscriber aug_state_sub; // This changes the cluster reference point
         void augStateCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
 
-        ros::Subscriber publish_state_sub;
+        ros::Subscriber publish_state_sub; //Topic to deceide if the controller should publish
         void publishStateCallback(const std_msgs::Bool::ConstPtr& msg);
 
         ros::ServiceClient set_mode;
 
-        ros::Timer controller_timer;
+        ros::Timer controller_timer; //Main control loop timer event
         void computeControl( const ros::TimerEvent& event );
 
-        Eigen::MatrixXd vectorIdXs(Eigen::MatrixXd input);
+        //This function takes a matrix of indices and reshapes it into a vector
+        Eigen::MatrixXd vectorIdXs(Eigen::MatrixXd input); 
         void vectorIdXsTest();
+
+        //This function takes a swarm composition and returns the indices of the aug_states for each cluster
         Eigen::MatrixXd generateAugStateIDXs(Eigen::MatrixXd swarmComp);
         void generateAugStateIDXsTest();
+
+        //This function takes a swarm composition and returns the indices of the integral states for each cluster
         Eigen::MatrixXd generateIntStateIDXs(Eigen::MatrixXd swarmComp);
         void generateIntStateIDXsTest();
+
+        //This function takes the integral state indices and returns the relative integral state indices
         Eigen::MatrixXd generateRelativeIntstateIDXs(Eigen::MatrixXd intStateIDXs, Eigen::MatrixXd swarmComp);
 
         double getUnixTime();
@@ -105,11 +112,11 @@ class HRLController {
 
         int numberOfIntStates = 0;
 
-        int cyber_state = 25; //Hz
-        int cyber_reference = 10; //Hz
-        float cyber_input = 0.0; //Unitless
-        double Kc  = 6.0; //cyber-system gain
-        double Kcp = 0.4; //physical system gain
+        int cyber_state = 25;       //Hz
+        int cyber_reference = 10;   //Hz
+        float cyber_input = 0.0;    //Unitless
+        double Kc  = 6.0;           //cyber-system gain
+        double Kcp = 0.4;           //physical system gain
         double cluster_spread = 0.0;
 
         bool coreg_enabled = false;
