@@ -91,6 +91,12 @@
 
     </node>
 
+    <!-- Launch verifier comms sim node -->
+    <node name="verifier_comms_sim" pkg="verifier_comms" type="verifier_comm_sim.py" output="screen">
+      <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
+      <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+    </node>
+
     <!-- Launch swarm_cmd node -->
     <node name="swarm_cmd" pkg="swarm_cmd" type="swarm_cmd.py" output="screen" respawn="true">
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />

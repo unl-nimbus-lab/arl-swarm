@@ -23,27 +23,87 @@ class radioSim(object):
     '''
 
     def radio_callback(self, msg):
-        '''string message received on /radio_traffic'''
-        print("Received from /radio_traffic: ", msg.data)
+        '''string message received on /radio_traffic needs to be published to /recieved_rs'''
+        #parse the msg.data from a to :
+        idx = 1
+        tempstr = ""
+        while msg.data[idx] != ":":
+            tempstr += msg.data[idx]
+            idx += 1
+        
+        if int(tempstr) != self.SYSID_THISMAV:
+            #publish the message to /recieved_rs
+            print("Publishing to /recieved_rs: ", msg.data)
+            tempHyperRect = hyperRectangle()
+
+            idx += 2
+            
+            tempHyperRect.id = int(tempstr)
+
+            tempstr = ""
+
+
+            while msg.data[idx] != "y":
+                #idx += 1
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.x.min = float(tempstr)
+            tempstr = ""
+            idx += 1
+            while msg.data[idx] != "z":
+                #idx += 1
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.x.max = float(tempstr)
+            tempstr = ""
+            idx += 1
+            while msg.data[idx] != "v":
+                #idx += 1
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.y.min = float(tempstr)
+            tempstr = ""
+            idx += 2
+            while msg.data[idx] != "v":
+                #idx += 1
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.y.max = float(tempstr)
+            tempstr = ""
+            idx += 2
+            while msg.data[idx] != "v":
+                #idx += 1
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.z.min = float(tempstr)
+            tempstr = ""
+            idx += 2
+            while idx < len(msg.data):
+                tempstr += msg.data[idx]
+                idx += 1
+            tempHyperRect.z.max = float(tempstr)
+            self.recievedRsPub.publish(tempHyperRect)
+
 
     def my_rs_callback(self, msg):
         '''string message received on /my_rs'''
-        print("Received from /my_rs: ", msg.id)
+        #print("Received from /my_rs: ", msg.id)
+        myRsString = "a" + str(self.SYSID_THISMAV) + ":x" + format(msg.x.min, '.2f') + "y" + format(msg.x.max, '.2f') + "z" + format(msg.y.min, '.2f') + "vx" + format(msg.y.max, '.2f') + "vy" + format(msg.z.min, '.2f') + "vz" + format(msg.z.max, '.2f')
+        print("Publishing to /radio_traffic: ", myRsString)
+        self.radioPub.publish(myRsString)
+
 
     def __init__(self):
         '''Initializes the class'''
         rospy.init_node('radio_sim')
 
-        self.SYSID_THISMAV = rospy.get_param('SYSID_THISMAV', 1)
+        self.SYSID_THISMAV = rospy.get_param('SystemID', 1)
 
         rospy.Subscriber("/radio_traffic", String, self.radio_callback)
-        print("Subscribed to /radio_traffic")
-
-        rospy.Subscriber("/agent_1/my_reach_state", hyperRectangle, self.my_rs_callback)
-        print("Subscried to /my_rs")
+        rospy.Subscriber("/my_reach_state", hyperRectangle, self.my_rs_callback)
 
         self.radioPub = rospy.Publisher("/radio_traffic", String, queue_size=30)
-        print("Publishing to /radio_traffic")
+        self.recievedRsPub = rospy.Publisher("/recieved_rs", hyperRectangle, queue_size=30)
 
 
     def main_loop(self):
