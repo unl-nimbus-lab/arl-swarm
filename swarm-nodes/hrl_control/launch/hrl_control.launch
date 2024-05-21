@@ -106,9 +106,16 @@
 
     </node>
 
-    <node name="bag_handler" pkg="bag_handler" type="bag_handler.py" output="screen">
-      <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
+    <!-- Launch Collision Checker node-->
+    <node name="collision_checker" pkg="verifier" type="collision_checker" output="screen">
+      <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+      <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
     </node>
+
+
+    <!-- <node name="bag_handler" pkg="bag_handler" type="bag_handler.py" output="screen">
+      <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
+    </node> -->
   
   </group>
 
