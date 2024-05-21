@@ -36,5 +36,8 @@ include_directories( include ${catkin_INCLUDE_DIRS} )
 
 ## Declare a C++ executable
 add_executable(verifier src/verifier.cpp)
+add_executable(collisionChecker src/collisionChecker.cpp)
 target_link_libraries(verifier ${catkin_LIBRARIES})
+target_link_libraries(collisionChecker ${catkin_LIBRARIES})
 set_property(TARGET verifier PROPERTY CXX_STANDARD 20)
+set_property(TARGET collisionChecker PROPERTY CXX_STANDARD 20)
