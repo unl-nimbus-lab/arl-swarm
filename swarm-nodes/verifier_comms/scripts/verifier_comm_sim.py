@@ -33,7 +33,7 @@ class radioSim(object):
         
         if int(tempstr) != self.SYSID_THISMAV:
             #publish the message to /recieved_rs
-            print("Publishing to /recieved_rs: ", msg.data)
+            #print("Publishing to /recieved_rs: ", msg.data)
             tempHyperRect = hyperRectangle()
 
             idx += 2
@@ -89,7 +89,7 @@ class radioSim(object):
         '''string message received on /my_rs'''
         #print("Received from /my_rs: ", msg.id)
         myRsString = "a" + str(self.SYSID_THISMAV) + ":x" + format(msg.x.min, '.2f') + "y" + format(msg.x.max, '.2f') + "z" + format(msg.y.min, '.2f') + "vx" + format(msg.y.max, '.2f') + "vy" + format(msg.z.min, '.2f') + "vz" + format(msg.z.max, '.2f')
-        print("Publishing to /radio_traffic: ", myRsString)
+        #print("Publishing to /radio_traffic: ", myRsString)
         self.radioPub.publish(myRsString)
 
 

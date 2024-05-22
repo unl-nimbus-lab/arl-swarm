@@ -107,9 +107,10 @@
     </node>
 
     <!-- Launch Collision Checker node-->
-    <node name="collision_checker" pkg="verifier" type="collision_checker" output="screen">
+    <node name="collisionChecker" pkg="verifier" type="collisionChecker" output="screen">
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
       <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
+      <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
     </node>
 
 

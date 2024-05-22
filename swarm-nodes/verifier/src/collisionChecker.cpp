@@ -2,6 +2,7 @@
 #include "ros/ros.h"
 #include "safetyChecker.h"
 #include "verifier_comms/hyperRectangle.h"
+#include "mavros_msgs/SetMode.h"
 //This ros node is to store "my_rs" and compare
 //it to the other agents' reachable sets
 
@@ -17,6 +18,11 @@ class collisionChecker {
         ros::Subscriber my_rs_subscriber;
         ros::Subscriber rcvd_rs_subscriber;
 
+        ros::ServiceClient set_mode;
+
+        mavros_msgs::SetMode brake_msg;
+        mavros_msgs::SetMode guided_msg;
+
         void my_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& msg);
         void rcvd_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& msg);
 };
@@ -28,7 +34,7 @@ void collisionChecker::my_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& 
     my_rs.intervals[1].max = msg->y.max;
     my_rs.intervals[2].min = msg->z.min;
     my_rs.intervals[2].max = msg->z.max;
-    my_rs.disp();
+    //my_rs.disp();
 
 }
 
@@ -39,10 +45,11 @@ void collisionChecker::rcvd_rs_cb(const verifier_comms::hyperRectangle::ConstPtr
     rcvd_rs.intervals[1].max = msg->y.max;
     rcvd_rs.intervals[2].min = msg->z.min;
     rcvd_rs.intervals[2].max = msg->z.max;
-    rcvd_rs.disp();
+    //rcvd_rs.disp();
 
     if (my_rs.intersects(rcvd_rs)) {
         std::cout << "Collision detected" << std::endl;
+        set_mode.call(brake_msg);
     }
 
 }
@@ -62,6 +69,10 @@ collisionChecker::collisionChecker() {
 
     my_rs = hyperRectangle(intervals);
     rcvd_rs = hyperRectangle(intervals);
+
+    set_mode = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
+    brake_msg.request.custom_mode = "BRAKE";
+    guided_msg.request.custom_mode = "GUIDED";
 
     my_rs_subscriber = nh.subscribe("/my_reach_state", 5, &collisionChecker::my_rs_cb, this);
     rcvd_rs_subscriber = nh.subscribe("/recieved_rs", 30, &collisionChecker::rcvd_rs_cb, this);
