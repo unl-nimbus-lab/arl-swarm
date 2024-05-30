@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+#Old, dont use
 import sys
 import serial
 from digi.xbee.devices import *
