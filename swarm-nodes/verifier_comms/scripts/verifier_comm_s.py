@@ -7,7 +7,7 @@ from std_msgs.msg import String
 from verifier_comms.msg import hyperRectangle
 
 #Radio traffic message protocol:
-# {target}:{sending agent}:{message type}:{payload}
+# {target}:{sending agent}:{message type}:{rebroadcast flag}:{payload}
 #First integer will be the target system (0 for all)
 
 #Second integer will be the sending agent sysid
@@ -18,6 +18,13 @@ from verifier_comms.msg import hyperRectangle
 
 # 1 - Command
     # {payload} = {command}:{param1}:{param2}:{param3}:{param4}:{param5}:{param6}:{param7}
+
+    #Commands:
+    # 0 - Ping
+    # 1 - set flight mode
+    # 2 - enable/disable collision avoidance
+    # 3 - enable/diable re-broadcasting
+
 
 class commsHandler(object):
     '''Class to handle radio strings coming from /radio_traffic and reachable sets'''
@@ -44,23 +51,39 @@ class commsHandler(object):
         #If made it this far, check the message type
         messageType = int(messageList[2])
 
-        #Handle the command, at this point we assume the message is for this agent, and not from this agent
+        #Check if the message needs to be re-broadcast
+        rebroadcast = False
+        if messageList[3] == '1':
+            rebroadcast = True
+        
+
+        #Handle the message as a reachable set or a command
         if messageType == 0:
         #reachable set received
             tempHyperRect = hyperRectangle()
             tempHyperRect.id = sendingAgent
-            tempHyperRect.x.min = float(messageList[3])
-            tempHyperRect.x.max = float(messageList[4])
-            tempHyperRect.y.min = float(messageList[5])
-            tempHyperRect.y.max = float(messageList[6])
-            tempHyperRect.z.min = float(messageList[7])
-            tempHyperRect.z.max = float(messageList[8])
+            tempHyperRect.x.min = float(messageList[4])
+            tempHyperRect.x.max = float(messageList[5])
+            tempHyperRect.y.min = float(messageList[6])
+            tempHyperRect.y.max = float(messageList[7])
+            tempHyperRect.z.min = float(messageList[8])
+            tempHyperRect.z.max = float(messageList[9])
 
             self.recievedRsPub.publish(tempHyperRect)
 
+        #doing a command
         elif messageType == 1:
-        #command received
-            print("Command received of type" + messageList[3])
+
+            commandType = int(messageList[4])
+            print("Command received of type" + commandType)
+
+            if commandType == 0:
+                print("Ping received from " + sendingAgent)
+                #do nothing
+
+            else:
+                print("Unknown command received")
+                return
 
         else:
             print("Invalid message type received")
@@ -72,7 +95,7 @@ class commsHandler(object):
         '''
         #Format the message and publish it to /radio_traffic
 
-        tempStr =  "0:" + str(self.SYSID_THISMAV) + ":0:" + str(msg.x.min) + ":" + str(msg.x.max) + ":" + str(msg.y.min) + ":" + str(msg.y.max) + ":" + str(msg.z.min) + ":" + str(msg.z.max)
+        tempStr =  "0:" + str(self.SYSID_THISMAV) + ":0:0:" + str(msg.x.min) + ":" + str(msg.x.max) + ":" + str(msg.y.min) + ":" + str(msg.y.max) + ":" + str(msg.z.min) + ":" + str(msg.z.max)
         self.radioPub.publish(tempStr)
 
 
