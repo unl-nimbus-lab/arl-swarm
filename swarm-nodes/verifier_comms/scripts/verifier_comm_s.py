@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
-import sys
-import serial
+from radio_object import commsHandler
 
-import rospy
-from std_msgs.msg import String
-from verifier_comms.msg import hyperRectangle
 
 #Radio traffic message protocol:
 # {target}:{sending agent}:{message type}:{rebroadcast flag}:{payload}
@@ -19,8 +15,9 @@ from verifier_comms.msg import hyperRectangle
 # 1 - Command
     # {payload} = {command}:{param1}:{param2}:{param3}:{param4}:{param5}:{param6}:{param7}
 
-    #Commands:
+    #commands:
     # 0 - Ping
+        # {param1} = 0 (from the origin of the ping), 1 (from the target of the ping) 
     # 1 - set flight mode
     # 2 - enable/disable collision avoidance
     # 3 - enable/diable re-broadcasting
@@ -36,27 +33,24 @@ class commsHandler(object):
         2) reachable set
         '''
         messageList = msg.data.split(":")
+
+        target = int(messageList[0])
+        sendingAgent = int(messageList[1])
+        messageType = int(messageList[2])
+        rebroadcast = bool(messageList[3])
+        commandType = int(messageList[4])
+        messageOptions = int(messageList[5:])
+
         #Error checking?
         
         #Check if the message is for this agent
-        target = int(messageList[0])
         if target != 0 and target != self.SYSID_THISMAV:
             return
 
         #Check if the message is from this agent
-        sendingAgent = int(messageList[1])
         if sendingAgent == self.SYSID_THISMAV:
             return
         
-        #If made it this far, check the message type
-        messageType = int(messageList[2])
-
-        #Check if the message needs to be re-broadcast
-        rebroadcast = False
-        if messageList[3] == '1':
-            rebroadcast = True
-        
-
         #Handle the message as a reachable set or a command
         if messageType == 0:
         #reachable set received
@@ -74,12 +68,17 @@ class commsHandler(object):
         #doing a command
         elif messageType == 1:
 
-            commandType = int(messageList[4])
             print("Command received of type" + commandType)
 
             if commandType == 0:
-                print("Ping received from " + sendingAgent)
-                #do nothing
+                if messageOptions[0] == 0:
+                    print("Ping received from " + str(sendingAgent))
+                    tempStr = "255:" + str(self.SYSID_THISMAV) + ":1:0:0:1:0:0:0:0:0:0"
+                    self.radioPub.publish(tempStr)
+                elif messageOptions[0] == 1:
+                    print("Ping received from " + str(sendingAgent))
+
+
 
             else:
                 print("Unknown command received")
