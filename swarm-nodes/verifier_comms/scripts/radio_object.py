@@ -39,7 +39,6 @@ class commsHandler:
             tempStr += str(payload[i]) + ":"
         return tempStr
 
-
     def pack_message(self, target, sendingAgent, messageType, rebroadcast, payload):
         '''
         Packs a message into the radio traffic message protocol
@@ -54,17 +53,24 @@ class commsHandler:
         '''
         Unpacks a message from the radio traffic message protocol into a dict
         '''
-        try:
-            messageList = message.split(":")
-            messageDict = {}
-            messageDict['target'] = int(messageList[0])
-            messageDict['sendingAgent'] = int(messageList[1])
-            messageDict['messageType'] = int(messageList[2])
-            messageDict['rebroadcast'] = bool(messageList[3])
-            messageDict['payload'] = float(messageList[4:]) #payload should have 8 elements
-        except:
-            print("Error unpacking message")
-            return None
+        #try:
+        messageList = message.split(":")
+        messageDict = {}
+        payloadList = []
+
+        messageDict['target'] = int(messageList[0])
+        messageDict['sendingAgent'] = int(messageList[1])
+        messageDict['messageType'] = int(messageList[2])
+        messageDict['rebroadcast'] = bool(messageList[3])
+
+        for item in messageList[4:]:
+            payloadList.append(float(item))
+
+        messageDict['payload'] = payloadList
+
+        # except:
+        #     print("Error unpacking message")
+        #     return None
 
         return messageDict
     
@@ -88,7 +94,6 @@ class commsHandler:
 
         return tempHyperRect
     
-
     def radio_callback(self, msg):
         '''
         When a message is received on /radio_traffic it needs to be parsed and handled as a
@@ -111,29 +116,30 @@ class commsHandler:
         if message['messageType'] == 0:
         #reachable set received
             tempHyperRect = hyperRectangle()
-            tempHyperRect.id = sendingAgent
-            tempHyperRect.x.min = float(messageList[4])
-            tempHyperRect.x.max = float(messageList[5])
-            tempHyperRect.y.min = float(messageList[6])
-            tempHyperRect.y.max = float(messageList[7])
-            tempHyperRect.z.min = float(messageList[8])
-            tempHyperRect.z.max = float(messageList[9])
+            tempHyperRect.id = message["sendingAgent"]
+            tempHyperRect.x.min = message["payload"][0]
+            tempHyperRect.x.max = message["payload"][1]
+            tempHyperRect.y.min = message["payload"][2]
+            tempHyperRect.y.max = message["payload"][3]
+            tempHyperRect.z.min = message["payload"][4]
+            tempHyperRect.z.max = message["payload"][5]
 
             self.recievedRsPub.publish(tempHyperRect)
 
         #doing a command
-        elif messageType == 1:
+        elif message["messageType"] == 1:
 
-            print("Command received of type" + commandType)
+            commandType = message["payload"][0]
+            print("Command received of type" + str(commandType))
 
             if commandType == 0:
-                if messageOptions[0] == 0:
-                    print("Ping received from " + str(sendingAgent))
+                if message["rebroadcast"] == 0:
+                    print("Ping received from " + message["sendingAgent"])
                     #send the ping back to the origin
-                    tempStr = str(sendingAgent) + ":" + str(self.RADIO_HOST) + ":1:0:0:1:0:0:0:0:0:0"
+                    tempStr = str(message["sendingAgent"]) + ":" + str(self.RADIO_HOST) + ":1:0:0:1:0:0:0:0:0:0"
                     self.radioPub.publish(tempStr)
-                elif messageOptions[0] == 1:
-                    print("Ping received from " + str(sendingAgent))
+                elif message["rebroadcast"] == 1:
+                    print("Ping received from " + message["sendingAgent"])
 
             else:
                 print("Unknown command received")
@@ -151,7 +157,6 @@ class commsHandler:
 
         tempStr =  "0:" + str(self.RADIO_HOST) + ":0:0:" + str(msg.x.min) + ":" + str(msg.x.max) + ":" + str(msg.y.min) + ":" + str(msg.y.max) + ":" + str(msg.z.min) + ":" + str(msg.z.max)
         self.radioPub.publish(tempStr)
-
 
     def __init__(self):
         rospy.init_node('verifier_comms')
