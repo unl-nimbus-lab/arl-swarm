@@ -97,16 +97,17 @@
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
+      <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
     </node>
 
     <!-- Launch swarm_cmd node -->
-    <node name="swarm_cmd" pkg="swarm_cmd" type="swarm_cmd.py" output="screen" respawn="true">
+    <!-- <node name="swarm_cmd" pkg="swarm_cmd" type="swarm_cmd.py" output="screen" respawn="true">
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
       <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
 
-    </node>
+    </node> -->
 
     <!-- Launch Collision Checker node-->
     <node name="collisionChecker" pkg="verifier" type="collisionChecker" output="screen">

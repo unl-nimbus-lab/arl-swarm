@@ -9,6 +9,7 @@ from verifier_comms.msg import hyperRectangle
 
 #Radio traffic message protocol:
 # {target}:{sending agent}:{message type}:{rebroadcast flag}:{payload}
+#     0           1               2               3               4
 #First integer will be the target system (0 for all)
 
 #Second integer will be the sending agent sysid
@@ -27,6 +28,7 @@ from verifier_comms.msg import hyperRectangle
         # {param1} = flight mode
     # 2 - arm/disarm
         # {param1} = 0 (disarm), 1 (arm)
+    # 3
     # 3 - enable/disable collision avoidance
     # 4 - enable/diable re-broadcasting
 
@@ -49,9 +51,25 @@ COMMAND_MAP = {
     0: "PING",
     1: "SET_MODE",
     2: "ARM",
-    3: "COLLISION_AVOIDANCE",
-    4: "REBROADCAST",
+    3: "TAKEOFF",
+    #3: "COLLISION_AVOIDANCE",
+    #4: "REBROADCAST",
 }
+
+#Message type macros
+HYPERRECTANGLE = 0
+COMMAND = 1
+
+#Arming MACROS
+DISARM = False
+ARM = True
+REQUEST_DISARM = 0
+REQUEST_ARM = 1
+
+#ping macros
+PING_REQUESTED = 0
+PING_RESPONSE = 1
+
 
 #This stays
 def pack_payload(payload):
