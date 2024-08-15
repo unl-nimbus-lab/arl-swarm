@@ -12,6 +12,7 @@
 #include "mavros_msgs/DebugValue.h"
 #include "geometry_msgs/AccelStamped.h"
 #include "std_msgs/Int32.h"
+#include "std_msgs/Float32.h"
 #include <string>
 #include <cstring>
 #include <chrono>
@@ -55,6 +56,8 @@ class agent {
         bool plotBool = false;
         bool ros_on = false;
 
+        float reachTime = 4.0;
+
         //Ploting locations
         std::string plotFile;
         std::string othrFile;
@@ -65,6 +68,7 @@ class agent {
         //ROS publishers and subscribers
         ros::Publisher rect_publisher; //<-- Topic where reachable state gets published
         ros::Subscriber physical_state_subscriber;
+        ros::Subscriber reach_time_subscriber;
         ros::Subscriber cyber_state_subscriber; //<< Get rid of this
 
         //ROS timers
@@ -137,6 +141,11 @@ class agent {
             vx= msg->accel.angular.x;
             vy= msg->accel.angular.y;
             vz= msg->accel.angular.z;
+        }
+
+        void reach_time_cb( const std_msgs::Float32::ConstPtr& msg ) {
+            ROS_WARN("Setting reach time to %f", msg->data);
+            reachTime = msg->data;
         }
 
         // Get rid of this function

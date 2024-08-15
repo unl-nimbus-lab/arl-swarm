@@ -9,8 +9,10 @@ agent::agent() {
 
     physical_state_subscriber = nh.subscribe("/agent_state",   1, &agent::state_update_cb, this);
     cyber_state_subscriber = nh.subscribe(   "/ncyber_state",   1, &agent::compute_reach_set_cb,  this);
+    reach_time_subscriber = nh.subscribe(    "/reach_time",     1, &agent::reach_time_cb,        this);
 
     rect_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
+
 
     //Switching to a timer based intterupt for reachable set computation
     rs_timer = nh.createTimer(ros::Duration(0.1), &agent::compute_rs, this);
@@ -32,9 +34,9 @@ void agent::compute_rs( const ros::TimerEvent& event ) {
     float compute_time = reachTimeout * 0.4;
 
     //The actual time it takes to compute the reachable set
-    double actualTime = getUnixTime(); 
+    double start_compute = getUnixTime(); 
 
-    computeReachableSet(1.5, 0.5, 4.0, 4.0, compute_time);
+    computeReachableSet(1.5, 0.5, reachTime, 4.0, compute_time);
 
     /*
     Because I often forget compute reachable set arguments:
@@ -46,13 +48,13 @@ void agent::compute_rs( const ros::TimerEvent& event ) {
     */
     
     //finish timing the computation
-    actualTime = getUnixTime() - actualTime;
+    float actual_compute_time = getUnixTime() - start_compute;
 
     //Populate the ROS message with the reachable set
     packRectangleMessage(myReachableState, rsMessage);
     
     rsMessage.header.stamp = ros::Time::now();
-    ros::Time tempTime(actualTime);
+    ros::Time tempTime(start_compute + 4.0);
     
     //Add the timestamp and the actual time
     rsMessage.header.stamp = ros::Time::now();

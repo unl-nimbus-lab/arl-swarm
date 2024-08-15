@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from radio_object import unpack_message, unpack_hyperrect_payload, unpack_command_payload, MODE_MAP, COMMAND_MAP, REBROADCAST, NO_REBROADCAST, HYPERRECTANGLE, COMMAND, DISARM, ARM, PING_REQUESTED, PING_RESPONSE, REQUEST_DISARM, REQUEST_ARM
+from radio_object import unpack_message, unpack_hyperrect_payload, unpack_command_payload, MODE_MAP, COMMAND_MAP, REBROADCAST, NO_REBROADCAST, HYPERRECTANGLE, COMMAND, DISARM, ARM, PING_REQUESTED, PING_RESPONSE, REQUEST_DISARM, REQUEST_ARM, ENABLE_AVOIDANCE, DISABLE_AVOIDANCE
 import rospy
 from verifier_comms.msg import hyperRectangle
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool, Float32
 from mavros_msgs.srv import SetMode, SetModeRequest, SetModeResponse, CommandBool, CommandBoolRequest, CommandTOL, CommandTOLRequest, CommandTOLResponse
+import math
 """
 rostopic pub /radio_traffic std_msgs/String "data: '0:0:1:0:1:1:0:0:0:0:0:0'"
 rostopic pub /radio_traffic std_msgs/String "data: '0:0:1:0:2:1:0:0:0:0:0:0'"
@@ -79,6 +80,24 @@ class agent_comms:
         #except:
         #    print("Invalid takeoff command")
 
+    def handle_set_collision_action(self, message, payload):
+        if payload["param1"] == ENABLE_AVOIDANCE:
+            mode = True
+        elif payload["param1"] == DISABLE_AVOIDANCE:
+            mode = False
+
+        try:
+            self.collision_action_pub.publish(mode)
+        except:
+            rospy.logwarn("Bad collision action mode")
+
+    def handle_set_reach_time(self, message, payload):
+        time = payload["param1"]
+        try:
+            self.set_reach_time_pub.publish(time)
+        except:
+            rospy.logwarn("bad reach time")
+
     def radio_traffic_callback(self, msg):
         '''
         When a message is received on /radio_traffic it needs to be unpacked and interpreted
@@ -99,6 +118,11 @@ class agent_comms:
                 
             #reachable set received
             rcvd_rs = unpack_hyperrect_payload(message['sendingAgent'], message['payload'])
+            send_time = rcvd_rs.rs_time.secs - 4
+            recv_time = rospy.Time.now().to_sec()
+            broadcast_time = (recv_time - send_time)
+            br_time = f"{message['sendingAgent']}:{broadcast_time:.2f}"
+            self.broadcast_time_pub.publish(br_time)
             self.rcvd_rs_pub.publish(rcvd_rs)
 
         elif message["messageType"] == COMMAND:
@@ -115,6 +139,10 @@ class agent_comms:
                 self.handle_arm(message, command)
             elif command["command"] == "TAKEOFF":
                 self.handle_takeoff(message, command)
+            elif command["command"] == "SET_COLLISION_ACTION":
+                self.handle_set_collision_action(message, command)
+            elif command["command"] == "SET_REACH_TIME":
+                self.handle_set_reach_time(message, command)
             else:
                 print("Unknown command received")
                 return
@@ -128,8 +156,11 @@ class agent_comms:
         When a message is received on /my_reach_state it needs to be publised to /radio_traffic
         '''
         #Format the message and publish it to /radio_traffic
+        #Max size is 92 bytes? 66? 84?
 
-        tempStr =  f"0:{self.ID}:0:0:{msg.x.min}:{msg.x.max}:{msg.y.min}:{msg.y.max}:{msg.z.min}:{msg.z.max}"
+
+        tempStr =  f"0:{self.ID}:0:0:{msg.x.min:.2f}:{msg.x.max:.2f}:{msg.y.min:.2f}:{msg.y.max:.2f}:{msg.z.min:.2f}:{msg.z.max:.2f}:{msg.rs_time.secs}"
+        #print(len(tempStr))
         self.radio_pub.publish(tempStr)
 
     def __init__(self):
@@ -142,6 +173,10 @@ class agent_comms:
 
         rospy.Subscriber('/my_reach_state', hyperRectangle, self.my_rs_callback) #subscribed to this agent's reachable set
         self.rcvd_rs_pub = rospy.Publisher('/recieved_rs', hyperRectangle, queue_size=10) #publish incoming reachable sets to the rest of the nodes
+
+        self.broadcast_time_pub = rospy.Publisher('/broadcast_time', String, queue_size=10) #publish the time of the last broadcast
+        self.collision_action_pub = rospy.Publisher('/collision_action', Bool, queue_size=1)
+        self.set_reach_time_pub = rospy.Publisher('/reach_time', Float32, queue_size=1)
 
         self.set_mode_service = rospy.ServiceProxy('/mavros/set_mode', SetMode)
         self.set_mode_request = SetModeRequest()

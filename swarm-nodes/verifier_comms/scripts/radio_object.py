@@ -38,13 +38,36 @@ from verifier_comms.msg import hyperRectangle
 REBROADCAST = 1
 NO_REBROADCAST = 0
 
+ENABLE_AVOIDANCE = 1
+DISABLE_AVOIDANCE = 0
+
+_COMMAND_MAP = {
+    "PING" :    0,
+    "SET_MODE": 1,
+    "ARM":      2,
+    "TAKEOFF" : 3,
+    "SET_COLLISION_ACTION" : 4,
+    "SET_REACH_TIME": 5,
+}
+
+_MODE_MAP = {
+    "STABILIZE":    0,
+    "GUIDED":       1,
+    "AUTO":         2,
+    "RTL":          3,
+    "LOITER":       4,
+    "LAND":         5,
+    "BRAKE":        6
+}
+
 MODE_MAP = {
     0: "STABILIZE",
     1: "GUIDED",
     2: "AUTO",
     3: "RTL",
     4: "LOITER",
-    5: "LAND"
+    5: "LAND",
+    6: "BRAKE"
 }
 
 COMMAND_MAP = {
@@ -52,8 +75,8 @@ COMMAND_MAP = {
     1: "SET_MODE",
     2: "ARM",
     3: "TAKEOFF",
-    #3: "COLLISION_AVOIDANCE",
-    #4: "REBROADCAST",
+    4: "SET_COLLISION_ACTION",
+    5: "SET_REACH_TIME",
 }
 
 #Message type macros
@@ -70,8 +93,294 @@ REQUEST_ARM = 1
 PING_REQUESTED = 0
 PING_RESPONSE = 1
 
+UNIVERSAL_COMMAND_OPTIONS = "target: -t [target_agent], rebroadcast: -r "
+SET_MODE_COMMAND_OPTIONS = "mode: -m [STABILIZE GUIDED AUTO RTL LOITER LAND]"
+ARM_COMMAND_OPTIONS = "disarm: -d"
 
-#This stays
+
+class command:
+    def __init__(self):
+        self.command_key = None
+        self.target = 0
+        self.sending_agent = 0
+        self.message_type = COMMAND
+        self.rebroadcast_flag = NO_REBROADCAST
+        self.command = None
+        self.payload = None
+
+        self.param1 = 0
+        self.param2 = 0
+        self.param3 = 0
+        self.param4 = 0
+        self.param5 = 0
+        self.param6 = 0
+        self.param7 = 0
+
+        self.msg_str = None
+
+    def load(self, message_string):
+        """
+        Used to populate a received message
+        """
+        message_dict = unpack_message(message_string)
+        
+        self.target = message_dict["target"]
+        self.sending_agent = message_dict["sendingAgent"]
+        self.rebroadcast_flag = message_dict["rebroadcast"]
+        self.payload = message_dict["payload"]
+        self.command = _COMMAND_MAP[self.payload[0]]
+
+    def reset(self):
+        self.command_key = None
+        self.target = 0
+        self.sending_agent = 0
+        self.message_type = COMMAND
+        self.rebroadcast_flag = NO_REBROADCAST
+        self.command = None
+        self.payload = None
+
+        self.param1 = 0
+        self.param2 = 0
+        self.param3 = 0
+        self.param4 = 0
+        self.param5 = 0
+        self.param6 = 0
+        self.param7 = 0
+
+        self.msg_str = None
+
+    def check_universal_options(self, options):
+        """
+        options (list of strs)
+        """
+        for idx in range(len(options)):
+            if options[idx] == "-t":
+                self.target = int(options[idx+1])
+            elif options[idx] == "-r":
+                self.rebroadcast_flag = REBROADCAST
+
+    def check_str(self,input_string):
+        list = input_string.split(":")
+        return len(list) >= 12
+
+    def pack_payload(self):
+        self.payload = f"{self.command}:{self.param1}:{self.param2}:{self.param3}:{self.param4}:{self.param5}:{self.param6}:{self.param7}"
+    
+    def build_message(self):
+
+        self.payload = f"{self.command}:{self.param1}:{self.param2}:{self.param3}:{self.param4}:{self.param5}:{self.param6}:{self.param7}"
+        temp_msg_str = f"{self.target}:{self.sending_agent}:{COMMAND}:{self.rebroadcast_flag}:{self.payload}"
+        if (self.check_str(temp_msg_str)):
+            self.msg_str = temp_msg_str
+        else:
+            print("The message string did not pass the checksum")
+
+    def __str__(self):
+        return self.msg_str
+    
+    def prompt_options(self):
+        raise NotImplementedError("This method must be implemented in the child class")
+    
+class ping_command(command):
+    
+    def __init__(self):
+        
+        command.__init__(self)
+
+        self.command_key = "PING"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def prompt_options(self):
+        return input(f"Options for {self.command_key} command {UNIVERSAL_COMMAND_OPTIONS} >>> ").split()
+    
+    def process_options(self, options):
+        self.check_universal_options(options)
+
+    def build_from_prompt(self):
+        options = self.prompt_options()
+        self.process_options(options)
+        self.build_message()
+
+class set_mode_command(command):
+    
+    def __init__(self):
+        command.__init__(self)
+
+        self.command_key = "SET_MODE"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def check_mode_option(self,options):
+        for idx in range(len(options)):
+            if options[idx] == "-m":
+                self.param1 = _MODE_MAP[options[idx+1]]
+
+    def prompt_options(self):
+        return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{SET_MODE_COMMAND_OPTIONS} >>> ").split()
+
+    def process_options(self, options):
+        self.check_universal_options(options)
+
+    def build_from_prompt(self):
+        options = self.prompt_options()
+        self.process_options(options)
+        self.build_message()
+
+class arm_command(command):
+
+    def __init__(self):
+        
+        command.__init__(self)
+
+        self.command_key = "ARM"
+        self.command = _COMMAND_MAP[self.command_key]
+
+        self.param1 = 1 #default to arm
+
+    def prompt_options(self):
+        return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{ARM_COMMAND_OPTIONS} >>> ").split()
+    
+    def process_options(self,options):
+        self.check_universal_options(options)
+
+    def build_from_prompt(self):
+        options = self.prompt_options()
+        self.process_options(options)
+        self.build_message()
+
+class takeoff_command(command):
+    
+    def __init__(self):
+
+        command.__init__(self)
+        self.command_key = "TAKEOFF"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self,options):
+        self.check_universal_options(options)
+        try:
+            self.param1 = float(options[0])
+        except ValueError as e:
+            print(f"{e}")
+
+class avoidance_command(command):
+
+    def __init__(self):
+
+        command.__init__(self)
+        self.command_key = "SET_COLLISION_ACTION"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self,options):
+        self.check_universal_options(options)
+
+class reach_time_command(command):
+    
+    def __init__(self):
+
+        command.__init__(self)
+        self.command_key = "SET_REACH_TIME"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self,options):
+        self.check_universal_options(options)
+        try:
+            self.param1 = float(options[0])
+        except ValueError as e:
+            print(f"{e}")
+
+def build_ping_command(options):
+    ping = ping_command()
+    ping.process_options(options)
+    ping.build_message()
+
+    return ping.msg_str
+
+def build_arm_command(options):
+    arm = arm_command()
+    arm.param1 = REQUEST_ARM
+    arm.process_options(options)
+    arm.build_message()
+
+    return arm.msg_str
+
+def build_disarm_command(options):
+    disarm = arm_command()
+    disarm.param1 = REQUEST_DISARM
+    disarm.process_options(options)
+    disarm.build_message()
+
+    return disarm.msg_str
+
+def build_guided_command(options):
+    guided = set_mode_command()
+    guided.param1 = _MODE_MAP["GUIDED"]
+    guided.process_options(options)
+    guided.build_message()
+
+    return guided.msg_str
+
+def build_rtl_command(options):
+    rtl = set_mode_command()
+    rtl.param1 = _MODE_MAP["RTL"]
+    rtl.process_options(options)
+    rtl.build_message()
+
+    return rtl.msg_str
+
+def build_land_command(options):
+    land = set_mode_command()
+    land.param1 = _MODE_MAP["LAND"]
+    land.process_options(options)
+    land.build_message()
+
+    return land.msg_str
+
+def build_auto_command(options):
+    auto = set_mode_command()
+    auto.param1 = _MODE_MAP["AUTO"]
+    auto.process_options(options)
+    auto.build_message()
+
+    return auto.msg_str
+
+def build_brake_command(options):
+    brake = set_mode_command()
+    brake.param1 = _MODE_MAP["BRAKE"]
+    brake.process_options(options)
+    brake.build_message()
+
+    return brake.msg_str
+
+def build_takeoff_command(options):
+    takeoff = takeoff_command()
+    takeoff.process_options(options)
+    takeoff.build_message()
+
+    return takeoff.msg_str
+
+def build_enable_avoidance_command(options):
+    enable_action = avoidance_command()
+    enable_action.process_options(options)
+    enable_action.param1 = ENABLE_AVOIDANCE
+    enable_action.build_message()
+
+    return enable_action.msg_str
+
+def build_disable_avoidance_command(options):
+    disable_action = avoidance_command()
+    disable_action.process_options(options)
+    disable_action.param1 = DISABLE_AVOIDANCE
+    disable_action.build_message()
+
+    return disable_action.msg_str
+
+def build_set_reach_time_command(options):
+    set = reach_time_command()
+    set.process_options(options)
+    set.build_message()
+
+    return set.msg_str
+
 def pack_payload(payload):
     '''
     Packs a payload into a string
@@ -81,7 +390,6 @@ def pack_payload(payload):
         tempStr += str(payload[i]) + ":"
     return tempStr
 
-#This stays
 def pack_message(target, sendingAgent, messageType, rebroadcast, payload):
     '''
     Packs a message into the radio traffic message protocol
@@ -92,7 +400,6 @@ def pack_message(target, sendingAgent, messageType, rebroadcast, payload):
     tempStr = str(target) + ":" + str(sendingAgent) + ":" + str(messageType) + ":" + str(rebroadcast) + ":" + sting_payload
     return tempStr
 
-#This stays
 def unpack_message(message):
     '''
     Unpacks a message from the radio traffic message protocol into a dict
@@ -109,7 +416,6 @@ def unpack_message(message):
 
     return messageDict
 
-#This stays
 def unpack_hyperrect_payload(id, payload_str):
     '''
     Unpacks a payload from a hyperrectangle message
@@ -123,6 +429,7 @@ def unpack_hyperrect_payload(id, payload_str):
         tempHyperRect.y.max = float(payload_str[3])
         tempHyperRect.z.min = float(payload_str[4])
         tempHyperRect.z.max = float(payload_str[5])
+        tempHyperRect.rs_time.secs = int(payload_str[6])
 
     except:
         print("Error unpacking hyperrectangle payload")
@@ -139,7 +446,7 @@ def unpack_command_payload(payload_str):
         "param4": float(payload_str[4]),
         "param5": float(payload_str[5]),
         "param6": float(payload_str[6]),
-        "param7": float(payload_str[7])
+        "param7": float(payload_str[7]),
     }
 
     return payload

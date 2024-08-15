@@ -52,7 +52,7 @@
     </node>
 
     <!-- Launch controller node -->
-    <node name="hrl_control" pkg="hrl_control" type="hrl_control" output="screen">
+    <!-- <node name="hrl_control" pkg="hrl_control" type="hrl_control" output="screen">
 
       <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
       <remap from="/aug_state" to="/agent_$(env SYS_ID)/aug_state" />
@@ -62,31 +62,32 @@
       <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
       <remap from="/mavros/global_position/swarm" to="/agent_$(env SYS_ID)/mavros/global_position/swarm" />
 
-    </node>
+    </node> -->
 
     <!-- Launch command_xform node -->
-    <node name="command_xform" pkg="command_xform" type="command_xform" output="screen">
+    <!-- <node name="command_xform" pkg="command_xform" type="command_xform" output="screen">
 
       <remap from="/mavros/setpoint_raw/attitude" to="/agent_$(env SYS_ID)/mavros/setpoint_raw/attitude" />
       <remap from="/vector" to="/agent_$(env SYS_ID)/vector" />
 
-    </node>
+    </node> -->
 
     <!-- Launch command_interpret node -->
-    <node name="hrl_command_interpret" pkg="hrl_command_interpret" type="hrl_command_interpret" output="screen">
+    <!-- <node name="hrl_command_interpret" pkg="hrl_command_interpret" type="hrl_command_interpret" output="screen">
 
       <remap from="/aug_state" to="/agent_$(env SYS_ID)/aug_state" />
       <remap from="/publish_state" to="/agent_$(env SYS_ID)/publish_state" />
       <remap from="/mavros/debug_value/debug_vector" to="/agent_$(env SYS_ID)/mavros/debug_value/debug_vector" />
       <remap from="/mavros/debug_value/named_value_int" to="/agent_$(env SYS_ID)/mavros/debug_value/named_value_int" />
 
-    </node>
+    </node> -->
 
     <!-- Launch verifier node -->
     <node name="verifier" pkg="verifier" type="verifier" output="screen">
       <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
       <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+      <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
 
 
     </node>
@@ -98,6 +99,9 @@
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
       <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
+      <remap from="/broadcast_time" to="/agent_$(env SYS_ID)/broadcast_time" />
+      <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+      <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
     </node>
 
     <!-- Launch swarm_cmd node -->
@@ -115,6 +119,7 @@
       <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
+      <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
     </node>
 
 
