@@ -155,7 +155,10 @@ class command:
         """
         for idx in range(len(options)):
             if options[idx] == "-t":
-                self.target = int(options[idx+1])
+                try:
+                    self.target = int(options[idx+1])
+                except ValueError as e:
+                    print(f"{e}: bad options")
             elif options[idx] == "-r":
                 self.rebroadcast_flag = REBROADCAST
 

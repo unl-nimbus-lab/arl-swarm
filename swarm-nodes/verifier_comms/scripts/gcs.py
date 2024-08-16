@@ -13,12 +13,12 @@ def user_command_thread(publisher_obj):
     #user chooses command options
     #Command Options: target (defaults to 0, rebroadcast, defaluts to NO)
     #Command Specific options
-    availible_commands = []
-    for command in COMMAND_MAP.values():
-        availible_commands.append(command)
+    # availible_commands = []
+    # for command in COMMAND_MAP.values():
+    #     availible_commands.append(command)
 
     while not rospy.is_shutdown():
-        requested_command = input(f"gcs {availible_commands} >>> ").split()
+        requested_command = input(f"gcs >>> ").split()
 
         try:
             command = requested_command[0].upper()
