@@ -260,10 +260,10 @@ class takeoff_command(command):
 
     def process_options(self,options):
         self.check_universal_options(options)
-        try:
-            self.param1 = float(options[0])
-        except ValueError as e:
-            print(f"{e}")
+        # try:
+        #     self.param1 = float(options[0])
+        # except ValueError as e:
+        #     self.param1 = 0
 
 class avoidance_command(command):
 

@@ -70,6 +70,14 @@ class agent_comms:
         param1: altitude
         '''
         requested_altitude = float(payload['param1'])
+
+        if requested_altitude == 0:
+            #no given altitude
+            home_alt = rospy.get_param("homeAlt")
+            agent_alt = rospy.get_param("agentAlt")
+
+            requested_altitude = agent_alt - home_alt
+
         #No real reason for these values:
         yaw = 0
         #try:
