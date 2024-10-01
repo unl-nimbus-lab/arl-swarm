@@ -63,7 +63,7 @@ def user_command_thread(publisher_obj):
                 msg = build_set_reach_time_command(options)
                 publisher_obj.publish(msg)
             else:
-                print("wut")
+                print("UNRECOGNIZED COMMAND")
         except IndexError as e:
             rospy.logwarn(f"{e}")
 
