@@ -18,7 +18,7 @@ struct vector {
 
 struct gains {
 
-    double kp = 1.0;
+    double kp = 0.15;
     double ki = 0.0;
     double kd = 0.0;
 
