@@ -1,5 +1,17 @@
 # arl-swarm
 
+# Update 10/1
+
+## Build the simulator image
+
+'docker build -f SimulatorDockerfile -t hrl_docker .'
+
+## use the gcs
+
+'docker run -it --net=host hrl_docker'
+
+'rosrun verifier_comms gcs.py'
+
 ## Introduction
 This repository contains the implementation, tools, and processes that have been used by the ARL Swarm Team for swarm deployment. For more comprehensive documentation, please refer to the project Wiki.
 

@@ -24,3 +24,6 @@ catkin_package(
 
 add_executable(hrl_control src/hrl_control.cpp)
 target_link_libraries(hrl_control ${catkin_LIBRARIES} )
+
+add_executable(vel_control src/vel_control.cpp)
+target_link_libraries(vel_control ${catkin_LIBRARIES} )
