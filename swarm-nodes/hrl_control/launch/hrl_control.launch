@@ -17,6 +17,7 @@
     <param name="startingControlRate"  value="$(optenv CONTROL_RATE 30 )"/>
     <param name="coregEnabled" value="$(optenv COREG_ENABLED false )"/>
     <param name="cyberRef" value="$(optenv CYBER_REF 10 )"/>
+    <param name="commonAlt" value="$(optenv COMMON_ALT 410)"/>
 
     <arg name="fcu_url" default="$(env PORT):$(env BAUD)"/>
     <arg name="gcs_url" default="" />
@@ -60,7 +61,7 @@
 
     </node>
 
-    <!-- Launch verifier comms sim node -->
+    <!-- Launch verifier comms s node -->
     <node name="verifier_comms" pkg="verifier_comms" type="verifier_comm_s.py" output="screen">
       <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
@@ -70,6 +71,8 @@
       <remap from="/broadcast_time" to="/agent_$(env SYS_ID)/broadcast_time" />
       <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
       <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
+      <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
+      <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
     </node>
 
     <!-- Launch Collision Checker node-->
@@ -79,6 +82,20 @@
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
       <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+    </node>
+
+    <node name="verifier_planner" pkg="verifier_planner" type="planner.py" output="screen">
+      <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
+      <remap from='/pos_ref' to='/agent_$(env SYS_ID)/pos_ref' />
+    </node>
+
+    <node name="vel_control" pkg="hrl_control" type="vel_control" output="screen">
+      <remap from='/agent_state' to='/agent_$(env SYS_ID)/agent_state' />
+      <remap from='/pos_ref' to='/agent_$(env SYS_ID)/pos_ref' />
+      <remap from='/mavros/setpoint_velocity/cmd_vel' to='/agent_$(env SYS_ID)/mavros/setpoint_velocity/cmd_vel' />
+      <remap from='/position_error' to='/agent_$(env SYS_ID)/position_error' />
+      <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
+      
     </node>
 
 

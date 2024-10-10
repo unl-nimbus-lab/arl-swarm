@@ -41,6 +41,9 @@ NO_REBROADCAST = 0
 ENABLE_AVOIDANCE = 1
 DISABLE_AVOIDANCE = 0
 
+ENABLE_CONTROL = 1
+DISABLE_CONTROL = 0
+
 _COMMAND_MAP = {
     "PING" :    0,
     "SET_MODE": 1,
@@ -48,6 +51,8 @@ _COMMAND_MAP = {
     "TAKEOFF" : 3,
     "SET_COLLISION_ACTION" : 4,
     "SET_REACH_TIME": 5,
+    "SET_MISSION": 6,
+    "ENABLE_POS_CONTROL": 7,
 }
 
 _MODE_MAP = {
@@ -77,6 +82,8 @@ COMMAND_MAP = {
     3: "TAKEOFF",
     4: "SET_COLLISION_ACTION",
     5: "SET_REACH_TIME",
+    6: "SET_MISSION",
+    7: "ENABLE_POS_CONTROL",
 }
 
 #Message type macros
@@ -96,15 +103,23 @@ PING_RESPONSE = 1
 UNIVERSAL_COMMAND_OPTIONS = "target: -t [target_agent], rebroadcast: -r "
 SET_MODE_COMMAND_OPTIONS = "mode: -m [STABILIZE GUIDED AUTO RTL LOITER LAND]"
 ARM_COMMAND_OPTIONS = "disarm: -d"
+ENABLE_COMMAND_OPTIONS = ""
 
 
 class command:
+    """
+    Command class that can be used to help build messages
+    """
     def __init__(self):
-        self.command_key = None
-        self.target = 0
-        self.sending_agent = 0
-        self.message_type = COMMAND
+        
+        self.command_key = None #Message type essentally, see COMMAND_MAP and _COMMAND_MAP
+        
+        self.target = 0 #Defaults to the "broadcast so that all listening agents will hear"
+        self.sending_agent = 0 #Defaults to the GCS sending agent
+        
+        self.message_type = COMMAND 
         self.rebroadcast_flag = NO_REBROADCAST
+        
         self.command = None
         self.payload = None
 
@@ -120,7 +135,7 @@ class command:
 
     def load(self, message_string):
         """
-        Used to populate a received message
+        NOT USED? Used to populate a received message
         """
         message_dict = unpack_message(message_string)
         
@@ -131,6 +146,9 @@ class command:
         self.command = _COMMAND_MAP[self.payload[0]]
 
     def reset(self):
+        """
+        NOT USED?
+        """
         self.command_key = None
         self.target = 0
         self.sending_agent = 0
@@ -151,8 +169,12 @@ class command:
 
     def check_universal_options(self, options):
         """
-        options (list of strs)
+        options avalible to all types of commands
+
+        -t [target agent]: specify an agent to send this message to 
+        -r : rebroadcast this message
         """
+
         for idx in range(len(options)):
             if options[idx] == "-t":
                 try:
@@ -163,14 +185,22 @@ class command:
                 self.rebroadcast_flag = REBROADCAST
 
     def check_str(self,input_string):
+        """
+        Simple checksum to make sure the built message has at least 12 fields
+        """
         list = input_string.split(":")
         return len(list) >= 12
 
     def pack_payload(self):
+        """
+        Once the command message options and param are set, the are built into a string 
+        """
         self.payload = f"{self.command}:{self.param1}:{self.param2}:{self.param3}:{self.param4}:{self.param5}:{self.param6}:{self.param7}"
     
     def build_message(self):
-
+        """
+        Once the command message options and param are set, the are built into a string 
+        """
         self.payload = f"{self.command}:{self.param1}:{self.param2}:{self.param3}:{self.param4}:{self.param5}:{self.param6}:{self.param7}"
         temp_msg_str = f"{self.target}:{self.sending_agent}:{COMMAND}:{self.rebroadcast_flag}:{self.payload}"
         if (self.check_str(temp_msg_str)):
@@ -185,7 +215,18 @@ class command:
         raise NotImplementedError("This method must be implemented in the child class")
     
 class ping_command(command):
+    """
+    Subclass for a ping command
+
+    param1: UNUSED
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
     
+    """
     def __init__(self):
         
         command.__init__(self)
@@ -193,18 +234,27 @@ class ping_command(command):
         self.command_key = "PING"
         self.command = _COMMAND_MAP[self.command_key]
 
-    def prompt_options(self):
-        return input(f"Options for {self.command_key} command {UNIVERSAL_COMMAND_OPTIONS} >>> ").split()
+    # def prompt_options(self):
+    #     return input(f"Options for {self.command_key} command {UNIVERSAL_COMMAND_OPTIONS} >>> ").split()
     
     def process_options(self, options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+        """
         self.check_universal_options(options)
 
-    def build_from_prompt(self):
-        options = self.prompt_options()
-        self.process_options(options)
-        self.build_message()
+    # def build_from_prompt(self):
+    #     options = self.prompt_options()
+    #     self.process_options(options)
+    #     self.build_message()
 
 class set_mode_command(command):
+    """
+    DEPRICATED: Subclass for a set flight mode command
+    """
     
     def __init__(self):
         command.__init__(self)
@@ -217,18 +267,30 @@ class set_mode_command(command):
             if options[idx] == "-m":
                 self.param1 = _MODE_MAP[options[idx+1]]
 
-    def prompt_options(self):
-        return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{SET_MODE_COMMAND_OPTIONS} >>> ").split()
+    # def prompt_options(self):
+    #     return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{SET_MODE_COMMAND_OPTIONS} >>> ").split()
 
     def process_options(self, options):
         self.check_universal_options(options)
 
-    def build_from_prompt(self):
-        options = self.prompt_options()
-        self.process_options(options)
-        self.build_message()
+    # def build_from_prompt(self):
+    #     options = self.prompt_options()
+    #     self.process_options(options)
+    #     self.build_message()
 
 class arm_command(command):
+    """
+    Subclass for arm command
+
+    param1: 1 (ARM), 0 (DISARM)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+
+    """
 
     def __init__(self):
         
@@ -237,20 +299,38 @@ class arm_command(command):
         self.command_key = "ARM"
         self.command = _COMMAND_MAP[self.command_key]
 
-        self.param1 = 1 #default to arm
+        self.param1 = REQUEST_ARM #Behavior defaults to arming
 
-    def prompt_options(self):
-        return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{ARM_COMMAND_OPTIONS} >>> ").split()
+    # def prompt_options(self):
+    #     return input(f"{self.command_key}:{UNIVERSAL_COMMAND_OPTIONS}{ARM_COMMAND_OPTIONS} >>> ").split()
     
     def process_options(self,options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+        """
         self.check_universal_options(options)
 
-    def build_from_prompt(self):
-        options = self.prompt_options()
-        self.process_options(options)
-        self.build_message()
+    # def build_from_prompt(self):
+    #     options = self.prompt_options()
+    #     self.process_options(options)
+    #     self.build_message()
 
 class takeoff_command(command):
+    """
+    Subclass for a takeoff command
+
+    param1: takeoff altitude (meters AGL) (if left to 0, agent will take off to alt sep) (not checked for) 
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+    
+    """
     
     def __init__(self):
 
@@ -259,6 +339,12 @@ class takeoff_command(command):
         self.command = _COMMAND_MAP[self.command_key]
 
     def process_options(self,options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+        """
         self.check_universal_options(options)
         # try:
         #     self.param1 = float(options[0])
@@ -266,6 +352,18 @@ class takeoff_command(command):
         #     self.param1 = 0
 
 class avoidance_command(command):
+    """
+    Subclass for a command to enable collision avoidance
+
+    param1: 1 (Enable avoidance), 0 (disable avoidance)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+    
+    """
 
     def __init__(self):
 
@@ -274,9 +372,27 @@ class avoidance_command(command):
         self.command = _COMMAND_MAP[self.command_key]
 
     def process_options(self,options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+        """
         self.check_universal_options(options)
 
 class reach_time_command(command):
+    """
+    Subclass for a command that sets the reach time
+
+    param1: reach time (seconds)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+    
+    """
     
     def __init__(self):
 
@@ -285,11 +401,44 @@ class reach_time_command(command):
         self.command = _COMMAND_MAP[self.command_key]
 
     def process_options(self,options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+
+        """
         self.check_universal_options(options)
         try:
             self.param1 = float(options[0])
         except ValueError as e:
             print(f"{e}")
+
+class control_enable_command(command):
+    """
+    Subclass for a command that enables/disables velocity control node
+
+    param1: 1 (ENBALE CONTROL), 0 (DISABLE CONTROL)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+    
+    """
+
+    def __init__(self):
+        command.__init__(self)
+        self.command_key = "ENABLE_POS_CONTROL"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self, options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+        """
+        self.check_universal_options(options)
 
 def build_ping_command(options):
     ping = ping_command()
@@ -383,6 +532,25 @@ def build_set_reach_time_command(options):
     set.build_message()
 
     return set.msg_str
+
+def build_control_enable_command(options):
+    enable_cmd = control_enable_command()
+    enable_cmd.param1 = ENABLE_CONTROL
+    enable_cmd.process_options(options)
+    enable_cmd.build_message()
+
+    return enable_cmd.msg_str
+
+def build_control_disable_command(options):
+    disable_cmd = control_enable_command()
+    disable_cmd.param1 = DISABLE_CONTROL
+    disable_cmd.process_options(options)
+    disable_cmd.build_message()
+
+    return disable_cmd.msg_str
+
+#Pretty sure most of these methods below here are unused
+#UPDATE: Some the the methods are used
 
 def pack_payload(payload):
     '''

@@ -106,6 +106,31 @@ class agent_comms:
         except:
             rospy.logwarn("bad reach time")
 
+    def handle_set_mission(self, message, payload):
+        mission = payload["param1"]
+        stage = payload["param2"]
+
+        mission_cmd = mission + ":" + stage
+
+        self.mission_cmd_pub.publish(mission_cmd)
+
+    def handle_enable_pos_control(self, message, payload):
+        
+        enable = payload["param1"]
+        enable_bool = False
+
+        if enable == 1:
+            enable_bool = True
+            self.position_control_enable_pub.publish(enable_bool)
+        elif enable == 0:
+            enable_bool = False
+            self.position_control_enable_pub.publish(enable_bool)
+        else:
+            print("did not send a valid control enable cmd")
+
+        
+
+
     def radio_traffic_callback(self, msg):
         '''
         When a message is received on /radio_traffic it needs to be unpacked and interpreted
@@ -151,6 +176,10 @@ class agent_comms:
                 self.handle_set_collision_action(message, command)
             elif command["command"] == "SET_REACH_TIME":
                 self.handle_set_reach_time(message, command)
+            elif command["command"] == "SET_MISSION":
+                self.handle_set_mission(message,command)
+            elif command["command"] == "ENABLE_POS_CONTROL":
+                self.handle_enable_pos_control(message, command)
             else:
                 print("Unknown command received")
                 return
@@ -165,8 +194,7 @@ class agent_comms:
         '''
         #Format the message and publish it to /radio_traffic
         #Max size is 92 bytes? 66? 84?
-
-
+        
         tempStr =  f"0:{self.ID}:0:0:{msg.x.min:.2f}:{msg.x.max:.2f}:{msg.y.min:.2f}:{msg.y.max:.2f}:{msg.z.min:.2f}:{msg.z.max:.2f}:{msg.rs_time.secs}"
         #print(len(tempStr))
         self.radio_pub.publish(tempStr)
@@ -185,6 +213,8 @@ class agent_comms:
         self.broadcast_time_pub = rospy.Publisher('/broadcast_time', String, queue_size=10) #publish the time of the last broadcast
         self.collision_action_pub = rospy.Publisher('/collision_action', Bool, queue_size=1)
         self.set_reach_time_pub = rospy.Publisher('/reach_time', Float32, queue_size=1)
+        self.mission_cmd_pub = rospy.Publisher('/mission_cmd', String, queue_size=1)
+        self.position_control_enable_pub = rospy.Publisher('/pos_en', Bool, queue_size=1)
 
         self.set_mode_service = rospy.ServiceProxy('/mavros/set_mode', SetMode)
         self.set_mode_request = SetModeRequest()

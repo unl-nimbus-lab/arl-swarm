@@ -40,6 +40,7 @@ class collisionChecker {
 };
 
 void collisionChecker::my_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& msg) {
+
     my_rs.intervals[0].min = msg->x.min;
     my_rs.intervals[0].max = msg->x.max;
     my_rs.intervals[1].min = msg->y.min;
@@ -49,19 +50,22 @@ void collisionChecker::my_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& 
     //my_rs.disp();
 
     //This doesn't really belong here, but this callback should fire fairly regularly
-    if (colliding_mavs.empty() == false) {
-        if (collision_action_enabled) {
-            set_mode.call(brake_msg);
-            mode = 1;
-        }
-    } else if (mode == 1) {
-        set_mode.call(guided_msg);
-        mode = 0;
-    }
+    // if (colliding_mavs.empty() == false) {
+    //     if (collision_action_enabled) {
+    //         set_mode.call(brake_msg);
+    //         mode = 1;
+    //     }
+    // } else if (mode == 1) {
+    //     set_mode.call(guided_msg);
+    //     mode = 0;
+    // }
 
 }
 
 void collisionChecker::rcvd_rs_cb(const verifier_comms::hyperRectangle::ConstPtr& msg) {
+    /* 
+
+    */
     int sending_agent = msg->id;
     rcvd_rs.intervals[0].min = msg->x.min;
     rcvd_rs.intervals[0].max = msg->x.max;
@@ -72,19 +76,36 @@ void collisionChecker::rcvd_rs_cb(const verifier_comms::hyperRectangle::ConstPtr
     //rcvd_rs.disp();
 
     if (my_rs.intersects(rcvd_rs)) {
-        if (sending_agent < SYSID_THISMAV) {
-            //this agent is colliding with a higher priority agent
-            if (std::find(colliding_mavs.begin(), colliding_mavs.end(), sending_agent) == colliding_mavs.end()) {
-                //Add the agent to the list of colliding agents if it is not already in the vector 
-                colliding_mavs.push_back(sending_agent);
+        bool im_moving = (abs(my_rs.maxWidth()) > 8.0); //See if "I" am moving
+        bool they_move = (abs(my_rs.maxWidth()) > 8.0); //See if "they" are moving
+
+        if (im_moving) {
+            ROS_INFO("IM MOVING"); 
+            if (they_move) {
+                //Lower priority breaks
+                //Higher priority Increases alt
+            } else {
+                //They aren't moving, I will increase altitude
             }
         }
-    } else {
-        if (std::find(colliding_mavs.begin(), colliding_mavs.end(), sending_agent) != colliding_mavs.end()) {
-            //Remove the agent from the list of colliding agents if it is in the vector
-            colliding_mavs.erase(std::remove(colliding_mavs.begin(), colliding_mavs.end(), sending_agent), colliding_mavs.end());
-        } 
     }
+
+    // if (my_rs.intersects(rcvd_rs)) {
+    //     //Collision detected
+    //     if (sending_agent < SYSID_THISMAV) {
+    //         //this agent is colliding with a higher priority agent
+    //         if (std::find(colliding_mavs.begin(), colliding_mavs.end(), sending_agent) == colliding_mavs.end()) {
+    //             //Add the agent to the list of colliding agents if it is not already in the vector 
+    //             colliding_mavs.push_back(sending_agent);
+    //         }
+    //     }
+    // } else {
+    //     //No collision detected
+    //     if (std::find(colliding_mavs.begin(), colliding_mavs.end(), sending_agent) != colliding_mavs.end()) {
+    //         //Remove the agent from the list of colliding agents if it is in the vector
+    //         colliding_mavs.erase(std::remove(colliding_mavs.begin(), colliding_mavs.end(), sending_agent), colliding_mavs.end());
+    //     } 
+    // }
 }
 
 void collisionChecker::collision_action(const std_msgs::Bool::ConstPtr& msg) {
@@ -119,8 +140,6 @@ collisionChecker::collisionChecker() {
     my_rs_subscriber = nh.subscribe("/my_reach_state", 5, &collisionChecker::my_rs_cb, this);
     rcvd_rs_subscriber = nh.subscribe("/recieved_rs", 30, &collisionChecker::rcvd_rs_cb, this);
     collision_action_subscriber = nh.subscribe("/collision_action", 5, &collisionChecker::collision_action, this);
-
-    
 
 }
 

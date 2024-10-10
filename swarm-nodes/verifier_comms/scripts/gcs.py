@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from radio_object import unpack_message, unpack_hyperrect_payload, unpack_command_payload, MODE_MAP, COMMAND_MAP, REBROADCAST, NO_REBROADCAST, HYPERRECTANGLE, COMMAND, DISARM, ARM, PING_REQUESTED, PING_RESPONSE, REQUEST_DISARM, REQUEST_ARM, ping_command, set_mode_command, arm_command, build_ping_command, build_arm_command, build_disarm_command, build_guided_command, build_auto_command, build_brake_command, build_land_command, build_rtl_command, build_takeoff_command, build_disable_avoidance_command, build_enable_avoidance_command, build_set_reach_time_command
+from radio_object import unpack_message, unpack_hyperrect_payload, unpack_command_payload, MODE_MAP, COMMAND_MAP, REBROADCAST, NO_REBROADCAST, HYPERRECTANGLE, COMMAND, DISARM, ARM, PING_REQUESTED, PING_RESPONSE, REQUEST_DISARM, REQUEST_ARM, ping_command, set_mode_command, arm_command, build_ping_command, build_arm_command, build_disarm_command, build_guided_command, build_auto_command, build_brake_command, build_land_command, build_rtl_command, build_takeoff_command, build_disable_avoidance_command, build_enable_avoidance_command, build_set_reach_time_command, build_control_disable_command, build_control_enable_command
 import rospy
 from std_msgs.msg import String
 import threading
@@ -61,6 +61,12 @@ def user_command_thread(publisher_obj):
                 publisher_obj.publish(msg)
             elif command == "SET":
                 msg = build_set_reach_time_command(options)
+                publisher_obj.publish(msg)
+            elif command == "POS":
+                msg = build_control_enable_command(options)
+                publisher_obj.publish(msg)
+            elif command == "SOP":
+                msg = build_control_disable_command(options)
                 publisher_obj.publish(msg)
             else:
                 print("UNRECOGNIZED COMMAND")
