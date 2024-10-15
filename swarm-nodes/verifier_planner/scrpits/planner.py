@@ -109,7 +109,7 @@ class swarm_planner:
         
         #Check the message data is properly formatted
         if(check_cmd(payload) == False):
-            print("Bad CMD message")
+            rospy.logwarn("PLANNER: Bad CMD message")
             return
         
         message_fields = payload.split(":")

@@ -416,7 +416,8 @@ class control_enable_command(command):
     """
     Subclass for a command that enables/disables velocity control node
 
-    param1: 1 (ENBALE CONTROL), 0 (DISABLE CONTROL)
+    param1: 1 : Enable
+            0 : Disable
     param2: UNUSED
     param3: UNUSED
     param4: UNUSED
@@ -435,10 +436,53 @@ class control_enable_command(command):
         """
         Specify options to modify the command
         command options: list[str]
-            -t [target agent id]: specific agent to send message to
+            -t : [target agent id]: specific agent to send message to
             -r : rebroadcast message
         """
         self.check_universal_options(options)
+   
+class mission_command(command):
+    """
+    Subclass for a command that sets the next mission waypoint
+
+    param1: 1 (ENBALE CONTROL), 0 (DISABLE CONTROL)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED    
+    """
+
+    def __init__(self):
+        command.__init__(self)
+        self.command_key = "SET_MISSION"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self, options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+            -t : [target agent id]: specific agent to send message to
+            -r : rebroadcast message
+            -m : [mission ID] (int)
+            -s : [mission stage] (int)
+        """
+        self.check_universal_options(options)
+        
+        #Now check for command specific options
+        for idx in range(len(options)):
+
+            if options[idx] == "-m":
+                try:
+                    self.param1 = int(options[idx+1])
+                except ValueError as e:
+                    print(f"{e}: bad options for mission id")
+            elif options[idx] == "-s":
+                try:
+                    self.param2 = int(options[idx+1])
+                except ValueError as e:
+                    print(f"{e}: bad options for mission stage")
 
 def build_ping_command(options):
     ping = ping_command()
@@ -548,6 +592,13 @@ def build_control_disable_command(options):
     disable_cmd.build_message()
 
     return disable_cmd.msg_str
+
+def build_mission_command(options):
+    mission_cmd = mission_command()
+    mission_cmd.process_options(options)
+    mission_cmd.build_message()
+
+    return mission_cmd.msg_str
 
 #Pretty sure most of these methods below here are unused
 #UPDATE: Some the the methods are used

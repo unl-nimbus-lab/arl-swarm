@@ -107,8 +107,10 @@ class agent_comms:
             rospy.logwarn("bad reach time")
 
     def handle_set_mission(self, message, payload):
-        mission = payload["param1"]
-        stage = payload["param2"]
+        "Set the mission ID and the mission stage"
+
+        mission = str(int(payload["param1"]))
+        stage =   str(int(payload["param2"]))
 
         mission_cmd = mission + ":" + stage
 

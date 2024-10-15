@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="verifier_comms" type="gcs_backend.py" name="gcs_backend" output="screen" />
+</launch>
