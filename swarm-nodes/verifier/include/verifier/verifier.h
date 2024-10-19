@@ -19,6 +19,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <filesystem>
+#include <iomanip>
+
 double getUnixTime() {
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
     
@@ -82,6 +85,10 @@ class agent {
         double myReachTime;
 
         verifier_comms::hyperRectangle rsMessage;
+
+        //Logging things
+        ros::Publisher rs_pub;
+        ros::Publisher en_pub;
 
         std::tuple<hyperRectangle, float> computeReachableSet(float positionError, float velocityError, float reachTime, float initialStepSize, float reachTimeout) {
 
@@ -148,6 +155,8 @@ class agent {
             reachTime = msg->data;
         }
 
+
+
         // Get rid of this function
         void compute_reach_set_cb( const std_msgs::Int32::ConstPtr& msg ) {
 
@@ -182,8 +191,6 @@ class agent {
         ROS_ERROR("SHOULD NOT SEE THIS MESSAGE");
 
         }
-
-        
 
 };
 

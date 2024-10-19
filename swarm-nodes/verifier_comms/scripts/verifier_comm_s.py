@@ -130,7 +130,29 @@ class agent_comms:
         else:
             print("did not send a valid control enable cmd")
 
+    def handle_rebroadcast(self, msg_string):
+        """
+        rebroadcast a message that was recieved
+        """
+        try:
+            #Load the msg string into a list and flip the rebroadcast flag to 0
+            msg_list = list(msg_string)
+            msg_list[6] = "0" 
+            
+            #build a new string from the list
+            new_str = "" 
+    
+            # traverse in the string 
+            for item in msg_list: 
+                new_str += item
+
+            rospy.logwarn(f"rebroadcasting: {new_str}")
+
+            #publish the new string
+            self.radio_pub.publish(new_str)
         
+        except:
+            pass
 
 
     def radio_traffic_callback(self, msg):
@@ -156,9 +178,11 @@ class agent_comms:
             send_time = rcvd_rs.rs_time.secs - 4
             recv_time = rospy.Time.now().to_sec()
             broadcast_time = (recv_time - send_time)
-            br_time = f"{message['sendingAgent']}:{broadcast_time:.2f}"
-            self.broadcast_time_pub.publish(br_time)
+            #br_time = f"{message['sendingAgent']}:{broadcast_time:.2f}"
+
+            self.broadcast_time_pub.publish(broadcast_time)
             self.rcvd_rs_pub.publish(rcvd_rs)
+            self.rc_rs_pub.publish( ''.join(message['payload']) )
 
         elif message["messageType"] == COMMAND:
 
@@ -185,7 +209,11 @@ class agent_comms:
             else:
                 print("Unknown command received")
                 return
-                    
+            
+            #Handle any rebroadcasting, right now this is only for valid commands
+            if (message['rebroadcast'] == "1") :
+                self.handle_rebroadcast(msg.data)
+            
         else:
             print("Invalid message type received")
             return
@@ -200,6 +228,7 @@ class agent_comms:
         tempStr =  f"0:{self.ID}:0:0:{msg.x.min:.2f}:{msg.x.max:.2f}:{msg.y.min:.2f}:{msg.y.max:.2f}:{msg.z.min:.2f}:{msg.z.max:.2f}:{msg.rs_time.secs}"
         #print(len(tempStr))
         self.radio_pub.publish(tempStr)
+        self.my_rs_pub.publish(tempStr)
 
     def __init__(self):
             
@@ -211,8 +240,10 @@ class agent_comms:
 
         rospy.Subscriber('/my_reach_state', hyperRectangle, self.my_rs_callback) #subscribed to this agent's reachable set
         self.rcvd_rs_pub = rospy.Publisher('/recieved_rs', hyperRectangle, queue_size=10) #publish incoming reachable sets to the rest of the nodes
+        self.rc_rs_pub = rospy.Publisher("rc_rs", String, queue_size = 10) #For logging purposes
+        self.my_rs_pub = rospy.Publisher("my_rs", String, queue_size = 10) #for logging purposes
 
-        self.broadcast_time_pub = rospy.Publisher('/broadcast_time', String, queue_size=10) #publish the time of the last broadcast
+        self.broadcast_time_pub = rospy.Publisher('/br_time', Float32, queue_size=10) #publish the time of the last broadcast
         self.collision_action_pub = rospy.Publisher('/collision_action', Bool, queue_size=1)
         self.set_reach_time_pub = rospy.Publisher('/reach_time', Float32, queue_size=1)
         self.mission_cmd_pub = rospy.Publisher('/mission_cmd', String, queue_size=1)

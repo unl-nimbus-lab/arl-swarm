@@ -253,7 +253,7 @@ class ping_command(command):
 
 class set_mode_command(command):
     """
-    DEPRICATED: Subclass for a set flight mode command
+    
     """
     
     def __init__(self):
@@ -633,7 +633,7 @@ def unpack_message(message):
     messageDict['target'] = int(messageList[0])
     messageDict['sendingAgent'] = int(messageList[1])
     messageDict['messageType'] = int(messageList[2])
-    messageDict['rebroadcast'] = bool(messageList[3])
+    messageDict['rebroadcast'] = str(messageList[3])
     messageDict['payload'] = messageList[4:] #This gets parsed in a different function depending on the message type, leave as a string for now
 
     return messageDict

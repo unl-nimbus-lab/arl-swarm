@@ -58,7 +58,8 @@
       <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
       <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
 
-
+      <remap from="/rs_time" to="/agent_$(env SYS_ID)/rs_time" />
+      <remap from="/en_time" to="/agent_$(env SYS_ID)/en_time" />
     </node>
 
     <!-- Launch verifier comms s node -->
@@ -73,6 +74,10 @@
       <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
       <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
       <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
+
+      <remap from='/rc_rs' to='/agent_$(env SYS_ID)/rc_rs' />
+      <remap from='/my_rs' to='/agent_$(env SYS_ID)/my_rs' />
+      <remap from='/br_time' to='/agent_$(env SYS_ID)/br_time' />
     </node>
 
     <!-- Launch Collision Checker node-->
@@ -82,6 +87,9 @@
       <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
       <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
       <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+
+      <remap from="/dc_time" to="/agent_$(env SYS_ID)/dc_time" />
+      <remap from="/in_time" to="/agent_$(env SYS_ID)/in_time" />
     </node>
 
     <node name="verifier_planner" pkg="verifier_planner" type="planner.py" output="screen">
@@ -96,6 +104,17 @@
       <remap from='/position_error' to='/agent_$(env SYS_ID)/position_error' />
       <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
       
+    </node>
+
+    <node name="verifier_logger" pkg="verifier" type="verifier_logger" output="screen">
+      <remap from="/rs_time" to="/agent_$(env SYS_ID)/rs_time" />
+      <remap from="/en_time" to="/agent_$(env SYS_ID)/en_time" />
+      <remap from="/br_time" to="/agent_$(env SYS_ID)/br_time" />
+      <remap from="/dc_time" to="/agent_$(env SYS_ID)/dc_time" />
+      <remap from="/in_time" to="/agent_$(env SYS_ID)/in_time" />
+      <remap from="/my_rs" to="/agent_$(env SYS_ID)/my_rs" />
+      <remap from="/rc_rs" to="/agent_$(env SYS_ID)/rc_rs" />
+
     </node>
 
 

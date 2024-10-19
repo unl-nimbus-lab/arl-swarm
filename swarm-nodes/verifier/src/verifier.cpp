@@ -23,12 +23,18 @@ agent::agent() {
     nh.param<float>("reachTimout", reachTimeout, 0.005);
     ROS_WARN("Set reachTimeout to %f", reachTimeout);
 
-    rsMessage.id = SYSID_THISMAV;
+    //Logging Publishers
+    rs_pub = nh.advertise<std_msgs::Float32>("/rs_time", 1, true); //For publishing the rs_time
+    en_pub = nh.advertise<std_msgs::Float32>("/en_time", 1, true); //For publishing the en_time
 
+    rsMessage.id = SYSID_THISMAV;
 
 }
 
 void agent::compute_rs( const ros::TimerEvent& event ) {
+
+    std_msgs::Float32 rs_time;
+    std_msgs::Float32 en_time;
             
     //std::cout << "computing a reach set for " << reachTimeout << " seconds" << std::endl;
     float compute_time = reachTimeout * 0.4;
@@ -42,34 +48,39 @@ void agent::compute_rs( const ros::TimerEvent& event ) {
     Because I often forget compute reachable set arguments:
     1) Postition Error (minimum space size)
     2) Velocity Error (minimum increase)
-    3) Reach time (how far ahead to look)
+    3) Reach time (how far ahead to look
     4) Initial Step Size (how big )
     5) Reach timeout
     */
     
     //finish timing the computation
-    float actual_compute_time = getUnixTime() - start_compute;
+    double end_compute = getUnixTime();
+
+    rs_time.data = end_compute - start_compute;
 
     //Populate the ROS message with the reachable set
     packRectangleMessage(myReachableState, rsMessage);
     
     rsMessage.header.stamp = ros::Time::now();
     ros::Time tempTime(start_compute + 4.0);
-    
+
+    //Find the encode time
+    double end_encode = getUnixTime();
+    en_time.data = end_encode - end_compute;
+
+
     //Add the timestamp and the actual time
     rsMessage.header.stamp = ros::Time::now();
     rsMessage.rs_time = tempTime;
 
     rect_publisher.publish(rsMessage);
+    rs_pub.publish(rs_time);
+    en_pub.publish(en_time);
 }
 
 int main(int argc, char **argv) {
-
     ros::init(argc, argv, "verifier");
-
     agent thisAgent;
-
     ros::spin();
-
     return 0;
 }
