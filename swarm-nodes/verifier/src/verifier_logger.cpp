@@ -44,10 +44,9 @@ int main(int argc, char **argv) {
 
     ros::init(argc, argv, "verifier_logger");
     ros::NodeHandle noodle;
-
     verifierLogger verifier_logger(noodle);
-
     ros::spin();
+
 }
 
 // void state_cb(const mavros_msgs::State::ConstPtr& msg) {

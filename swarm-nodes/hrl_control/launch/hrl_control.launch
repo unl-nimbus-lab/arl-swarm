@@ -106,15 +106,8 @@
       
     </node>
 
-    <node name="verifier_logger" pkg="verifier" type="verifier_logger" output="screen">
-      <remap from="/rs_time" to="/agent_$(env SYS_ID)/rs_time" />
-      <remap from="/en_time" to="/agent_$(env SYS_ID)/en_time" />
-      <remap from="/br_time" to="/agent_$(env SYS_ID)/br_time" />
-      <remap from="/dc_time" to="/agent_$(env SYS_ID)/dc_time" />
-      <remap from="/in_time" to="/agent_$(env SYS_ID)/in_time" />
-      <remap from="/my_rs" to="/agent_$(env SYS_ID)/my_rs" />
-      <remap from="/rc_rs" to="/agent_$(env SYS_ID)/rc_rs" />
-
+    <node name="logger_handler" pkg="verifier" type="logger_handler.py" >
+      <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
     </node>
 
 
