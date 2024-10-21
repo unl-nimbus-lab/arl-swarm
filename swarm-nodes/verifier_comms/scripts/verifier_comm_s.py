@@ -5,6 +5,7 @@ from verifier_comms.msg import hyperRectangle
 from std_msgs.msg import String, Bool, Float32
 from mavros_msgs.srv import SetMode, SetModeRequest, SetModeResponse, CommandBool, CommandBoolRequest, CommandTOL, CommandTOLRequest, CommandTOLResponse
 import math
+
 """
 rostopic pub /radio_traffic std_msgs/String "data: '0:0:1:0:1:1:0:0:0:0:0:0'"
 rostopic pub /radio_traffic std_msgs/String "data: '0:0:1:0:2:1:0:0:0:0:0:0'"
@@ -16,6 +17,7 @@ rostopic pub /radio_traffic std_msgs/String "data: '0:0:1:0:3:10:0:0:0:0:0:0'"
 #set guided 0:0:1:0:1:1:0:0:0:0:0:0
 #set arm    0:0:1:0:2:1:0:0:0:0:0:0
 #takeoff    0:0:1:0:3:10:0:0:0:0:0:0
+
 class agent_comms:
     ID = -1
 
@@ -234,9 +236,17 @@ class agent_comms:
             
         rospy.init_node('agent_comms')
         self.ID = rospy.get_param('SystemID', 1)
+        self.simulating = rospy.get_param("simulating", True)
 
-        rospy.Subscriber('/radio_traffic', String, self.radio_traffic_callback) #subscribe to incoming radio traffic for commands
-        self.radio_pub = rospy.Publisher('/radio_traffic', String, queue_size=10) #publish messages to radio traffic
+
+        if (self.simulating):
+            rospy.Subscriber('/radio_traffic', String, self.radio_traffic_callback) #subscribe to incoming radio traffic for commands
+            self.radio_pub = rospy.Publisher('/radio_traffic', String, queue_size=10) #publish messages to radio traffic
+        else:
+            rospy.Subscriber('/radio_traffic_in', String, self.radio_traffic_callback) #subscribe to incoming radio traffic for commands
+            self.radio_pub = rospy.Publisher('/radio_traffic_out', String, queue_size=10) #publish messages to radio traffic
+
+
 
         rospy.Subscriber('/my_reach_state', hyperRectangle, self.my_rs_callback) #subscribed to this agent's reachable set
         self.rcvd_rs_pub = rospy.Publisher('/recieved_rs', hyperRectangle, queue_size=10) #publish incoming reachable sets to the rest of the nodes

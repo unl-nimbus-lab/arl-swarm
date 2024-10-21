@@ -73,6 +73,9 @@ class MyServer(BaseHTTPRequestHandler):
             elif command == "MISSION":
                 msg = build_mission_command(options)
                 radio_pub.publish(msg)
+            elif command == "PING":
+                msg = build_ping_command(options)
+                radio_pub.publish(msg)
 
         except IndexError as e:
             rospy.logwarn(f"{e}")
@@ -99,8 +102,12 @@ if __name__ == "__main__":
     rospy.init_node('swarm_gcs')
     ID = 0 #ID stays fixed for GCS
 
-    #rospy.Subscriber("radio_traffic", String, radio_callback)
-    radio_pub = rospy.Publisher("/radio_traffic", String, queue_size=100)
+    simulating = rospy.get_param("simulating", True)
+
+    if (simulating):
+        radio_pub = rospy.Publisher("/radio_traffic", String, queue_size=100)
+    else:
+        radio_pub = rospy.Publisher("/radio_traffic_out", String, queue_size = 100)
 
     rospy.loginfo("Starting Swarm GCS Node")
     run()

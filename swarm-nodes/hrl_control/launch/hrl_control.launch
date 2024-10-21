@@ -18,6 +18,7 @@
     <param name="coregEnabled" value="$(optenv COREG_ENABLED false )"/>
     <param name="cyberRef" value="$(optenv CYBER_REF 10 )"/>
     <param name="commonAlt" value="$(optenv COMMON_ALT 410)"/>
+    <param name="simulating" type="bool" value="true"/>
 
     <arg name="fcu_url" default="$(env PORT):$(env BAUD)"/>
     <arg name="gcs_url" default="" />
@@ -78,6 +79,8 @@
       <remap from='/rc_rs' to='/agent_$(env SYS_ID)/rc_rs' />
       <remap from='/my_rs' to='/agent_$(env SYS_ID)/my_rs' />
       <remap from='/br_time' to='/agent_$(env SYS_ID)/br_time' />
+
+      <remap from="/simulating" to='/agent_$(env SYS_ID)/simulating' />
     </node>
 
     <!-- Launch Collision Checker node-->
