@@ -1,0 +1,127 @@
+<launch>
+
+    <group ns="agent_$(env SYS_ID)">
+  
+      <!-- Set default values from environment variables -->
+      <param name="MavDev"  value="$(optenv PORT udp://127.0.0.1)" />
+      <param name="MavPort" value="$(optenv BAUD 14560@14565)" />
+      <param name="SystemID" value="$(optenv SYS_ID 1)" />
+      <param name="ClusterID" value="$(optenv CLS_ID 1)" />
+      <param name="agentIDX"  value="$(optenv AGENT_IDX 1)" />
+      <param name="agentAlt"  value="$(optenv AGENT_ALT 400)" />
+      <param name="homeLat"   value="$(optenv HOME_LAT 40.846740)"/>
+      <param name="homeLon"   value="$(optenv HOME_LON -96.471819)"/>
+      <param name="homeAlt"   value="$(optenv HOME_ALT 390)"/>
+      <param name="bagDir"    value="$(optenv BAG_DIR /home/rosbags/ )"/>
+      <param name="thrustScalar"  value="$(optenv THRUST_SCALAR 1.0 )"/>
+      <param name="startingControlRate"  value="$(optenv CONTROL_RATE 30 )"/>
+      <param name="coregEnabled" value="$(optenv COREG_ENABLED false )"/>
+      <param name="cyberRef" value="$(optenv CYBER_REF 10 )"/>
+      <param name="commonAlt" value="$(optenv COMMON_ALT 410)"/>
+      <param name="simulating" type="bool" value="false"/>
+  
+      <arg name="fcu_url" default="$(env PORT):$(env BAUD)"/>
+      <arg name="gcs_url" default="" />
+      <arg name="tgt_system" default="$(env SYS_ID)" />
+      <arg name="tgt_component" default="" />
+      <arg name="log_output" default="screen" />
+      <arg name="fcu_protocol" default="v2.0" />
+      <arg name="respawn_mavros" default="false" />
+  
+      <!-- Launch mavros node -->
+      <include file="$(find mavros)/launch/node.launch">
+        <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+        <arg name="fcu_url" value="$(arg fcu_url)" />
+        <arg name="gcs_url" value="$(arg gcs_url)" />
+        <arg name="tgt_system" value="$(arg tgt_system)" />
+        <arg name="tgt_component" value="$(arg tgt_component)" />
+        <arg name="log_output" value="$(arg log_output)" />
+        <arg name="fcu_protocol" value="$(arg fcu_protocol)" />
+        <arg name="respawn_mavros" value="$(arg respawn_mavros)" />
+      </include>
+      
+  
+      <!-- Launch state_provider node -->
+      <node name="state_provider" pkg="state_provider" type="state_provider" output="screen">
+  
+        <remap from="/mavros/global_position/swarm" to="/agent_$(env SYS_ID)/mavros/global_position/swarm" />
+        <remap from="/mavros/global_position/local" to="/agent_$(env SYS_ID)/mavros/global_position/local" />
+        <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
+      
+      </node>
+  
+  
+      <!-- Launch verifier node -->
+      <node name="verifier" pkg="verifier" type="verifier" output="screen">
+        <remap from="/agent_state" to="/agent_$(env SYS_ID)/agent_state" />
+        <remap from="/cyber_state" to="/agent_$(env SYS_ID)/cyber_state" />
+        <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+        <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
+  
+        <remap from="/rs_time" to="/agent_$(env SYS_ID)/rs_time" />
+        <remap from="/en_time" to="/agent_$(env SYS_ID)/en_time" />
+      </node>
+  
+      <!-- Launch verifier comms s node -->
+      <node name="verifier_comms" pkg="verifier_comms" type="verifier_comm_s.py" output="screen">
+        <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
+        <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+        <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
+        <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
+        <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
+        <remap from="/broadcast_time" to="/agent_$(env SYS_ID)/broadcast_time" />
+        <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+        <remap from="/reach_time" to="/agent_$(env SYS_ID)/reach_time" />
+        <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
+        <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
+  
+        <remap from='/rc_rs' to='/agent_$(env SYS_ID)/rc_rs' />
+        <remap from='/my_rs' to='/agent_$(env SYS_ID)/my_rs' />
+        <remap from='/br_time' to='/agent_$(env SYS_ID)/br_time' />
+  
+        <remap from="/simulating" to='/agent_$(env SYS_ID)/simulating' />
+      </node>
+  
+      <!-- Launch Collision Checker node-->
+      <node name="collisionChecker" pkg="verifier" type="collisionChecker" output="screen">
+        <remap from="/my_reach_state" to="/agent_$(env SYS_ID)/my_reach_state" />
+        <remap from="/recieved_rs" to="/agent_$(env SYS_ID)/recieved_rs" />
+        <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
+        <remap from="/mavros/cmd/arming" to="/agent_$(env SYS_ID)/mavros/cmd/arming" />
+        <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+  
+        <remap from="/dc_time" to="/agent_$(env SYS_ID)/dc_time" />
+        <remap from="/in_time" to="/agent_$(env SYS_ID)/in_time" />
+      </node>
+  
+      <node name="verifier_planner" pkg="verifier_planner" type="planner.py" output="screen">
+        <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
+        <remap from='/pos_ref' to='/agent_$(env SYS_ID)/pos_ref' />
+      </node>
+  
+      <node name="vel_control" pkg="hrl_control" type="vel_control" output="screen">
+        <remap from='/agent_state' to='/agent_$(env SYS_ID)/agent_state' />
+        <remap from='/pos_ref' to='/agent_$(env SYS_ID)/pos_ref' />
+        <remap from='/mavros/setpoint_velocity/cmd_vel' to='/agent_$(env SYS_ID)/mavros/setpoint_velocity/cmd_vel' />
+        <remap from='/position_error' to='/agent_$(env SYS_ID)/position_error' />
+        <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
+        
+      </node>
+      
+
+      <node name="logger_handler" pkg="verifier" type="logger_handler.py" output="screen" >
+        <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
+      </node>
+  
+      <node name="xbee_bridge" pkg="verifier_comms" type="xbee_bridge.py" output="screen" >
+        <remap from="/simulating" to='/agent_$(env SYS_ID)/simulating' />
+      </node>
+  
+      <!-- <node name="bag_handler" pkg="bag_handler" type="bag_handler.py" output="screen">
+        <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
+      </node> -->
+    
+    </group>
+  
+  </launch>
