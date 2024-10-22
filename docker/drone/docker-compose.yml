@@ -9,7 +9,7 @@ services:
     container_name: hrl
     network_mode: "host"
     volumes:
-      - /home/ubuntu/rosbags:/home/rosbags
+      - /home/ubuntu/rosbags:/home/verifier_logs
       - /home/ubuntu/arl-swarm/docker/drone:/home/drone
     devices: 
       - ${PORT}:${PORT}
