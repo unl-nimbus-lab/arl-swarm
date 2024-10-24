@@ -1,3 +1,5 @@
 <launch>
+    <param name="simulating" type="bool" value="false"/> 
     <node pkg="verifier_comms" type="gcs_backend.py" name="gcs_backend" output="screen" />
+    <node pkg="verifier_comms" type="xbee_bridge.py" name="xbee_bridge" output="screen" />
 </launch>

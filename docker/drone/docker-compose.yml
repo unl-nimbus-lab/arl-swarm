@@ -17,5 +17,5 @@ services:
     command: >
       /bin/bash -c "source /home/catkin_ws/devel/setup.bash && 
                     export $$(cat /home/drone/.env) &&
-                    roslaunch src/hrl_control/launch/hrl_control.launch"
+                    roslaunch src/hrl_control/launch/hrl_control_drone.launch"
     restart: always
