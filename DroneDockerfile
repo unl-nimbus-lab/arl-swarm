@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-catkin-tools \
         python3-rosinstall-generator \
         geographiclib-tools \
+        chrony \
         libgeographic-dev \
 	&& geographiclib-get-geoids egm96-5 \
     && geographiclib-get-gravity egm96 \

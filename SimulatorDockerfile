@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-catkin-tools \
         python3-rosinstall-generator \
         geographiclib-tools \
+        chrony \
         libgeographic-dev \
 	&& geographiclib-get-geoids egm96-5 \
     && geographiclib-get-gravity egm96 \
@@ -103,6 +104,9 @@ RUN chmod +x /home/catkin_ws/src/verifier_comms/scripts/gcs.py
 RUN chmod +x /home/catkin_ws/src/verifier_planner/scrpits/planner.py
 RUN chmod +x /home/catkin_ws/src/verifier/scripts/logger_handler.py
 RUN chmod +x /home/catkin_ws/src/verifier_comms/scripts/xbee_bridge.py
+
+#Time sync line
+RUN echo "refclock SHM 0 refid GPS precision 1e-1 poll 3 prefer" >> /etc/chrony/chrony.conf
 
 # Rosbag management
 #COPY docker/drone/bag_manager.sh /home/
