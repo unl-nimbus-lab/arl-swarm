@@ -268,9 +268,9 @@ class agent_comms:
         self.takeoff_client = rospy.ServiceProxy('/mavros/cmd/takeoff', CommandTOL)
         self.takeoff_client_request = CommandTOLRequest()
 
-        #Publish the start time once to br_time so that it gets logged
-        start_time = rospy.Time.now().to_sec()
-        self.broadcast_time_pub.publish(start_time)
+        # #Publish the start time once to br_time so that it gets logged
+        # start_time = rospy.Time.now().to_sec()
+        # self.broadcast_time_pub.publish(start_time)
 
         
         

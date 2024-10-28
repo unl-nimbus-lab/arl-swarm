@@ -38,6 +38,9 @@ verifierLogger::verifierLogger(ros::NodeHandle nh) {
     my_logger.openLogFile("my_spaces.txt");
     rr_logger.openLogFile("rc_spaces.txt");
 
+    //write current time to br_time incase there is any offset
+    br_logger.writeLogFloat(getUnixTime());
+
 }
 
 int main(int argc, char **argv) {
