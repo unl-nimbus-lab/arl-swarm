@@ -127,7 +127,7 @@ class Logger {
         // Function to write to the log file
         void writeLogFloat(const float& message) {
             if (logFile.is_open()) {
-                logFile << std::setprecision(15) << message << std::endl;
+                logFile << std::setprecision(10) << message << std::endl;
             } else {
                 std::cerr << "Log file is not open!" << std::endl;
             }
