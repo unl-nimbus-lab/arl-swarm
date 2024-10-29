@@ -255,7 +255,7 @@ class agent_comms:
 
         self.broadcast_time_pub = rospy.Publisher('/br_time', Float32, queue_size=10) #publish the time of the last broadcast
         self.collision_action_pub = rospy.Publisher('/collision_action', Bool, queue_size=1)
-        self.set_reach_time_pub = rospy.Publisher('/reach_time', Float32, queue_size=1)
+        self.set_reach_time_pub = rospy.Publisher('/reach_timeout', Float32, queue_size=1)
         self.mission_cmd_pub = rospy.Publisher('/mission_cmd', String, queue_size=1)
         self.position_control_enable_pub = rospy.Publisher('/pos_en', Bool, queue_size=1)
 

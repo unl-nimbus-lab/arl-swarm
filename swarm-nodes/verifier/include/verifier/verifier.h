@@ -150,12 +150,10 @@ class agent {
             vz= msg->accel.angular.z;
         }
 
-        void reach_time_cb( const std_msgs::Float32::ConstPtr& msg ) {
-            ROS_WARN("Setting reach time to %f", msg->data);
-            reachTime = msg->data;
+        void reach_timeout_cb( const std_msgs::Float32::ConstPtr& msg ) {
+            ROS_WARN("Setting reach timeout to %f", msg->data);
+            reachTimeout = msg->data;
         }
-
-
 
         // Get rid of this function
         void compute_reach_set_cb( const std_msgs::Int32::ConstPtr& msg ) {

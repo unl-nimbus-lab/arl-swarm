@@ -174,6 +174,7 @@ class verifierLogger {
         ros::Subscriber in_time_sub;
         ros::Subscriber my_rs_sub;
         ros::Subscriber rc_rs_sub;
+        ros::Subscriber ttc_sub;
 
         //Setup the loggers //
         Logger rs_logger;
@@ -183,6 +184,7 @@ class verifierLogger {
         Logger in_logger;
         Logger my_logger;
         Logger rr_logger;
+        Logger ttc_logger;
 
         void rs_cb(const std_msgs::Float32::ConstPtr& msg) {
             rs_logger.writeLogFloat(msg->data);
@@ -204,6 +206,9 @@ class verifierLogger {
         }
         void rc_rs_cb(const std_msgs::String::ConstPtr& msg) {
             rr_logger.writeLogString(msg->data);
+        }
+        void ttc_cb(const std_msgs::Float32::ConstPtr& msg) {
+            ttc_logger.writeLogFloat(msg->data);
         }
 
 

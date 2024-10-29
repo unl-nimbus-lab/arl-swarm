@@ -10,6 +10,7 @@ verifierLogger::verifierLogger(ros::NodeHandle nh) {
     in_time_sub = nh.subscribe("/in_time", 1, &verifierLogger::in_cb, this);
     my_rs_sub = nh.subscribe("/my_rs"    , 1, &verifierLogger::my_rs_cb, this);
     rc_rs_sub = nh.subscribe("/rc_rs"    , 1, &verifierLogger::rc_rs_cb, this);
+    ttc_sub   = nh.subscribe("/ttc"      , 1, &verifierLogger::ttc_cb, this);
 
     //state_sub = nh.subscribe("/mavros/state", 1, &verifierLogger::state_cb, this);
 
@@ -28,6 +29,7 @@ verifierLogger::verifierLogger(ros::NodeHandle nh) {
     in_logger.setLogDirectory(logDir);
     my_logger.setLogDirectory(logDir);
     rr_logger.setLogDirectory(logDir);
+    ttc_logger.setLogDirectory(logDir);
 
     //Open the log files
     rs_logger.openLogFile("rs_time.txt");
@@ -37,8 +39,10 @@ verifierLogger::verifierLogger(ros::NodeHandle nh) {
     in_logger.openLogFile("in_time.txt");
     my_logger.openLogFile("my_spaces.txt");
     rr_logger.openLogFile("rc_spaces.txt");
+    ttc_logger.openLogFile("ttc_time.txt");
 
     //write current time to br_time incase there is any offset
+    double start_time = getUnixTime();
     br_logger.writeLogFloat(getUnixTime());
 
 }

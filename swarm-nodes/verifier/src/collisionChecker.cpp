@@ -39,6 +39,7 @@ class collisionChecker {
 
         ros::Publisher dc_pub;
         ros::Publisher in_pub;
+        ros::Publisher ttc_pub;
 
         ros::ServiceClient set_mode;
 
@@ -262,6 +263,11 @@ void collisionChecker::rcvd_rs_cb(const verifier_comms::hyperRectangle::ConstPtr
     std_msgs::Float32 in_time;
     in_time.data = intersect_end - decode_end;
     in_pub.publish(in_time);
+
+    double ttc = msg->rs_time.toSec() - decode_start;
+    std_msgs::Float32 ttc_msg;
+    ttc_msg.data = ttc;
+    ttc_pub.publish(ttc_msg);
 }
 
 void collisionChecker::collision_action(const std_msgs::Bool::ConstPtr& msg) {
@@ -302,6 +308,7 @@ collisionChecker::collisionChecker() {
 
     dc_pub = nh.advertise<std_msgs::Float32>("dc_time", 1, true);
     in_pub = nh.advertise<std_msgs::Float32>("in_time", 1, true);
+    ttc_pub= nh.advertise<std_msgs::Float32>("ttc", 1, true);
 
 }
 

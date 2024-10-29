@@ -8,6 +8,7 @@
         <remap from="/in_time" to="/agent_$(env SYS_ID)/in_time" />
         <remap from="/my_rs" to="/agent_$(env SYS_ID)/my_rs" />
         <remap from="/rc_rs" to="/agent_$(env SYS_ID)/rc_rs" />
+        <remap from="/ttc"   to="/agent_$(env SYS_ID)/ttc" />
   
       </node>
 </launch>
