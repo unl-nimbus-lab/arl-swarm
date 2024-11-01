@@ -138,7 +138,7 @@ class swarm_planner:
         
         #Setp 3: enable velocity controller
         rospy.loginfo("ENABLEING POSITION CONTROLLER")
-        self.position_control_enable_pub(True)
+        self.position_control_enable_pub.publish(True)
 
         #Step 4: publish new reference: m1s2
         rospy.loginfo("UPDATAING REFERENCE TO M1S2")
