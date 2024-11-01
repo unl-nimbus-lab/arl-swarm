@@ -73,6 +73,7 @@ class agent {
         ros::Subscriber physical_state_subscriber;
         ros::Subscriber reach_time_subscriber;
         ros::Subscriber cyber_state_subscriber; //<< Get rid of this
+        ros::Subscriber lookahead_time_subscriber;
 
         //ROS timers
         float reachTimeout = 0.005;
@@ -153,6 +154,11 @@ class agent {
         void reach_timeout_cb( const std_msgs::Float32::ConstPtr& msg ) {
             ROS_WARN("Setting reach timeout to %f", msg->data);
             reachTimeout = msg->data;
+        }
+
+        void lh_time_cb(const std_msgs::Float32::ConstPtr& msg) {
+            ROS_WARN("Setting lookahead time to %f", msg->data);
+            reachTime = msg->data;
         }
 
         // Get rid of this function

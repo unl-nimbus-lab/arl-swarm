@@ -10,6 +10,7 @@ agent::agent() {
     physical_state_subscriber = nh.subscribe("/agent_state",   1, &agent::state_update_cb, this);
     cyber_state_subscriber = nh.subscribe(   "/ncyber_state",   1, &agent::compute_reach_set_cb,  this);
     reach_time_subscriber = nh.subscribe(    "/reach_timeout",     1, &agent::reach_timeout_cb,        this);
+    lookahead_time_subscriber = nh.subscribe("/lookahead_time", 1, &agent::lh_time_cb, this);
 
     rect_publisher = nh.advertise<verifier_comms::hyperRectangle>("/my_reach_state", 1, true);
 

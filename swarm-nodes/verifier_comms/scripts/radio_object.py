@@ -53,6 +53,7 @@ _COMMAND_MAP = {
     "SET_REACH_TIME": 5,
     "SET_MISSION": 6,
     "ENABLE_POS_CONTROL": 7,
+    "SET_LH_TIME": 8,
 }
 
 _MODE_MAP = {
@@ -84,6 +85,7 @@ COMMAND_MAP = {
     5: "SET_REACH_TIME",
     6: "SET_MISSION",
     7: "ENABLE_POS_CONTROL",
+    8: "SET_LH_TIME",
 }
 
 #Message type macros
@@ -412,6 +414,38 @@ class reach_time_command(command):
         except ValueError as e:
             print(f"{e}")
 
+class lh_time_command(command):
+    """
+    Subclass for a command that sets the lookahead time
+
+    param1: lookahead time (seconds)
+    param2: UNUSED
+    param3: UNUSED
+    param4: UNUSED
+    param5: UNUSED
+    param6: UNUSED
+    param7: UNUSED
+    
+    """
+    
+    def __init__(self):
+
+        command.__init__(self)
+        self.command_key = "SET_LH_TIME"
+        self.command = _COMMAND_MAP[self.command_key]
+
+    def process_options(self,options):
+        """
+        Specify options to modify the command
+        command options: list[str]
+
+        """
+        self.check_universal_options(options)
+        try:
+            self.param1 = float(options[0])
+        except ValueError as e:
+            print(f"{e}")
+
 class control_enable_command(command):
     """
     Subclass for a command that enables/disables velocity control node
@@ -572,6 +606,13 @@ def build_disable_avoidance_command(options):
 
 def build_set_reach_time_command(options):
     set = reach_time_command()
+    set.process_options(options)
+    set.build_message()
+
+    return set.msg_str
+
+def build_set_lh_time_command(options):
+    set = lh_time_command()
     set.process_options(options)
     set.build_message()
 

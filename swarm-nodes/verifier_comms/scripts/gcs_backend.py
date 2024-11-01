@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from radio_object import build_ping_command, build_arm_command, build_disarm_command, build_guided_command, build_auto_command, build_brake_command, build_land_command, build_rtl_command, build_takeoff_command, build_disable_avoidance_command, build_enable_avoidance_command, build_set_reach_time_command, build_control_disable_command, build_control_enable_command, build_mission_command
+from radio_object import build_ping_command, build_arm_command, build_disarm_command, build_guided_command, build_auto_command, build_brake_command, build_land_command, build_rtl_command, build_takeoff_command, build_disable_avoidance_command, build_enable_avoidance_command, build_set_reach_time_command, build_control_disable_command, build_control_enable_command, build_mission_command, build_set_lh_time_command
 import rospy
 from std_msgs.msg import String
 import threading
@@ -75,6 +75,9 @@ class MyServer(BaseHTTPRequestHandler):
                 radio_pub.publish(msg)
             elif command == "PING":
                 msg = build_ping_command(options)
+                radio_pub.publish(msg)
+            elif command == "SET_LH":
+                msg = build_set_lh_time_command(options)
                 radio_pub.publish(msg)
 
         except IndexError as e:

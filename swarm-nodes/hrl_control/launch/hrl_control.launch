@@ -61,6 +61,8 @@
 
       <remap from="/rs_time" to="/agent_$(env SYS_ID)/rs_time" />
       <remap from="/en_time" to="/agent_$(env SYS_ID)/en_time" />
+      <remap from="/lookahead_time" to="/agent_$(env SYS_ID)/lookahead_time" />
+
     </node>
 
     <!-- Launch verifier comms s node -->
@@ -79,6 +81,8 @@
       <remap from='/rc_rs' to='/agent_$(env SYS_ID)/rc_rs' />
       <remap from='/my_rs' to='/agent_$(env SYS_ID)/my_rs' />
       <remap from='/br_time' to='/agent_$(env SYS_ID)/br_time' />
+
+      <remap from="/lookahead_time" to="/agent_$(env SYS_ID)/lookahead_time" />
 
       <remap from="/simulating" to='/agent_$(env SYS_ID)/simulating' />
     </node>
@@ -99,6 +103,11 @@
     <node name="verifier_planner" pkg="verifier_planner" type="planner.py" output="screen">
       <remap from='/mission_cmd' to='/agent_$(env SYS_ID)/mission_cmd' />
       <remap from='/pos_ref' to='/agent_$(env SYS_ID)/pos_ref' />
+
+      <remap from='/pos_en' to='/agent_$(env SYS_ID)/pos_en' />
+      <remap from="/collision_action" to="/agent_$(env SYS_ID)/collision_action" />
+      <remap from="/mavros/cmd/takeoff" to="/agent_$(env SYS_ID)/mavros/cmd/takeoff" />
+      <remap from="/mavros/set_mode" to="/agent_$(env SYS_ID)/mavros/set_mode" />
     </node>
 
     <node name="vel_control" pkg="hrl_control" type="vel_control" output="screen">

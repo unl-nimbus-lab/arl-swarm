@@ -156,6 +156,15 @@ class agent_comms:
         except:
             pass
 
+    def handle_set_lh_time(self, message, payload):
+        """
+        set the lh time by publishing to /lookahead_time
+        """
+
+        time = payload["param1"]
+        self.set_lh_time_pub.publish(time)
+        
+
 
     def radio_traffic_callback(self, msg):
         '''
@@ -208,6 +217,8 @@ class agent_comms:
                 self.handle_set_mission(message,command)
             elif command["command"] == "ENABLE_POS_CONTROL":
                 self.handle_enable_pos_control(message, command)
+            elif command["command"] == "SET_LH_TIME":
+                self.handle_set_lh_time(message, command)
             else:
                 print("Unknown command received")
                 return
@@ -246,8 +257,6 @@ class agent_comms:
             rospy.Subscriber('/radio_traffic_in', String, self.radio_traffic_callback) #subscribe to incoming radio traffic for commands
             self.radio_pub = rospy.Publisher('/radio_traffic_out', String, queue_size=10) #publish messages to radio traffic
 
-
-
         rospy.Subscriber('/my_reach_state', hyperRectangle, self.my_rs_callback) #subscribed to this agent's reachable set
         self.rcvd_rs_pub = rospy.Publisher('/recieved_rs', hyperRectangle, queue_size=10) #publish incoming reachable sets to the rest of the nodes
         self.rc_rs_pub = rospy.Publisher("rc_rs", String, queue_size = 10) #For logging purposes
@@ -258,6 +267,8 @@ class agent_comms:
         self.set_reach_time_pub = rospy.Publisher('/reach_timeout', Float32, queue_size=1)
         self.mission_cmd_pub = rospy.Publisher('/mission_cmd', String, queue_size=1)
         self.position_control_enable_pub = rospy.Publisher('/pos_en', Bool, queue_size=1)
+
+        self.set_lh_time_pub = rospy.Publisher('/lookahead_time', Float32, queue_size=1)
 
         self.set_mode_service = rospy.ServiceProxy('/mavros/set_mode', SetMode)
         self.set_mode_request = SetModeRequest()
