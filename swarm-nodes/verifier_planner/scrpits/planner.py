@@ -130,7 +130,7 @@ class swarm_planner:
         self.handle_takeoff()
 
         #wait for 15? sec
-        time.sleep(15)
+        time.sleep(20)
 
         #Step 2: publish new reference: m1s1
         rospy.loginfo("UPDATAING REFERENCE TO M1S1")
@@ -140,12 +140,14 @@ class swarm_planner:
         rospy.loginfo("ENABLEING POSITION CONTROLLER")
         self.position_control_enable_pub.publish(True)
 
+        time.sleep(25)
+
         #Step 4: publish new reference: m1s2
         rospy.loginfo("UPDATAING REFERENCE TO M1S2")
         self.update_reference(1,2)
 
         #wait for 10? sec
-        time.sleep(20)
+        time.sleep(10)
 
         #Step 5: Turn verifier on
         rospy.loginfo("ENABLING COLLISION AVOIDDANCE")
@@ -159,7 +161,7 @@ class swarm_planner:
         self.update_reference(1,3)
 
         #wait for 30? sec
-        time.sleep(30)
+        time.sleep(15)
 
         #Step 7: turn verifier off
         rospy.loginfo("DISABLING COLLISION AVOIDANCE")

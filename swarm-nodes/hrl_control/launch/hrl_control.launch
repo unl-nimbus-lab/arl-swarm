@@ -119,7 +119,7 @@
       
     </node>
 
-    <node name="logger_handler" pkg="verifier" type="logger_handler.py" >
+    <node name="logger_handler" pkg="verifier" type="logger_handler.py" output="screen" >
       <remap from="/mavros/state" to="/agent_$(env SYS_ID)/mavros/state" />
     </node>
 
