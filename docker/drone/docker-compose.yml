@@ -1,3 +1,4 @@
+# Build file for the swarm used in Phillips, Tran, Bradley, IEEE TAES 2026 (doi:10.1109/TAES.2026.3683620).
 version: '3'
 
 services:

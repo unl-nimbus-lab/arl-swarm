@@ -1,5 +1,7 @@
 # arl-swarm
 
+> **Paper:** G. Phillips, H.-D. Tran, and J. M. Bradley, "Robust Safety Assurance for Robotic Swarms Using Decentralized Collision Verification," *IEEE Transactions on Aerospace and Electronic Systems*, vol. 62, pp. 9706-9717, 2026. DOI: [10.1109/TAES.2026.3683620](https://doi.org/10.1109/TAES.2026.3683620). The `verifier_2025` branch is the code used in that paper; the runtime verifier (`safety_checker`) is in `swarm-nodes/verifier/`.
+
 ## Build the development image
 
 `docker build -f docker/development/Dockerfile -t swarm_devel .`
